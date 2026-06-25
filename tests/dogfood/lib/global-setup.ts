@@ -24,6 +24,8 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
+// The app monorepo is nested at <harness>/app; its build scripts run there.
+const APP_ROOT = resolve(REPO_ROOT, "app");
 
 // biome-ignore lint/style/noDefaultExport: Playwright's `globalSetup` config hook resolves the module's default export.
 export default function globalSetup(): void {
@@ -34,7 +36,7 @@ export default function globalSetup(): void {
 	console.log("[dogfood:setup] building first-party app bundles (build:apps)…");
 	const started = Date.now();
 	const result = spawnSync("bun", ["run", "build:apps"], {
-		cwd: REPO_ROOT,
+		cwd: APP_ROOT,
 		stdio: "inherit",
 	});
 	if (result.status !== 0) {
