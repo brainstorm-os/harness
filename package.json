@@ -4,11 +4,11 @@
   "type": "module",
   "description": "Brainstorm harness hub — dogfood sessions, the dev MCP server, and orchestration. Drives the app monorepo nested at ./app.",
   "scripts": {
-    "dogfood:build": "cd app && bun run --filter @brainstorm/shell build && bun run build:apps",
-    "dogfood": "cd app && bun run --filter @brainstorm/shell build && cd .. && playwright test --config=playwright.dogfood.config.ts",
+    "dogfood:build": "cd shell && bun run --filter @brainstorm/shell build && bun run build:apps",
+    "dogfood": "cd shell && bun run --filter @brainstorm/shell build && cd .. && playwright test --config=playwright.dogfood.config.ts",
     "dogfood:fast": "BRAINSTORM_DOGFOOD_SKIP_BUILD=1 playwright test --config=playwright.dogfood.config.ts",
-    "dogfood:collab": "cd app && bun run --filter @brainstorm/shell build && cd .. && playwright test --config=playwright.collab.config.ts",
-    "dogfood:catalog": "cd app && bun run --filter @brainstorm/shell build && bun run build:apps && cd .. && playwright test --config=playwright.catalog.config.ts",
+    "dogfood:collab": "cd shell && bun run --filter @brainstorm/shell build && cd .. && playwright test --config=playwright.collab.config.ts",
+    "dogfood:catalog": "cd shell && bun run --filter @brainstorm/shell build && bun run build:apps && cd .. && playwright test --config=playwright.catalog.config.ts",
     "dogfood:open": "node tools/dogfood-open.mjs",
     "dogfood:chat": "bun tools/dogfood-chat.ts"
   },

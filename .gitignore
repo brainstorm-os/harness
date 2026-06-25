@@ -1,5 +1,5 @@
 # nested repos — each managed as its own remote
-/app/
+/shell/
 /sync/
 /cloud/
 /site/
