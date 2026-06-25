@@ -3,6 +3,7 @@
 /sync/
 /cloud/
 /site/
+/docs-site/
 
 # deps & build output
 node_modules/
