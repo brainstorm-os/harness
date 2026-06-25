@@ -25,8 +25,8 @@ const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 
 const DATA_DIR = join(REPO_ROOT, "tests", "dogfood", ".screenshots-data");
 const VAULT_DIR = join(DATA_DIR, "vault");
-const WALLPAPER_SRC = join(REPO_ROOT, "pitch", "wallpaper.jpg");
-const OUT_DIR = resolve(REPO_ROOT, "..", "brainstorm-site", "public", "screenshots", "raw");
+const WALLPAPER_SRC = join(REPO_ROOT, "docs", "art", "wallpaper", "stormy-sea.png");
+const OUT_DIR = join(REPO_ROOT, "site", "public", "screenshots", "raw");
 
 const APP = {
 	Notes: "io.brainstorm.notes",
@@ -140,15 +140,15 @@ test("capture marketing screenshots", async () => {
 		await bs.dev.seedMarketingEntities();
 	}, DATA_DIR);
 
-	// Drop the pitch wallpaper into the vault's wallpaper store, then apply
-	// the Rose theme + pitch wallpaper (light slot).
+	// Drop the stormy-sea wallpaper into the vault's wallpaper store, then apply
+	// the Midnight (dark) theme + stormy-sea wallpaper (dark slot).
 	mkdirSync(join(VAULT_DIR, "dashboard", "wallpapers"), { recursive: true });
-	copyFileSync(WALLPAPER_SRC, join(VAULT_DIR, "dashboard", "wallpapers", "wallpaper.jpg"));
+	copyFileSync(WALLPAPER_SRC, join(VAULT_DIR, "dashboard", "wallpapers", "stormy-sea.png"));
 	await dashboard.evaluate(async () => {
 		const bs = (window as unknown as BW).brainstorm;
-		await bs.dashboard.setAppearanceMode("light");
-		await bs.dashboard.setTheme("rose");
-		await bs.dashboard.setWallpaper({ kind: "image", value: "wallpaper.jpg" }, "light");
+		await bs.dashboard.setAppearanceMode("dark");
+		await bs.dashboard.setTheme("midnight");
+		await bs.dashboard.setWallpaper({ kind: "image", value: "stormy-sea.png" }, "dark");
 	});
 
 	await dashboard.waitForTimeout(6000);
