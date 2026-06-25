@@ -24,7 +24,9 @@
  *      attribute (a labelled inner element labels the button);
  *   5. a `// a11y-exempt` comment on or above the opening tag's line
  *      (the explicit escape hatch — rare cases where the button is
- *      genuinely decorative or its name is set imperatively).
+ *      genuinely decorative or its name is set imperatively);
+ *   6. `aria-hidden="true"` (or bare / `={true}`) — the button is removed
+ *      from the accessibility tree, so an accessible name is moot.
  *
  * Pure: `(files) → violations`.
  */
@@ -66,6 +68,20 @@ function attributesNameButton(props: ts.NodeArray<ts.JsxAttributeLike>): boolean
 		const lit = attrStringValue(prop);
 		if (lit && lit.trim().length > 0) return true;
 		if (lit === null && attrHasExpressionValue(prop)) return true;
+	}
+	return false;
+}
+
+/** `aria-hidden="true"` (or bare / `={true}`) removes the button from the
+ *  accessibility tree, so it needs no accessible name — e.g. a visually-hidden
+ *  Enter-to-submit button. A literal `"false"` does NOT exempt. */
+function isAriaHidden(props: ts.NodeArray<ts.JsxAttributeLike>): boolean {
+	for (const prop of props) {
+		if (!ts.isJsxAttribute(prop)) continue;
+		if (prop.name.getText() !== "aria-hidden") continue;
+		const lit = attrStringValue(prop);
+		if (lit === null) return true; // bare attr or expression — presume hidden
+		return lit.trim() === "true";
 	}
 	return false;
 }
@@ -148,10 +164,16 @@ export function findUnnamedButtons(files: readonly SourceFileInput[]): ButtonNam
 
 		const walk = (node: ts.Node): void => {
 			if (ts.isJsxSelfClosingElement(node) && isButtonOpening(node)) {
-				if (!attributesNameButton(node.attributes.properties)) flag(node);
+				if (
+					!attributesNameButton(node.attributes.properties) &&
+					!isAriaHidden(node.attributes.properties)
+				) {
+					flag(node);
+				}
 			} else if (ts.isJsxElement(node) && isButtonOpening(node.openingElement)) {
 				if (
 					!attributesNameButton(node.openingElement.attributes.properties) &&
+					!isAriaHidden(node.openingElement.attributes.properties) &&
 					!subtreeHasAccessibleContent(node)
 				) {
 					flag(node.openingElement);

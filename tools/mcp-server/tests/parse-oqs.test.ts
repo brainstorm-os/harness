@@ -20,8 +20,10 @@ describe("parseOpenQuestions", () => {
 	});
 
 	it("treats open OQs as open", () => {
-		const oq6 = projection.questions.find((q) => q.id === "OQ-6");
-		expect(oq6?.status).toBe(OQStatus.Open);
+		// Read against the LIVE doc, so don't pin a specific id (they get
+		// resolved over time — OQ-6 did). Assert the parser produces open
+		// statuses at all; OQ-1's resolved case is covered above.
+		expect(projection.questions.some((q) => q.status === OQStatus.Open)).toBe(true);
 	});
 
 	it("extracts the Where / Question / Resolution bullets", () => {
