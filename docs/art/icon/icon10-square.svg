@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- Squircle background: bright blush top → deep crimson bottom (the Rose
+         theme's gloss face — see packages/tokens/src/themes.ts `rose.gloss`). -->
+    <linearGradient id="bgGrad" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%"  stop-color="#fb7185"/>
+      <stop offset="48%" stop-color="#e11d48"/>
+      <stop offset="100%" stop-color="#be123c"/>
+    </linearGradient>
+
+    <!-- Soft warm highlight near the top, mirroring the gloss shine. -->
+    <radialGradient id="bgGlow" cx="0.5" cy="0.34" r="0.62">
+      <stop offset="0%"  stop-color="#ffd9e0" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#ffd9e0" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#ffd9e0" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Bolt body: near-white with a faint rose tint at the foot so it reads
+         crisp on the crimson tile. -->
+    <linearGradient id="boltGrad" x1="0.2" y1="0.05" x2="0.85" y2="0.95">
+      <stop offset="0%"  stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#fff1f4"/>
+      <stop offset="100%" stop-color="#ffd6e0"/>
+    </linearGradient>
+
+    <!-- Inner specular highlight on the bolt's upper edge -->
+    <linearGradient id="boltShine" x1="0.3" y1="0" x2="0.5" y2="0.4">
+      <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Inner shadow on the rounded square (subtle vignette around edges) -->
+    <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.72">
+      <stop offset="60%" stop-color="#7a0c28" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#7a0c28" stop-opacity="0.40"/>
+    </radialGradient>
+
+    <!-- Square clip path (no rounded corners — avatar variant) -->
+    <clipPath id="square">
+      <rect x="0" y="0" width="1024" height="1024" rx="0" ry="0"/>
+    </clipPath>
+  </defs>
+
+  <!-- ===== ICON BODY (clipped to square) ===== -->
+  <g clip-path="url(#square)">
+    <!-- Rose base -->
+    <rect width="1024" height="1024" fill="url(#bgGrad)"/>
+    <!-- Warm radial highlight -->
+    <rect width="1024" height="1024" fill="url(#bgGlow)"/>
+    <!-- Edge vignette -->
+    <rect width="1024" height="1024" fill="url(#vignette)"/>
+
+    <!-- ===== LIGHTNING BOLT ===== -->
+    <path d="
+      M 600 215
+      L 348 555
+      L 488 555
+      L 424 808
+      L 676 468
+      L 536 468
+      Z"
+      fill="url(#boltGrad)"
+      stroke="#ffffff"
+      stroke-opacity="0.85"
+      stroke-width="6"
+      stroke-linejoin="round"
+      stroke-linecap="round"/>
+
+    <!-- Inner specular shine along the upper face -->
+    <path d="
+      M 600 215
+      L 348 555
+      L 488 555
+      L 600 215 Z"
+      fill="url(#boltShine)"
+      opacity="0.6"/>
+  </g>
+
+  <!-- Subtle outer rim highlight (square) -->
+  <rect x="1" y="1" width="1022" height="1022"
+        fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="2"/>
+</svg>

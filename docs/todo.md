@@ -1,0 +1,1 @@
+Brainstorm is the operating system for the AI-native company: a local-first, encrypted workspace where people and AI agents share one knowledge base and identity.

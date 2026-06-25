@@ -1,0 +1,24 @@
+# nested repos — each managed as its own remote
+/app/
+/sync/
+/cloud/
+/site/
+
+# deps & build output
+node_modules/
+out/
+dist/
+
+# editor / local
+.DS_Store
+*.log
+.obsidian/
+.claude/settings.local.json
+
+# dogfood runtime
+test-results/
+tests/dogfood/.data/
+tests/dogfood/.data-collab/
+tests/dogfood/.screenshots/
+tests/dogfood/.screenshots-data/
+tests/dogfood/Singleton*

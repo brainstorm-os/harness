@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "bun-types"],
+    "paths": {
+      "@brainstorm/sdk-types": ["../../packages/sdk-types/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "tests/**/*"]
+}
