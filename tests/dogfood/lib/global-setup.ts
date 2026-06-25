@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
 // The app monorepo is nested at <harness>/app; its build scripts run there.
-const APP_ROOT = resolve(REPO_ROOT, "shell");
+const APP_ROOT = resolve(REPO_ROOT, "..", "shell");
 
 // biome-ignore lint/style/noDefaultExport: Playwright's `globalSetup` config hook resolves the module's default export.
 export default function globalSetup(): void {

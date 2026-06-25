@@ -1,9 +1,5 @@
-# nested repos — each managed as its own remote
-/shell/
-/sync/
-/cloud/
-/site/
-/docs-site/
+# Sibling repos live next to this one under the brainstorm/ container
+# (../shell, ../sync, ../cloud, ../site, ../docs) — not nested here anymore.
 
 # deps & build output
 node_modules/
