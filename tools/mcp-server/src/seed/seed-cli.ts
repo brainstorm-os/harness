@@ -17,9 +17,14 @@
 
 import { SeedMode, SeedScope, seedVault } from "./seeder.ts";
 
-function parseArgs(argv: readonly string[]): { vault: string | null; dryRun: boolean } {
+function parseArgs(argv: readonly string[]): {
+	vault: string | null;
+	dryRun: boolean;
+	deferToSidecar: boolean;
+} {
 	let vault: string | null = null;
 	let dryRun = false;
+	let deferToSidecar = false;
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		if (arg === "--vault" || arg === "-v") {
@@ -27,12 +32,17 @@ function parseArgs(argv: readonly string[]): { vault: string | null; dryRun: boo
 			i += 1;
 		} else if (arg === "--dry-run") {
 			dryRun = true;
+		} else if (arg === "--defer-sidecar") {
+			// A live shell spawns the CLI with this so the projection lands in the
+			// seed sidecar (drained in-process by the shell) rather than via a
+			// second entities.db connection that contends with the running shell.
+			deferToSidecar = true;
 		}
 	}
-	return { vault, dryRun };
+	return { vault, dryRun, deferToSidecar };
 }
 
-const { vault, dryRun } = parseArgs(process.argv.slice(2));
+const { vault, dryRun, deferToSidecar } = parseArgs(process.argv.slice(2));
 
 if (!vault) {
 	console.error("seed-cli: --vault <absolute-path> is required");
@@ -46,6 +56,7 @@ try {
 		mode: SeedMode.Merge,
 		dryRun,
 		now: Date.now(),
+		deferToSidecar,
 	});
 
 	const lines: string[] = [];

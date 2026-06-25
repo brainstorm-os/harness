@@ -89,6 +89,11 @@ export interface SeedRequest {
 	/** Override the seeder's clock. Tests pass a fixed value for determinism;
 	 *  the CLI passes `Date.now()` so iteration schedules anchor to real time. */
 	now?: number;
+	/** Set by a live shell driving the reseed: park the entities.db projection
+	 *  in the seed sidecar instead of opening a second writer connection to
+	 *  entities.db (which contends cross-process with the running shell — F-278).
+	 *  The shell drains the sidecar in-process. Omitted for standalone CLI use. */
+	deferToSidecar?: boolean;
 }
 
 export interface SeedReport {
@@ -162,7 +167,9 @@ export async function seedVault(request: SeedRequest): Promise<SeedReport> {
 	let entities: import("./write-vault-entities").WriteStats | undefined;
 	if (!dryRun && Object.keys(blobsForEntitiesDb).length > 0) {
 		const { writeVaultEntities } = await import("./write-vault-entities");
-		entities = await writeVaultEntities(request.vaultPath, blobsForEntitiesDb);
+		entities = await writeVaultEntities(request.vaultPath, blobsForEntitiesDb, {
+			deferToSidecar: request.deferToSidecar ?? false,
+		});
 	}
 
 	return { dryRun, mode, wrote, ...(entities ? { entities } : {}) };

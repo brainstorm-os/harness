@@ -78,6 +78,7 @@ export interface WriteStats {
 export async function writeVaultEntities(
 	vaultPath: string,
 	blobs: SeederBlobs,
+	opts: { deferToSidecar?: boolean } = {},
 ): Promise<WriteStats> {
 	const snapshot: VaultEntitiesSnapshot = { entities: [], links: [] };
 	if (blobs.tasks) projectTasksFromBlob(blobs.tasks, snapshot);
@@ -96,6 +97,27 @@ export async function writeVaultEntities(
 			linksWritten: 0,
 			entitiesRemoved: 0,
 			deferredToSidecar: false,
+			entitiesProjected,
+			linksProjected,
+		};
+	}
+
+	// When a live shell is driving the reseed it passes `deferToSidecar`: opening
+	// a SECOND writer connection to entities.db from this Bun subprocess while
+	// the shell holds the file open is cross-process WAL contention — a bulk
+	// seed transaction or a close-time checkpoint outlasts the 5s busy_timeout
+	// and both sides throw "database is locked" (F-278). Park the snapshot in the
+	// sidecar instead; the shell drains it in-process on its own single
+	// connection. A standalone CLI reseed (no live shell) skips this and writes
+	// directly, which is contention-free.
+	if (opts.deferToSidecar) {
+		await writeSeedSidecar(vaultPath, snapshot);
+		return {
+			entitiesCreated: 0,
+			entitiesUpdated: 0,
+			linksWritten: 0,
+			entitiesRemoved: 0,
+			deferredToSidecar: true,
 			entitiesProjected,
 			linksProjected,
 		};

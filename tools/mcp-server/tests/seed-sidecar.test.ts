@@ -73,3 +73,43 @@ describe("writeVaultEntities — encrypted vault", () => {
 		expect(existsSync(join(vault, "data", SEED_SIDECAR_FILENAME))).toBe(false);
 	});
 });
+
+// F-278: when a live shell drives the reseed it passes `deferToSidecar`. The
+// Bun CLI must then NOT open a second writer connection to entities.db (that
+// contends cross-process with the running shell → "database is locked"); it
+// parks the snapshot in the sidecar for the shell to drain in-process.
+describe("writeVaultEntities — deferToSidecar (live shell)", () => {
+	function makeFreshVault(): string {
+		const vault = mkdtempSync(join(tmpdir(), "bs-seed-defer-"));
+		mkdirSync(join(vault, "data"), { recursive: true });
+		vaults.push(vault);
+		return vault;
+	}
+
+	const seed = {
+		notes: {
+			"note:hub": { id: "hub", title: "Hub", body: null },
+		},
+	};
+
+	it("parks to the sidecar without opening entities.db on an unencrypted vault", async () => {
+		const vault = makeFreshVault();
+		const stats = await writeVaultEntities(vault, seed, { deferToSidecar: true });
+
+		expect(stats.deferredToSidecar).toBe(true);
+		expect(existsSync(join(vault, "data", SEED_SIDECAR_FILENAME))).toBe(true);
+		// The smoking-gun assertion: no second connection was opened, so the CLI
+		// never created/touched entities.db.
+		expect(existsSync(join(vault, "data", "entities.db"))).toBe(false);
+	});
+
+	it("opens entities.db directly when not deferring (standalone CLI path)", async () => {
+		const vault = makeFreshVault();
+		const stats = await writeVaultEntities(vault, seed, { deferToSidecar: false });
+
+		expect(stats.deferredToSidecar).toBe(false);
+		// Standalone reseed writes the real store (no live shell to contend with).
+		expect(existsSync(join(vault, "data", "entities.db"))).toBe(true);
+		expect(existsSync(join(vault, "data", SEED_SIDECAR_FILENAME))).toBe(false);
+	});
+});
