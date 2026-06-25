@@ -114,19 +114,11 @@ describe("findRawCompositeRoles — escape hatch + reporting", () => {
 // 12 KBN-A app surfaces (Phase 2).
 
 const KNOWN_VIOLATION_PATHS: ReadonlySet<string> = new Set<string>([
-	// Notes editor plugins (typeaheads / inline toolbars / inspectors + the
-	// B11.3 select-field popover) — composite roles gated on the Lexical-decorator
-	// KBN-A work, which rides the B11.x editor-parity ladder, not the 12.4 sweep.
-	"apps/notes/src/editor/add-property-menu-plugin.tsx",
-	"apps/notes/src/editor/block-embed-picker-plugin.tsx",
-	"apps/notes/src/editor/link-markup-plugin.tsx",
-	"apps/notes/src/editor/media-inspector-plugin.tsx",
-	"apps/notes/src/editor/nodes/select-field-node.tsx",
-	// Whiteboard board-list adopted the composite-keyboard binding
-	// (KBN-A-whiteboard); the remaining literal is the canvas authoring `toolbar`.
-	"apps/whiteboard/src/app.ts",
 	// The window-management tab strip (shell chrome) — hand-written `tablist`/`tab`.
 	"packages/shell/src/renderer/chrome/tab-strip.tsx",
+	// NOTE: the Notes editor plugins + whiteboard `app.ts` that used to live here
+	// were migrated off composite-role literals and pruned 2026-06-25; the other
+	// app surfaces now carry per-site `// kbn-roles-exempt` annotations instead.
 ]);
 
 describe("repo-wide KBN-G-roles audit", () => {
