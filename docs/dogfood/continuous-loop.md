@@ -64,7 +64,7 @@ separate `bun run dev` shell.
 
 7. **Commit from an ISOLATED git worktree, never the shared main tree.** A git
    working tree holds exactly one checked-out branch, and **other agents share
-   `/Users/admin/home/brainstorm`**. If you `git checkout -b` and work directly
+   `/Users/admin/home/harness`**. If you `git checkout -b` and work directly
    in that shared tree, a concurrent agent's `git checkout` can move HEAD out
    from under you *between your branch-create and your commit* — your commit then
    lands on **their** branch, and the branch name you push stays empty. (This
