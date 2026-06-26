@@ -10,6 +10,7 @@
  */
 
 import { type ChildProcess, spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { createConnection, createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,7 +18,20 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
-const SYNC_MAIN = resolve(REPO_ROOT, "..", "brainstorm-sync", "src", "main.ts");
+const SIBLINGS = resolve(REPO_ROOT, "..");
+/** The durable-node repo's entry point. The org migration renamed it `sync`
+ *  (`brainst0rm-os/sync`); `brainstorm-sync` was the pre-split sibling name.
+ *  Resolve whichever exists so a stale name doesn't surface as a cryptic
+ *  `spawn bun ENOENT` (a non-existent `cwd` throws that, not a missing bun). */
+const SYNC_MAIN = ((): string => {
+	for (const name of ["sync", "brainstorm-sync"]) {
+		const candidate = resolve(SIBLINGS, name, "src", "main.ts");
+		if (existsSync(candidate)) return candidate;
+	}
+	throw new Error(
+		`launch-durable-node: durable-node main.ts not found in ../sync or ../brainstorm-sync (looked under ${SIBLINGS})`,
+	);
+})();
 
 export type DurableNodeHandle = {
 	readonly port: number;
