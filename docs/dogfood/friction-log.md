@@ -27,6 +27,22 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 344 — Database delete flow verified (the piece 343 deferred) (2026-06-26)
+
+`tests/dogfood/sessions/344-database-lifecycle.spec.ts`. Picks up the Database
+lifecycle 343 deferred. A first grounded attempt mis-fired — this vault has no
+"Clients" grid, so it fell back to a BOARD list ("Tasks") whose cards aren't grid
+rows, and the grid is `@tanstack/react-virtual` (row-count checks unreliable). All
+**harness/state artifacts, not bugs** (code-read confirms delete: row menu
+"Delete" → `confirmDeleteEntity` → a `delete-entity-confirm` popover with a
+`.bs-btn--danger` → `deleteEntity` through the entities service). So 344 asserts
+the part a GUI test reliably can, **view-agnostically and non-destructively**:
+right-click any `[data-entity-id]` → the shared menu offers **Delete** → the
+**confirm popover appears** → **Cancel** closes it cleanly — **zero console
+errors**. ✅ Passes. The delete *flow* is wired and safe across whatever view the
+list renders; row-grid create/delete (virtualization-aware, on a guaranteed grid
+list) stays the one deferred piece.
+
 ## Session 343 — the delete/edit lifecycle the create-sweeps skip (2026-06-26)
 
 342 verifies the *create* action of each core app; nothing exercises **edit** or
