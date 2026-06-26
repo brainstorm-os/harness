@@ -27,6 +27,29 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 343 — the delete/edit lifecycle the create-sweeps skip (2026-06-26)
+
+342 verifies the *create* action of each core app; nothing exercises **edit** or
+**delete** — where data-loss and stuck-state bugs hide. New spec
+`tests/dogfood/sessions/343-delete-lifecycle.spec.ts` runs create → edit (must
+persist) → **delete via the object ⋯ menu** → verify-gone, with zero console
+errors. **Result: ✅ Notes and Tasks pass the full lifecycle cleanly** — delete
+works, the object leaves the surface, no console errors. No friction filed.
+
+**Method note (selector lesson, worth carrying forward).** The first two runs
+filed *four* findings ("Notes/Tasks object ⋯ menu has no Delete row", etc.) —
+**all false positives** from wrong selectors. Ground truth (from the working
+"tidy" sessions, e.g. `051-tidy-tasks`): fancy-menus rows are
+**`.fm-menu [role="option"]`** (not `.bs-object-menu__item`, a different
+component), and the Delete label is exactly `Delete`. Verified against the app
+code (Notes/Tasks both wire `onRemove`/`onDelete`) *before* believing the run —
+the findings evaporated once the selector was corrected. Lesson for future GUI
+sessions: confirm an affordance is genuinely absent (code + a known-good
+selector) before recording it; a "missing" affordance is usually a wrong query.
+**Database lifecycle deferred** — its grid add/row-delete affordances aren't the
+header-⋯ menu, so it needs a dedicated session with grounded selectors (342
+already proves DB add-row works, so the trimmed-out DB findings were not bugs).
+
 ## Session collab-005 — the Northbound team ships Issue #4 (2026-06-26)
 
 User-prompted: *"we stopped using our Northbound team in dogfooding?"* — we had. The
