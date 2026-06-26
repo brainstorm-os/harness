@@ -27,6 +27,33 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 328 (re-run) — every-button sweep, fresh signal across all 20 apps (2026-06-26)
+
+Re-ran the proven every-button sweep to get a current health signal — especially
+on the newer in-flight apps (Mailbox/Agent/Browser/Automations) that the core-app
+CRUD sessions don't deep-probe. **32 menus, 205 buttons, 20/20 apps, 0 stuck
+overlays** (the hard signal — clean). Two real findings surfaced; the 86
+"possible dead button" entries are the sweep's known heuristic false-positive
+class (nav/selection/number buttons — "Board", "Timeline", "Today", day cells
+"1".."21", list rows — whose effect is real but not DOM-observable by the
+effect-detector), **not filed**.
+
+### F-291 — Calendar logs a React setState-in-render warning
+- **session:** 328-rerun   **kind:** bug   **app:** Calendar   **status:** open
+- **what happened:** during the Calendar button sweep the renderer logged *"Cannot update a component while rendering a different component … setState() call inside …"* (React's setState-in-render anti-pattern; minified components "FR"/"SU"). Surfaced as the 1 Calendar console error.
+- **why it matters:** setState-in-render can cause double-renders / subtle stale-state glitches; React will escalate this to an error in a future major.
+- **ruled out:** `overflow-popover.tsx` (its `setPos` is in `useLayoutEffect`, correct — not the culprit). The offender is a child calling a parent/sibling setter during render; needs a repro + component stack to locate.
+- **evidence:** `tests/dogfood/.sessions/328-every-button-sweep/console.log` ("[calendar] error: Cannot update a component …").
+- **triage:** _(next)_ open Calendar with React DevTools / a stack-trace build, click through views to repro, move the offending setter into an effect/handler.
+
+### F-292 — emoji glyphs newer than the bundled set fail to load (🪪/🫯)
+- **session:** 328-rerun   **kind:** bug   **app:** Notes / Journal / Database (shared editor emoji)   **status:** 🟡 symptom fixed; data-gap open
+- **what happened:** `brainstorm://emoji/1faea.webp` (🪪) and `1faef.webp` (🫯) fail with `ERR_UNEXPECTED` in Notes/Journal/Database. The bundled emoji art set (`art/emoji`, 3921 webp, iamcal img-apple-160) predates these Emoji-14 glyphs, but the editor's emoji shortcode/typeahead offers them — so rendering one requests a missing webp. (The *curated* IconPicker set of 144 is clean — verified zero missing — so this is the larger typeahead/shortcode dataset, not the picker.)
+- **fix (symptom, 2026-06-26):** the `brainstorm://emoji` serve handler now `stat()`-checks the file and returns a clean **404** for a missing glyph instead of letting `net.fetch` throw and surface as `ERR_UNEXPECTED` (`main/index.ts`); `tsc` + biome clean.
+- **root (open):** the emoji shortcode/typeahead data should be **gated to the built webp set** (only offer glyphs with a bundled image), or the art set regenerated to a newer iamcal version. Until then a few newer emoji render blank.
+- **evidence:** `…/328-every-button-sweep/console.log`; `art/emoji/1faea.webp` + `1faef.webp` confirmed absent while `1f600.webp` present.
+- **triage:** _(next)_ gate `@brainstorm/sdk/icon-picker` emoji data (+ editor shortcode list) to the built filenames, or regenerate the art set.
+
 ## Session 345 — fleet-wide delete-affordance + menu-health sweep (2026-06-26)
 
 `tests/dogfood/sessions/345-delete-affordance-sweep.spec.ts` — across all 20 apps,
