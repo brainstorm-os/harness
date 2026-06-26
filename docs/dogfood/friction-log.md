@@ -39,7 +39,10 @@ class (nav/selection/number buttons — "Board", "Timeline", "Today", day cells
 effect-detector), **not filed**.
 
 ### F-291 — Calendar logs a React setState-in-render warning
-- **session:** 328-rerun   **kind:** bug   **app:** Calendar   **status:** open
+- **session:** 328-rerun   **kind:** bug   **app:** Calendar   **status:** ✅ done (2026-06-26)
+- **root cause:** `setView` and `step` (calendar `app.tsx`) called `recordNav(...)` — which `navHist.push` → notifies nav-history subscribers → their `setState` — **inside the `setAnchorState` updater function**. React runs state updaters during the render phase, so that fired a *different* component's setState mid-render ("update FR while rendering SU"). The sibling nav actions (`openMonth`/`setAnchor`/`goToday`) already did it right (compute `next`, set state, record outside the updater).
+- **fix (2026-06-26):** added an `anchorRef` (latest anchor) so `setView`/`step` compute `next` from `anchorRef.current` OUTSIDE the updater, then `setAnchorState(next)` + `recordNav(...)` in the handler body — no side effect inside the updater. `tsc` (apps) + biome clean.
+- **verified:** new `tests/dogfood/sessions/346-calendar-nav-no-setstate-warning.spec.ts` cycles every view kind + steps prev/next/today → **0 console errors, 0 setState-in-render warnings** (was the 1 Calendar console error in the 328 sweep).
 - **what happened:** during the Calendar button sweep the renderer logged *"Cannot update a component while rendering a different component … setState() call inside …"* (React's setState-in-render anti-pattern; minified components "FR"/"SU"). Surfaced as the 1 Calendar console error.
 - **why it matters:** setState-in-render can cause double-renders / subtle stale-state glitches; React will escalate this to an error in a future major.
 - **ruled out:** `overflow-popover.tsx` (its `setPos` is in `useLayoutEffect`, correct — not the culprit). The offender is a child calling a parent/sibling setter during render; needs a repro + component stack to locate.
