@@ -34,13 +34,13 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { AccessRole } from "../../../packages/shell/src/main/collab/access-record";
 import type { RestoreSummary } from "../../../packages/shell/src/preload/index";
 import {
 	SelectiveSyncMode,
 	type SelectiveSyncPolicy,
 } from "../../../packages/shell/src/shared/selective-sync-types";
 import {
+	AccessRole,
 	COLLAB_DATA_ROOT,
 	type CollabShell,
 	type CollabTeam,

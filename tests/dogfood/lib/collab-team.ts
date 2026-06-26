@@ -24,12 +24,23 @@ import { Buffer } from "node:buffer";
 import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ThemeName } from "@brainstorm/tokens";
+/** Theme ids mirrored from `@brainstorm/tokens` (`ThemeName` enum), inlined so
+ *  the dogfood harness carries NO runtime import of a shell workspace package —
+ *  the post-split harness can't resolve `@brainstorm/tokens`, and a value import
+ *  of it silently broke the entire collab harness. Values must stay in sync with
+ *  ../shell/packages/tokens/src/themes.ts. */
+type ThemeName = "nord" | "rose" | "sepia" | "forest" | "high-contrast" | "midnight";
 import { type ElectronApplication, type Page, _electron } from "@playwright/test";
 import { type RelayHandle, launchRelay } from "../../soak/lib/launch-relay";
 import { type Speaker, postToTeamChat } from "./team-chat";
 
-import type { AccessRole } from "../../../packages/shell/src/main/collab/access-record";
+/** Runtime mirror of `AccessRole` (../shell/.../collab/access-record.ts). The
+ *  harness must not VALUE-import shell main-process source — that drags in
+ *  yjs/@noble, which are absent from the thin harness node_modules post-split
+ *  (importing the enum as a value is what broke every collab spec). Specs import
+ *  this `AccessRole` from the lib instead. Keep the values in sync with the enum. */
+export const AccessRole = { Owner: "owner", Editor: "editor", Viewer: "viewer" } as const;
+export type AccessRole = (typeof AccessRole)[keyof typeof AccessRole];
 import type {
 	CollabAccessView,
 	CollabIdentity,
@@ -66,12 +77,12 @@ export type CollabPersona = {
  *  docs/dogfood/README.md). Any distinct assignment works; this is the default
  *  a collab session reuses so the team reads at a glance. */
 export const NORTHBOUND_THEMES: Readonly<Record<string, ThemeName>> = {
-	mira: ThemeName.Nord,
-	marcus: ThemeName.Rose,
-	priya: ThemeName.Sepia,
-	dana: ThemeName.Forest,
-	sol: ThemeName.HighContrast,
-	kai: ThemeName.Midnight,
+	mira: "nord",
+	marcus: "rose",
+	priya: "sepia",
+	dana: "forest",
+	sol: "high-contrast",
+	kai: "midnight",
 };
 
 type CollabDevApi = {

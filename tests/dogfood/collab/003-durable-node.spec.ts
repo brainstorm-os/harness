@@ -22,8 +22,7 @@ import { mkdtempSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { AccessRole } from "../../../packages/shell/src/main/collab/access-record";
-import { type CollabTeam, startCollabTeam } from "../lib/collab-team";
+import { AccessRole, type CollabTeam, startCollabTeam } from "../lib/collab-team";
 import { type DurableNodeHandle, launchDurableNode } from "../lib/launch-durable-node";
 import { SPEAKER } from "../lib/team-chat";
 

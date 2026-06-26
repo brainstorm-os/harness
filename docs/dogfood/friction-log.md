@@ -27,6 +27,61 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session collab-005 — the Northbound team ships Issue #4 (2026-06-26)
+
+User-prompted: *"we stopped using our Northbound team in dogfooding?"* — we had. The
+last ~12 sessions (335–342) were solo single-vault mechanical sweeps; the
+Mira+Marcus+Priya persona narrative and the multi-persona paired-vault collab
+loop had gone dark since ~session 218 / collab-004. **Root cause of the silence:**
+the repo split broke the collab harness outright — `tests/dogfood/lib/collab-team.ts`
+did a value-import of `@brainstorm/tokens` (`ThemeName` enum) and every collab spec
+value-imported `AccessRole` from shell **main-process source**, both unresolvable
+from the thin post-split harness `node_modules` (no `yjs`/`@noble`/`@brainstorm/*`).
+So `playwright --config=playwright.collab.config.ts` failed at module load — the
+team loop couldn't even start. **Fixed** by inlining both as harness-local mirrors
+(the `founder.ts` pattern: never import shell source — drive via `window.brainstorm`):
+`ThemeName` → a string union, `AccessRole` → a `{Owner,Editor,Viewer}` const exported
+from `collab-team.ts`; all five collab specs (001–005) repointed. 002 (three-editor
+baseline) now passes again (3.4 s); new session 005 passes (8.5 s).
+
+New spec `tests/dogfood/collab/005-northbound-issue4-team.spec.ts` drives the Issue #4
+narrative beyond 002: mixed roles (Marcus Editor, Priya Viewer), a Viewer receiving
+**live** editor edits (controlled diagnostic confirmed Viewers converge live, not just
+on the share snapshot), revoke, and re-invite. Three findings + one harness gap.
+
+### F-286 — a revoked teammate keeps reading new edits (revoke ≠ forward secrecy)
+- **session:** collab-005   **kind:** design/security   **app:** shell / sync (collab)   **status:** open
+- **what I was trying to do:** take Marcus off the Issue #4 brief, then keep editing it privately.
+- **what happened:** after `revoke(Marcus)`, Mira edited the brief and **Marcus still saw the new text** (`"[mira: final pass after Marcus rolled off]"`). Revocation sets the access record's `revokedAt` (policy) but does **not** rotate the entity DEK or drop Marcus's relay subscription, so his shell keeps decrypting post-revoke frames with the DEK he already holds.
+- **what I expected:** once revoked, Marcus can read history but not anything written after.
+- **why it's subtle (not a surprise bug):** DEK *rotation* is deliberately **decoupled from access change** (resolved OQ, Stage 10.0). So this is the *consequence* of that decision surfacing end-to-end: revocation is not cryptographically effective until an explicit rotation. The in-product Share/revoke flow (Collab-C5) must **rotate-on-revoke** (and unsubscribe the removed member) or "remove access" is only advisory.
+- **evidence:** `tests/dogfood/.sessions/collab-005-northbound-issue4-team/mira.notes.md` ("Forward-secrecy probe: Marcus STILL SEES post-revoke edits").
+- **triage:** _(developer)_ confirm whether the production `revoke` path (engine `share`/`revoke`, not just the dev bridge) rotates + unsubscribes; if not, this is a Collab-C5 requirement, not optional.
+
+### F-287 — you can't re-invite a revoked teammate (revoke is a dead end)
+- **session:** collab-005   **kind:** bug   **app:** shell / sync (access-record)   **status:** open
+- **what I was trying to do:** re-grant Marcus the brief after revoking him ("need him back for launch tweaks").
+- **what happened:** `share(Marcus, Editor)` with a fresh signed invite returned an access view where **Marcus's `active` was still false** — the re-grant did not reactivate him.
+- **what I expected:** re-granting restores access (with a fresh DEK wrap), and Marcus re-converges.
+- **likely mechanism:** the access record is **append-only, keyed per member, with a sticky `revokedAt`** (`access-record.ts`: `active = grantValid && !validly-revoked`). A second grant for an already-revoked member doesn't clear `revokedAt`, so the member stays inactive. Re-grant-after-revoke needs either a superseding causally-later grant entry or an explicit un-revoke.
+- **evidence:** `…/mira.notes.md` ("Re-invite probe: … did NOT reactivate him").
+- **triage:** _(developer)_ check `grant()` against an existing revoked entry in `access-record.ts`; this blocks the realistic "off the project, then back on" workflow.
+
+### F-288 — a Viewer can still write; nothing blocks it at the data layer
+- **session:** collab-005   **kind:** gap   **app:** shell / sync (collab) + Collab-C5   **status:** open
+- **what happened:** Priya, granted **Viewer**, called an edit and it **propagated to the editors** — there is no data-layer write-block for Viewers (expected: a blind-relay CRDT can't refuse a key-holder's frame; the relay can't read roles).
+- **what I expected:** a Viewer is read-only.
+- **resolution direction:** this is correct at the crypto layer; enforcement belongs in the **in-product Share UX (Collab-C5)** — disable editing affordances for Viewers and don't emit their frames. Record it so C5 ships with Viewer read-only, not as an afterthought.
+- **evidence:** `…/priya.notes.md` ("Viewer write-protection probe: a Viewer's edit PROPAGATED to the editors").
+- **triage:** _(developer)_ fold "Viewer = read-only at the UI + no emit" into the Collab-C5 spec.
+
+### F-289 — the dogfood collab bridge can't share two docs with one teammate (harness gap)
+- **session:** collab-005   **kind:** gap (harness)   **app:** tests/dogfood (collab-dev-bridge)   **status:** open
+- **what happened:** 005 originally shared two entities (the brief + a CRM note) with Marcus to dogfood **per-entity DEK isolation** (revoke one, keep the other). It failed: `installShareReceiver` installs a **single-entity** receiver (`collab-dev-bridge.ts` — "a second call replaces the prior listener"; `#detachReceiver` unsubscribes the previous entity), so the second `installShareReceiver` silently dropped Marcus's first subscription and that doc stopped converging. So multi-doc collaboration per teammate (and therefore the per-entity-isolation probe) can't be dogfooded through the bridge today.
+- **what I expected:** a teammate can hold live subscriptions to several shared docs at once (the production `LiveSyncEngine` already tracks a set).
+- **fix:** make the dev bridge receiver multi-entity — a `Map<entityId, listener>` + per-entity subscribe/detach — mirroring `LiveSyncEngine`. Then restore the per-entity-isolation probe in 005.
+- **triage:** _(developer)_ small dev-only bridge change; unblocks realistic multi-doc team sessions.
+
 ## Session 342 — deep CRUD verify; the db-lock now fires on a SINGLE create (2026-06-25)
 
 User-reported ("I still find functionality that doesn't work"). A new spec
@@ -193,7 +248,8 @@ Marcus, 9 to Priya, 2 to Mira), and the final persisted text —
 so it relays ciphertext only.
 
 ### F-274 — live collaboration works through the relay, but not yet inside the app UIs
-- **session:** collab-002-three-way-live   **kind:** gap   **app:** shell / sync   **status:** open
+- **session:** collab-002-three-way-live   **kind:** gap   **app:** shell / sync   **status:** 🟡 half-done (emit half closed by 10.12; Share UX remains)
+- **UPDATE (2026-06-26, via collab-005):** this entry was stale — its first half is **done**. Part (1) "no always-on auto-sync of app-UI edits" was **resolved by `10.12` (LiveSyncEngine, landed 2026-06-22)**: the normal entities-service edit path now auto-emits shared-entity updates (echo-free; solo edits stay off the relay). What remains open is part (2) — **the in-product Share UX (`Collab-C5`)**: granting/revoking access is still only reachable via the `dev:collab` bridge, not a real "Share" affordance. Collab-005 also surfaced what C5 must carry: Viewer read-only enforcement ([[F-288]]), rotate-on-revoke for real forward secrecy ([[F-286]]), and re-grant-after-revoke ([[F-287]]). Narrowed from "gap" to the C5 build.
 - **what I was trying to do:** have two+ agents co-edit the *same note in the Notes app*, live, and see each other's typing.
 - **what happened:** the C4 collaboration subsystem (share/grant/encrypted-relay/converge/revoke) works end to end through the standalone relay service — proven live with 2 and 3 shells. But two pieces of the "in the app UI" experience are not yet wired: (1) **no always-on auto-sync of app-UI edits** — `encryptAndEmit` (ydoc update → relay) is called only by explicit bridges (collab-dev-bridge, pairing, soak), not by the ydoc-store persist path, so typing in the live Notes editor does not auto-emit to the relay; (2) **no in-product share UI** — granting access is only reachable via the `dev:collab` bridge, not a real "Share" affordance. So today the working real-time path is the C4 bridge over the relay; the app-UI co-editing layer (an always-on sync worker that emits every shared-entity update, plus the C5 in-product Share UI) is the next stage.
 - **what I expected:** open a shared note in Notes on two shells and watch edits flow both ways.
