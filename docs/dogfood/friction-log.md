@@ -27,6 +27,25 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 345 — fleet-wide delete-affordance + menu-health sweep (2026-06-26)
+
+`tests/dogfood/sessions/345-delete-affordance-sweep.spec.ts` — across all 20 apps,
+opens the object/context menu (header ⋯ or right-click an `[data-entity-id]`) and
+checks for a Delete row + zero console errors. **Result: ✅ ZERO console errors
+across all 20 apps** during the menu interaction (strong fleet-health signal).
+Delete confirmed reachable via the heuristic for **5** apps (Notes, Tasks,
+Database, Bookmarks, Files).
+
+The other 15 reported "no delete found" — **a probe limitation, NOT a gap**, and
+not filed as findings. The heuristic only reaches the *header* object menu or a
+*top-level* `[data-entity-id]`; apps whose delete lives on a detail/event/cell
+menu aren't reached. Spot-checked the suspicious data apps against code:
+**Contacts** (`onRemove → setConfirmDeleteId` + confirm) and **Calendar**
+(`calendar.menu.delete` + `EventDetailOutcome.Deleted`) both **have** delete — my
+probe just didn't open the person/event detail. The rest are tool/view apps
+(Graph, Preview, Browser, Code/Theme Editor, Agent, …) that legitimately have no
+per-object delete. (Verify-before-believe, again — 345 found no bugs.)
+
 ## Session 344 — Database delete flow verified (the piece 343 deferred) (2026-06-26)
 
 `tests/dogfood/sessions/344-database-lifecycle.spec.ts`. Picks up the Database
