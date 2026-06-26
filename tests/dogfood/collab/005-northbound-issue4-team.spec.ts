@@ -111,15 +111,14 @@ test("Northbound ships Issue #4: mixed roles, live Viewer, revoke + re-invite", 
 			`Forward-secrecy probe: Marcus ${marcusPostRevoke.includes("final pass after Marcus") ? "STILL SEES post-revoke edits (FINDING)" : "does not see post-revoke edits (DEK rotation holds)"}.`,
 		);
 
-		// --- Re-invite probe: can a revoked member be re-granted? (Observation —
-		// an earlier run showed re-grant did not reactivate, so measure it.) ---
+		// --- Re-invite: revoke is not a dead end (F-287 fixed — the access view
+		// now collapses to one CURRENT row per member, so the re-grant wins). ---
 		mira.chat("Need Marcus back for the launch tweaks — re-granting the brief.");
 		const reInvite = await marcus.createInvite(marcus.persona.name);
 		const reShared = await mira.share(BRIEF_ID, NOTE_TYPE, reInvite, AccessRole.Editor);
-		const reActive = reShared.find((m) => m.member === marcusId?.userPubB64)?.active === true;
-		mira.note(
-			`Re-invite probe: re-granting a revoked member ${reActive ? "reactivated him (active=true)" : "did NOT reactivate him (active still false) — revoke is a dead-end in the share engine's access resolution (FINDING)"}.`,
-		);
+		const marcusRows = reShared.filter((m) => m.member === marcusId?.userPubB64);
+		expect(marcusRows.length, "one current row for the re-granted member").toBe(1);
+		expect(marcusRows[0]?.active, "re-invite reactivates Marcus").toBe(true);
 		await marcus.shot("re-invited");
 
 		// --- LAST: Viewer write-protection probe (runs last so a fork can't poison
