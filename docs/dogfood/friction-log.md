@@ -49,6 +49,17 @@ narrative beyond 002: mixed roles (Marcus Editor, Priya Viewer), a Viewer receiv
 **live** editor edits (controlled diagnostic confirmed Viewers converge live, not just
 on the share snapshot), revoke, and re-invite. Three findings + one harness gap.
 
+**Collab hardening (2026-06-26).** After 005 surfaced the findings, the loop fixed
+every harness/engine bug and widened coverage — the collab suite is now **8 sessions,
+all green** (001–008): `006` per-entity DEK isolation ✅ (revoke one doc, the other
+stays live — doc 16's promise holds), `007` four-way concurrent contention ✅ (20
+simultaneous edits across 4 teammates all merge byte-identical — relay fan-out + CRDT
+merge scale), `008` offline-reconnect ✅ (a teammate misses live edits while away, the
+durable node backfills them on reconnect). Fixed: F-289 (multi-entity receiver), F-287
+(re-grant access view), F-290 (durable-node launcher path) + the import-breakage
+revival. Remaining open are F-286 / F-288 — both **Collab-C5** feature work (Share UX:
+Viewer read-only + rotate-on-revoke), not quick fixes.
+
 ### F-286 — a revoked teammate keeps reading new edits (revoke ≠ forward secrecy)
 - **session:** collab-005   **kind:** design/security   **app:** shell / sync (collab)   **status:** open
 - **what I was trying to do:** take Marcus off the Issue #4 brief, then keep editing it privately.
