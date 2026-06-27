@@ -27,6 +27,32 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 349 — Mira builds an automation (in-flight-app deep probe) (2026-06-27)
+
+`tests/dogfood/sessions/349-mira-builds-automation.spec.ts` — first of the
+in-flight-app deep probes (the connector/agentic surfaces the core-CRUD sweeps
+open but never drive). Mira opens **Automations** and builds a real workflow.
+**Verdict: clean — the builder is genuinely well-built, zero findings.**
+
+- **New workflow → Build dialog** is clear and well-structured: Name ("What
+  does this workflow do?"), Trigger ("Fires on → Run on demand"), Steps,
+  Capabilities ("This workflow needs no special capabilities") + Cancel/Save
+  (capture `02-builder-open.png`).
+- **Step palette is rich — 11 kinds**: Dispatch intent · Entity operation ·
+  Notify · Wait · AI call · AI agent · Branch · For each · Expression · Export ·
+  Run workflow.
+- **Live capability surfacing (strong design signal).** Adding a "Dispatch
+  intent" step renders a clean step card (reorder ↑↓ · duplicate · delete) with
+  a Verb field, and the **Capabilities** section live-updates to
+  `intents.dispatch:open` with a **"Not granted"** badge — the builder tells
+  Mira exactly which capability the step needs and that it isn't granted yet
+  (capture `04-step-configured.png`). Honest, consent-first.
+- **0 console/page errors** through open → build → add step → configure.
+
+By-design (not friction): a "No device hosts automation… / Claim" banner — the
+`11b.6` host-claim model; the builder composes regardless, execution waits on a
+claimed host. No product change.
+
 ## Session 348 — Mira drafts a structured doc + reopen persistence stress (2026-06-27)
 
 `tests/dogfood/sessions/348-mira-structured-doc-reopen.spec.ts` — back to Mira
