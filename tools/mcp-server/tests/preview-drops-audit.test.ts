@@ -145,27 +145,10 @@ describe("auditPreviewDrops", () => {
 // the audit surfaces today so a new expiration is what fails, not the
 // known-debt; each entry must carry a reason + follow-up trigger.
 const KNOWN_EXPIRED: ReadonlyMap<string, string> = new Map([
-	[
-		"9.12.13",
-		// 9.12.13(c) Dashboard PinnedList Contacts — the id-shaped gate
-		// `9.3.5.1b` (Collection contract) has flipped ✅, but the body
-		// also names two descriptive co-blockers ("Database open-list
-		// intent" + "activateIcon human-initiated") the audit can't
-		// classify. Real cleanup: confirm those two are still pending
-		// (then reword the gate as `BLOCKED: <those>`, dropping the
-		// stale `9.3.5.1b` reference) OR ship the conversion / removal.
-		"co-blockers are descriptive (no id) — see SH-31 follow-up note in the log",
-	],
-	[
-		"9.8.9",
-		// Files 9.8.9 — body says "gate: 9.8.2b follow-up". The id
-		// `9.8.2b` IS ✅ (Files read-half shipped), but "follow-up"
-		// qualifies it as a TODO that piggy-backs on 9.8.2b, not on
-		// 9.8.2b itself. Real cleanup: reword the gate to name the
-		// actual blocker (an OQ id, a real follow-up iteration id, or
-		// drop the gate) OR ship the conversion. See SH-31 log note.
-		"`follow-up` qualifier on a ✅ id — gate text mis-specifies; rewording or shipping needed",
-	],
+	// 9.12.13 + 9.8.9 entries removed 2026-06-27 — both flipped ✅ in the
+	// plan (Contacts / People shipped; Files 9.8.9 search scope-flip shipped),
+	// so the audit no longer surfaces them as expired ◑ and the snapshot
+	// entries went stale.
 	// 9.12.16 (UI) entry removed 2026-05-23 — slice 1 shipped (the
 	// `9.12.16-UI` iteration in the plan flipped to ✅; the audit no
 	// longer surfaces it as expired because the iteration body now

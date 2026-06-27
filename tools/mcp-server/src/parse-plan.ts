@@ -79,10 +79,12 @@ export const BULLET_RE = /^\s*-\s+([✅🟡◑⚪❌])\s+(\S.*)$/u;
  *  trailing letter without a dot is a distinct id from the bare `9.10`,
  *  so `9.10`, `9.10(a)`, `9.10a` are three different iterations). Also
  *  catches named-track ids minted post-G0 (`Help-1`, `OpenRes-1c`,
- *  `Net-1a`, `NAPI-3d`, `Feedback-3`, `Welcome-1`, …) so a `## YYYY-MM-DD
- *  — Help-1 — …` log entry can be joined back to its plan-side bullet. */
+ *  `Net-1a`, `NAPI-3d`, `Feedback-3`, `Welcome-1`, `SYNC-0`/`SYNC-4a`, …)
+ *  so a `## YYYY-MM-DD — Help-1 — …` log entry can be joined back to its
+ *  plan-side bullet. A second branch catches the letter/word-suffixed
+ *  track ids (`NAPI-P`, `Public-source`) the digit-suffix list can't. */
 const LEAD_ID_RE =
-	/^(KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|IE|AS)-\d+[a-z]?|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
+	/^(KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|Asset-B\d+[a-z]?|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|IE|AS|SYNC|MCP|DND)-\d+[a-z]?|(?:NAPI|Public)-[A-Za-z][\w-]*|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
 
 function iconToStatus(icon: string): IterationStatus {
 	switch (icon) {
