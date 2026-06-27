@@ -53,7 +53,7 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Asset-B4` | lazy fetch + eager thumbnail tier: materialise bytes on access (not eagerly on restore);… | ⚪ pending | Asset-B3 ✅ |
+| `Asset-B4` | lazy fetch + eager thumbnail tier: materialise bytes on access (not eagerly on restore);… | 🟡 in flight (foundation) | Asset-B3 ✅ |
 | `Asset-B5` | restore integration: the cold-device RestoreEngine (10.14) re-materialises asset chunks f… | ⚪ pending | Asset-B4 |
 | `Asset-B6` | cross-device / offline-peer asset GC: conservative mark-and-sweep against converged refs,… | ⚪ pending | Asset-B3 (node |
 
