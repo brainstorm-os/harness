@@ -27,6 +27,28 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 348 — Mira drafts a structured doc + reopen persistence stress (2026-06-27)
+
+`tests/dogfood/sessions/348-mira-structured-doc-reopen.spec.ts` — back to Mira
+after Priya's 347 audit. Targets the two surfaces the breadth sweep skipped: a
+doc built from **varied block types** and the **reopen-persistence** path that
+has bitten before (the "switch/reopen → blank body" F-class, sessions 311/312).
+**Verdict: clean — zero findings.**
+
+- **All 7 block types insert cleanly** via the slash path (`runBlockCommand`):
+  `heading2 · numberedList · quote · code · callout · toggle · divider` — every
+  one returned `ok`, and they render correctly (numbered item, quote bar, code
+  box, callout with ⓘ, toggle ▾, divider rule — capture `01-structured-doc.png`).
+- **Persistence is byte-stable across a full renderer reload.** Before reload:
+  **12 blocks / 150 body chars**. After `page.reload()` + re-select from the
+  list: **12 blocks / 150 body chars — identical** (captures `02`/`03`). The
+  body re-hydrates from the vault intact; the blank-body bug class does **not**
+  reproduce.
+- **0 console/page errors** across drafting + reload + reselect.
+
+A strong positive signal for the editor block model + the Yjs/storage
+re-hydration path. No product change.
+
 ## Session 347 — Priya's knowledge-integrity audit (2026-06-27)
 
 `tests/dogfood/sessions/347-priya-knowledge-integrity.spec.ts` — a specialist
