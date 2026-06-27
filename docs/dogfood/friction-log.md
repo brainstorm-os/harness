@@ -27,6 +27,53 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 012–028 (app-sweep arc) — fleet dogfood sweep across all 20 apps + shell surfaces (2026-06-27)
+
+> **Numbering note:** these are the **app-sweep** arc specs (full slugs below), a
+> *different* track from the early-June CRM arc that reused the same `0NN`
+> numbers (`023-track-deal-size` ≠ `023-tasks-nav`). Always disambiguate by slug.
+
+A 17-session breadth sweep landed spec-only across the branch (the specs were
+committed; the friction distillation + triage this block records were the missing
+half). Coverage: an all-apps smoke open (`012`), the shell surfaces — dashboard
+testids/aria, vault search (object + content), Bin, Settings (`015`–`017`) —
+per-app deep CRUD on Notes/Files/Database/Calendar/Whiteboard/Tasks
+(`013`/`014`/`018`/`019`/`020`/`023`), a remaining-apps create-affordance probe
+(`021`), and the fleet-wide invariants: **dark-mode render (`022`), ICU
+plural-leak scan (`024`), in-grid cell edit→persist→revert (`025`), dashboard
+pin/unpin (`026`), cross-app clipboard / "Copy as block" (`027`), inbound
+deeplink open (`028`)**. **Hard signal: 0 page/console errors across all 17
+sessions; 20/20 apps render clean on dark; 0 ICU plural leaks across 20 apps.**
+Cross-app clipboard, "Copy as block" → `brainstorm://entity` URI, and inbound
+`open-url` deeplink all verified end-to-end. Two real findings (below); three
+minor observations **not filed** — (a) `021` saw no create affordance on
+Books/Graph/Preview/Journal/ThemeEditor, expected for the view/tool apps but
+**Books is worth a later look** (a reading app with collections); (b) several
+apps emit *informational* boot logs (`[property-ui] catalog loaded`, `[files]
+boot: snapshot=…`) through `console.warn`, which clutters the warn channel and
+trips error-log heuristics — dev hygiene, not founder friction; (c) `026`
+self-healed a pre-existing dashboard pin before asserting — vault cruft, not a
+bug.
+
+### F-293 — opening all 20 apps in a burst, 5 of them time out (but open fine one-at-a-time)
+- **session:** 012-all-apps-smoke   **kind:** bug (launch perf)   **app:** shell / window-open   **status:** 🟡 triaged
+- **what I was trying to do:** open every app once, back to back, to smoke the fleet.
+- **what happened:** 15/20 opened; **ThemeEditor, Agent, Automations, Mailbox, FormDesigner** each failed with `founder: no app page for io.brainstorm.<id> after 20000ms`.
+- **what I expected:** every installed app opens.
+- **ruled out (not per-app breakage):** the *same five* apps open cleanly when exercised individually with normal waits — `021-remaining-apps-probe` opened Agent + Automations + FormDesigner + ThemeEditor, and `022-dark-mode-sweep` + `024-plural-scan` each opened **all 20** (incl. Mailbox) with 0 errors. So the apps work; the burst is the variable.
+- **why it matters:** points at cold app-window open latency under a rapid multi-open burst (these five are the heavier React-conversion / newer connector apps). Either a real cold-start regression on the heavy apps or smoke-harness open-contention (no inter-open settle); needs a measured repro to tell which.
+- **triage:** measure single-app cold-open latency for the five vs the budget, and re-run `012` with a settle between opens to isolate contention from cold-start. Relates to **OQ-101** (cold-start budget split) / **OQ-150** (V8 snapshots) — evidence cross-linked there. Not beta-blocking (no founder opens 20 apps in <20s in one burst).
+- **evidence:** `tests/dogfood/.sessions/012-all-apps-smoke/notes.md` ("opened 15/20 apps"); `…/console.log`.
+
+### F-294 — "Show all apps" grid has no search/filter, and it's now a 20-icon scroll
+- **session:** 015-shell-dashboard   **kind:** gap (design)   **app:** shell / app launcher   **status:** open
+- **what I was trying to do:** find a specific app from the dashboard's "Show all apps" grid.
+- **what happened:** the grid lists all 20 app icons with **no search/filter field** (`no app-grid-search found on dashboard`) — at 20 apps it's a hunt-and-scan.
+- **what I expected:** type-to-filter, like the vault search overlay already does for objects.
+- **why it matters:** the app count crossed the threshold where a flat grid stops scaling; the vault search overlay sets the pattern (a `Search the vault` field exists — apps just aren't in it). Discoverability + keyboard-first both want a filter here.
+- **triage:** small design add — a filter field on the app grid (or fold apps into the existing vault-search overlay as a result kind). Not beta-blocking; GA polish. No OQ needed (no design fork — the search-overlay pattern already exists).
+- **evidence:** `tests/dogfood/.sessions/015-shell-dashboard/notes.md` (testid/aria dump; "no app-grid-search found").
+
 ## Session 328 (re-run) — every-button sweep, fresh signal across all 20 apps (2026-06-26)
 
 Re-ran the proven every-button sweep to get a current health signal — especially

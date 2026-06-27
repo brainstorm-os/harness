@@ -1041,6 +1041,7 @@ Format:
 #### OQ-101 — Cold-start budget split
 - **Where:** [12-shell-architecture.md](../shell/12-shell-architecture.md).
 - **Tentative leaning:** Split into "Shell ready" (300ms warm-cache) vs "Dashboard interactive" (500-800ms cold).
+- **Dogfood evidence (2026-06-27):** the app-sweep `012-all-apps-smoke` opened all 20 apps back-to-back and **5 of the heavier apps (ThemeEditor / Agent / Automations / Mailbox / FormDesigner) exceeded a 20s open-wait** while opening fine one-at-a-time (`021`/`022`/`024`) — see [friction-log](../dogfood/friction-log.md) **F-293**. Per-app *cold-window-open* latency (distinct from dashboard-interactive) is the missing third budget; an open-burst with no inter-open settle is the worst case. Measure before refining the split (relates to OQ-150 V8 snapshots). Not beta-blocking.
 - **Blocking?:** No.
 
 #### OQ-102 — `entities.getMany` / `subscribeMany` for v1 SDK
