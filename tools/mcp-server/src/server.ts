@@ -34,6 +34,7 @@ import { findRelayImportViolations, isRelayModulePath } from "./tools/relay-nobl
 import { listIterations, listOpenQuestions } from "./tools/search.ts";
 import { checkSize } from "./tools/size.ts";
 import { diffBaseline, snapshotStage } from "./tools/stage-boundary-audit.ts";
+import { auditUntestedIterations } from "./tools/untested-iterations.ts";
 import { baselineFor } from "./tools/stage-boundary-baselines.ts";
 import { registerVisualTools } from "./tools/visual.ts";
 import {
@@ -650,6 +651,28 @@ export function buildServer(): McpServer {
 						text: JSON.stringify({ count: items.length, items }, null, 2),
 					},
 				],
+			};
+		},
+	);
+
+	server.registerTool(
+		"plan.untested_iterations",
+		{
+			description:
+				"Enforces workflow standard #1 ('New features ship with tests'). Cross-references every Done (✅) iteration's plan bullet + implementation-log narrative for a test-shaped token (test/vitest/playwright/coverage/*.test.ts/…). An iteration with no test signal is `flagged` ONLY if it also carries a code signal (a real source path / *.ts); test-less AND code-less iterations (pure docs / OQ-resolution / plan reconciliation) are counted under `skippedNoCodeSignal`, not flagged, so `flagged` is a genuine-gap list. Exact-over-the-docs, not fuzzy. Like i18n.find_bare_strings this is a HINT surface (false positives still possible), never a CI gate. Pass `statuses` to widen beyond Done.",
+			inputSchema: {
+				statuses: z
+					.array(z.nativeEnum(IterationStatus))
+					.optional()
+					.describe("Iteration statuses to audit (default: ['done'])."),
+			},
+		},
+		async (args) => {
+			const report = auditUntestedIterations(
+				args.statuses !== undefined ? { statuses: args.statuses } : {},
+			);
+			return {
+				content: [{ type: "text", text: JSON.stringify(report, null, 2) }],
 			};
 		},
 	);

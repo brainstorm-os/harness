@@ -50,7 +50,14 @@ renderer/app/main error, fixes it with a regression test, and only then
 clears the log. Surface findings. Stop on anything that can't be
 root-caused — don't guess-patch or clear a still-failing log.
 
-## 8. Commit
+## 8. Test-coverage audit (workflow standard #1)
+
+Call the dev-MCP `plan.untested_iterations` tool. It cross-references every Done (✅) iteration's plan bullet + implementation-log narrative for a test signal and flags code-bearing iterations that carry none (`flagged`); pure docs/OQ/plan work is set aside under `skippedNoCodeSignal`, not flagged.
+
+- If the iteration you just finished appears in `flagged`, that is a workflow-standard-#1 violation — **stop** and either add the missing tests or, if the work is genuinely test-exempt, make sure its implementation-log entry says *why* (so the narrative carries a test rationale and the heuristic clears it).
+- A pre-existing backlog in `flagged` (iterations from earlier work) is not a hard stop for this iteration — surface the count to the user, don't auto-fix.
+
+## 9. Commit
 
 Once all reviews are clean (or the user has signed off on remaining items):
 
@@ -59,7 +66,7 @@ Once all reviews are clean (or the user has signed off on remaining items):
 3. Show the user the message + the file list and ask for go-ahead. Even with chores authorized in advance, the commit message itself is worth a glance.
 4. On approval, commit with the project's `Co-Authored-By` trailer (HEREDOC form per the global Bash rules).
 
-## 8. Push
+## 10. Push
 
 Push affects shared state, so always confirm with the user before pushing — the authorization to "run chores" is not blanket authorization to push every time.
 
