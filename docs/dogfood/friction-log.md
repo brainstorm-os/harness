@@ -27,6 +27,38 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 347 — Priya's knowledge-integrity audit (2026-06-27)
+
+`tests/dogfood/sessions/347-priya-knowledge-integrity.spec.ts` — a specialist
+turn after the Mira-breadth `012`–`028` sweep, deep-probing the **connective
+tissue** the breadth pass skipped: can Priya cross-reference / embed from the
+editor, is what she writes findable, and does the Graph render it as connected.
+**Verdict: the knowledge layer is healthy — zero product findings.**
+
+- **Embed / reference discoverability — rich.** `/embed` surfaces **Embed ·
+  Graph · Book highlight · Bookmark · Reference**, each with a one-line
+  description (capture `02-slash-embed.png`). A research editor can embed a
+  preview card, a live reference, a saved graph, or a book highlight from the
+  slash menu — exactly the surfaces a cited deliverable needs.
+- **Cross-linking — rich + typed.** `@` offers 15 options spanning Today/
+  Tomorrow/Yesterday + journal entries, Notes, Bookmark, Task, Project,
+  BrowsingSession, CodeFile, Event, ListView — each with its type label
+  (capture `03-mention-typeahead.png`).
+- **Findable.** Vault search `knowledge-integrity` surfaces the new note. **Graph** canvas renders. **0 console/page errors** across the whole audit.
+
+**Spec hygiene (fixed this turn, not a product bug):** the first run logged
+`"/embed" slash-menu results: []` — a **stale selector in the new spec**
+(`.notes__slash-menu`), since the slash menu migrated to the shared
+fancy-menus runtime (`.fm-menu` / `role="option"`). Switched the locator to
+`.fm-menu [role="option"]` and re-ran: it now captures the five commands above.
+Another verify-before-believe catch (this time in our own probe) — the feature
+was always there; the selector had drifted.
+
+**Not filed (vault cruft, per the hygiene rule):** the `@` list shows one Note
+titled `DeleteMe note 56368DeleteMe note 26658` (two `DeleteMe` test titles
+concatenated into one entity) — accumulated dogfood-session residue in the
+persistent vault, Mira's-desk cruft not a product bug.
+
 ## Session 012–028 (app-sweep arc) — fleet dogfood sweep across all 20 apps + shell surfaces (2026-06-27)
 
 > **Numbering note:** these are the **app-sweep** arc specs (full slugs below), a
