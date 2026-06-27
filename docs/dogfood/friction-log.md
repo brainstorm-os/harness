@@ -27,6 +27,32 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 351 — Mira sets up email — Mailbox connect flow (2026-06-28)
+
+`tests/dogfood/sessions/351-mira-mailbox-connect.spec.ts` — Mira turn, in-flight
+app. Without a connected account Mailbox has no mail, so the surface that matters
+is the **connect flow** (the first wall any new user hits). **Verdict: the
+connect flow is well-designed; it surfaces a *known* gap honestly. No new
+finding, 0 errors.**
+
+- **Empty state is clear:** "No mail account yet / Connect your Google account to
+  sync mail into this vault" + a primary **Connect Gmail** CTA (capture
+  `01-empty-state.png`).
+- **Connect dialog is clean + honest** (`02-connect-google.png`): a **Google |
+  IMAP / SMTP** tab pair, plain-language setup help, OAuth client ID / Client
+  secret / Account label fields, and a trust line — *"the credentials are sealed
+  in this vault's keystore."* The **IMAP/SMTP** tab switches cleanly (`03`).
+- **Confirms the known `Mailbox-9` gap (not a new finding).** Connecting **Gmail
+  today requires the user to "Create a Desktop-app OAuth client in Google Cloud
+  Console… paste the client ID and secret here"** — a developer task a normal
+  operator (Mira) can't realistically do. This is exactly what **`Mailbox-9`
+  (official Google OAuth client registration)** exists to remove; it's tracked +
+  pending (an external org task with weeks-of-lead-time). The real-shell evidence
+  here = the dialog text. **What softens it well:** the **IMAP/SMTP** tab is a
+  genuine escape hatch (app-password connect, no Google Cloud project) — so a
+  user *can* get mail in today without BYO-OAuth. The design handles the
+  constrained state about as gracefully as possible.
+
 ## Session 350 — Marcus design-reviews the Agent app (2026-06-27)
 
 `tests/dogfood/sessions/350-marcus-agent-design-review.spec.ts` — specialist
