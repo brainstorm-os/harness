@@ -27,6 +27,25 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 353 — inline formatting toolbar: locked-state + icon polish (2026-06-28)
+
+`tests/dogfood/sessions/353-inline-toolbar-lock-and-align.spec.ts` — **user-reported**
+defects on the floating B/I/U/S toolbar (a screenshot showed it up on a locked
+note + off-center icons). The user's wider point landed: *a clean console run
+isn't "polished" — I'd been skipping alignment + locked-state artifacts*
+([[polish-scrutinize-alignment-and-locked-state]]). Reproduced each defect,
+fixed, and **verified by rebuild + on-screen measurement** (not code-reading).
+**All FIXED → shell `main` `fa2f507`.**
+
+### F-297 — inline toolbar shows on a locked note + baseline-off-center, undersized icons
+- **session:** 353-inline-toolbar-lock-and-align   **kind:** bug (interaction + visual)   **app:** Notes / shared editor   **status:** ✅ done + verified (2026-06-28)
+- **(a) shows on a LOCKED note.** Locking a note sets `editor.setEditable(false)` (B11.11, `contenteditable="false"`), but text is still *selectable* — and the toolbar's `read()` never checked editability, so the bar stayed up. **Repro (measured):** select text (bar shows) → lock → `toolbar still present: true`. **Fix:** gate `read()` on `editor.isEditable()` **+** a `registerEditableListener` so locking *while selected* dismisses it. **After:** `still present: false`.
+- **(b) icons baseline-high (off-center).** Each `ToolButton` wrapped its inline SVG in a redundant `<span>` that carried text-baseline descender space → glyph sat high. **Fix:** removed the span (icons already carry `aria-hidden`). **Measured:** top-gap == bottom-gap (4px) — centered; was lopsided before.
+- **(c) icons too small/thin (20×20 requested).** Shared catalogue size is 16px. **Fix:** scoped `.notes__inline-toolbar-btn svg { display:block; width:20px; height:20px }`. **Measured:** icon `16×16 → 20×20`.
+- **debt found:** the inline-toolbar CSS is **duplicated** — `@brainstorm/editor/editor-theme.css` (journal/tasks/chat/bookmarks) **and** `apps/notes/src/styles.css` (Notes ships its own copy). The first rebuild fixed the size everywhere *but Notes*; both copies now carry the rule, flagged in-code as debt to de-dup when Notes adopts the shared sheet.
+- **verified:** session 353 re-run — icon 20×20 · gaps 4/4 centered · no span · toolbar gone on lock · 0 console errors. Build path: `editor-theme.css` is per-app-bundled (not shell-injected), so each editor app rebuilds to pick it up.
+- **evidence:** `packages/editor/src/plugins/inline-toolbar-plugin.tsx`, `editor-theme.css`, `apps/notes/src/styles.css`; captures `…/353-…/02-toolbar-tight.png` (before/after), `03-locked-while-selected.png`.
+
 ## Session 352 — Mira drives the Web Browser chrome (2026-06-28)
 
 `tests/dogfood/sessions/352-mira-browser-chrome.spec.ts` — Mira turn, completes
