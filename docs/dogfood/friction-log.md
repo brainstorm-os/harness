@@ -27,6 +27,28 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 352 — Mira drives the Web Browser chrome (2026-06-28)
+
+`tests/dogfood/sessions/352-mira-browser-chrome.spec.ts` — Mira turn, completes
+the in-flight-app coverage (Automations 349 · Agent 350 · Mailbox 351 · Browser
+here). Probes the chrome a user touches before any page loads (network egress
+may be off in the harness). **Verdict: the browser chrome is solid; found + fixed
+one real a11y bug (F-296).**
+
+- **Real-browser chrome.** Tabs (open/close/+), Back · Forward · Reload ·
+  History, a "Local page" security indicator, address bar ("Search or enter web
+  address"), **Save to vault** clip affordance (Browser-5), and a Browser menu —
+  opening a second tab grew the strip cleanly (captures `01`–`03`). 0 console
+  errors.
+
+### F-296 — a blank new browser tab had NO accessible name (empty aria-label) — FIXED
+- **session:** 352-mira-browser-chrome   **kind:** bug (a11y)   **app:** Web Browser   **status:** ✅ done + verified (2026-06-28)
+- **what surfaced it:** the chrome's aria-label dump contained an **empty `""`** entry — an interactive element with no accessible name.
+- **root cause:** the tab button's `aria-label` (and `data-bs-tooltip`) were `tab.title || tab.url` (`apps/browser/src/app.tsx:1179/1181`). A **fresh blank tab** has *both* empty, so its accessible name resolved to `""` — while sighted users saw **"New tab"** (rendered via the *separate* visible fallback `tab.title || t("tab.untitled")`, line 1191). A screen-reader user navigating tabs heard an unlabeled button; the accessible name didn't match the visible label. (Exactly the class the repo's own `a11y-button-name-check` audit targets.)
+- **fix:** add the same `|| t("tab.untitled")` fallback the visible title already uses, to both the `aria-label` and the tooltip — so the accessible name is "New tab", matching what's on screen. One-token change, no design judgment (unlike F-295), type-safe (mirrors the existing line-1191 usage).
+- **verified (real shell):** rebuilt `apps/browser` + re-ran `352` — the aria-label dump's empty `""` became **"New tab"**. Shipped to **shell `main`** (`3516d74`, via an isolated worktree off `origin/main`).
+- **evidence:** `apps/browser/src/app.tsx:1179-1181` (before/after); `tests/dogfood/.sessions/352-mira-browser-chrome/notes.md` (the `""` → `"New tab"` aria-label dump across the fix).
+
 ## Session 351 — Mira sets up email — Mailbox connect flow (2026-06-28)
 
 `tests/dogfood/sessions/351-mira-mailbox-connect.spec.ts` — Mira turn, in-flight
