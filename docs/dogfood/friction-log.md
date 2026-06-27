@@ -27,6 +27,36 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 354 — fleet read-only lock: foundation + Notes + Journal (2026-06-28)
+
+**User feature:** "lock should be present in all apps where possible, and synced."
+Lock = **read-only** (block edits, allow view/navigate); sync is automatic
+(`locked` is a normal synced entity property). Rolling out **one app per commit,
+dogfood-verified each**. This entry covers the foundation + first two apps.
+
+- **Shared `@brainstorm/sdk/lock-button` `<LockButton>`** (shell `5471c90`) — one
+  header toggle for the whole fleet (`.header-icon-btn`, `aria-pressed` locked
+  state already accent-styled). **Notes migrated** off its bespoke button onto it.
+- **Journal read-only lock** (shell `c43621d`) — header toggle reads/writes the
+  entry's synced `locked`; the editor goes read-only via `editable={mutable &&
+  !locked}` threaded through `EntryEditorIsland → JournalEntryEditor →
+  <BrainstormEditor>`.
+- **Shared-editor bug found + fixed (verify-before-believe).** First Journal run:
+  the lock button toggled but the editor **stayed `contenteditable="true"`**.
+  Root cause: `<BrainstormEditor>` only seeded `editable` in `initialConfig` —
+  Lexical never re-reads it, so a post-mount lock did nothing (Notes only worked
+  via its *own* reactive `EditablePlugin`). **Fix:** a small reactive
+  `EditableSync` plugin (`editor.setEditable` on prop change) in the shared
+  editor — **unblocks lock for every BrainstormEditor consumer** (Tasks/Bookmarks).
+- **verified (dogfood 354):** lock affordance shows for a real entry;
+  `contenteditable` flips **true → false (locked) → true (unlocked)**; 0 console
+  errors. (Test note: a journal entry must exist first — created via a template —
+  before the lock affordance appears, which is correct.)
+- **rollout status:** ✅ Notes, ✅ Journal · ⏳ Tasks, Bookmarks, Code-editor,
+  Whiteboard, Database, Calendar (one verified commit each).
+- **evidence:** `packages/sdk/src/lock-button/`, `packages/editor/src/editor.tsx`
+  (EditableSync), `apps/journal/src/…`; `tests/dogfood/.sessions/354-journal-lock/`.
+
 ## Session 353 — inline formatting toolbar: locked-state + icon polish (2026-06-28)
 
 `tests/dogfood/sessions/353-inline-toolbar-lock-and-align.spec.ts` — **user-reported**
