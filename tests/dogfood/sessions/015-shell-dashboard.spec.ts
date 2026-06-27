@@ -15,9 +15,12 @@ test("shell: dashboard renders, search works, no console errors", async () => {
 	const s = await startSession("015-shell-dashboard");
 	const errors: string[] = [];
 	s.app.on("window", (page) => {
-		page.on("pageerror", (e) => errors.push(`pageerror: ${e.message.split("\n")[0]}`));
+		page.on("pageerror", (e) =>
+			errors.push(`pageerror: ${e.message.split("\n")[0]}`),
+		);
 		page.on("console", (m) => {
-			if (m.type() === "error") errors.push(`console.error: ${m.text().split("\n")[0]}`);
+			if (m.type() === "error")
+				errors.push(`console.error: ${m.text().split("\n")[0]}`);
 		});
 	});
 
@@ -33,7 +36,9 @@ test("shell: dashboard renders, search works, no console errors", async () => {
 				testids.add(el.getAttribute("data-testid") ?? "");
 			}
 			const labels = new Set<string>();
-			for (const el of Array.from(document.querySelectorAll("[aria-label]")).slice(0, 60)) {
+			for (const el of Array.from(
+				document.querySelectorAll("[aria-label]"),
+			).slice(0, 60)) {
 				labels.add(el.getAttribute("aria-label") ?? "");
 			}
 			return { testids: [...testids], labels: [...labels] };
@@ -42,6 +47,19 @@ test("shell: dashboard renders, search works, no console errors", async () => {
 		for (const t of inventory.testids.sort()) s.note(`  ${t}`);
 		s.note("\n=== dashboard aria-labels (first 60) ===");
 		for (const l of inventory.labels.sort()) s.note(`  ${l}`);
+
+		// Open the "All Apps" grid first — its search input is a popover that
+		// only mounts when open. Probing the dashboard page directly logs a
+		// phantom "no search" gap (see F-294).
+		const openGrid = dash.locator('[aria-label="Show all apps"]');
+		if ((await openGrid.count()) > 0) {
+			await openGrid.first().click();
+			await dash.waitForTimeout(500);
+		} else {
+			s.note(
+				"\ncould not find the 'Show all apps' affordance to open the grid",
+			);
+		}
 
 		// Exercise the app-grid search (Spotlight-style launcher/search).
 		const search = dash.locator('[data-testid="app-grid-search"]');
@@ -53,7 +71,7 @@ test("shell: dashboard renders, search works, no console errors", async () => {
 			const cellCount = await dash.locator("[data-app-grid-cell]").count();
 			s.note(`\napp-grid cells visible for query "task": ${cellCount}`);
 		} else {
-			s.note("\nno app-grid-search found on dashboard");
+			s.note("\nno app-grid-search found after opening the grid");
 		}
 
 		s.note(`\nconsole/page errors: ${errors.length}`);

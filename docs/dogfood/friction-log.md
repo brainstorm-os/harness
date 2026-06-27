@@ -45,8 +45,11 @@ pin/unpin (`026`), cross-app clipboard / "Copy as block" (`027`), inbound
 deeplink open (`028`)**. **Hard signal: 0 page/console errors across all 17
 sessions; 20/20 apps render clean on dark; 0 ICU plural leaks across 20 apps.**
 Cross-app clipboard, "Copy as block" → `brainstorm://entity` URI, and inbound
-`open-url` deeplink all verified end-to-end. Two real findings (below); three
-minor observations **not filed** — (a) `021` saw no create affordance on
+`open-url` deeplink all verified end-to-end. Two findings filed below — **both
+downgraded to not-a-product-bug on a verify-before-believe follow-up** (F-293 a
+smoke-harness renderer-pile-up artifact; F-294 a probe miss — the grid is
+already searchable). Three further minor observations **not filed** — (a) `021`
+saw no create affordance on
 Books/Graph/Preview/Journal/ThemeEditor, expected for the view/tool apps but
 **Books is worth a later look** (a reading app with collections); (b) several
 apps emit *informational* boot logs (`[property-ui] catalog loaded`, `[files]
@@ -55,24 +58,21 @@ trips error-log heuristics — dev hygiene, not founder friction; (c) `026`
 self-healed a pre-existing dashboard pin before asserting — vault cruft, not a
 bug.
 
-### F-293 — opening all 20 apps in a burst, 5 of them time out (but open fine one-at-a-time)
-- **session:** 012-all-apps-smoke   **kind:** bug (launch perf)   **app:** shell / window-open   **status:** 🟡 triaged
-- **what I was trying to do:** open every app once, back to back, to smoke the fleet.
-- **what happened:** 15/20 opened; **ThemeEditor, Agent, Automations, Mailbox, FormDesigner** each failed with `founder: no app page for io.brainstorm.<id> after 20000ms`.
-- **what I expected:** every installed app opens.
-- **ruled out (not per-app breakage):** the *same five* apps open cleanly when exercised individually with normal waits — `021-remaining-apps-probe` opened Agent + Automations + FormDesigner + ThemeEditor, and `022-dark-mode-sweep` + `024-plural-scan` each opened **all 20** (incl. Mailbox) with 0 errors. So the apps work; the burst is the variable.
-- **why it matters:** points at cold app-window open latency under a rapid multi-open burst (these five are the heavier React-conversion / newer connector apps). Either a real cold-start regression on the heavy apps or smoke-harness open-contention (no inter-open settle); needs a measured repro to tell which.
-- **triage:** measure single-app cold-open latency for the five vs the budget, and re-run `012` with a settle between opens to isolate contention from cold-start. Relates to **OQ-101** (cold-start budget split) / **OQ-150** (V8 snapshots) — evidence cross-linked there. Not beta-blocking (no founder opens 20 apps in <20s in one burst).
-- **evidence:** `tests/dogfood/.sessions/012-all-apps-smoke/notes.md` ("opened 15/20 apps"); `…/console.log`.
+### F-293 — opening all 20 apps in a burst, 5 of them time out (smoke-harness artifact, not a product bug)
+- **session:** 012-all-apps-smoke   **kind:** bug (launch perf)   **app:** shell / window-open   **status:** ✅ triaged — harness artifact, no product fix (2026-06-27)
+- **what happened:** the smoke opened 15/20; **ThemeEditor, Agent, Automations, Mailbox, FormDesigner** each failed `founder: no app page for io.brainstorm.<id> after 20000ms`.
+- **root cause (verify-before-believe, 2026-06-27):** `012-all-apps-smoke` opens all 20 apps in a **sequential loop and never closes a window** (`founder.openApp` retains every page; teardown is only at `s.finish()`), so by the 11th–20th open there are **10–20 live renderers** competing for CPU/RAM and the *heavier* apps' cold-open slips past the harness's 20s page-wait. The failing five are scattered across positions #11/12/14/16/17 (not strictly monotonic — Contacts #13 / Browser #15 / Books #18 / Preview #19 / Chat #20 passed), which fits **contention**, not per-app breakage. The same five open cleanly one-at-a-time (`021`) and **all 20** open with 0 errors in `022`/`024`. So the apps work; the unrealistic 20-renderer pile-up is the variable.
+- **why it's not a bug:** no founder opens 20 apps and holds all 20 renderers alive inside 30s. The realistic path (open, use, the window-manager reaps idle ones) never reproduces it.
+- **residual signal:** weak — the *heavier* apps are the slowest to cold-open under memory pressure, worth noting against **OQ-101** (cold-start budget) / **OQ-150** (V8 snapshots), cross-linked there. Not a measured cold-start number (the pile-up confounds it).
+- **follow-up (this turn):** the smoke could close each window before opening the next to get a clean per-app cold-open signal — left as a harness improvement, not filed as product work.
+- **evidence:** `tests/dogfood/.sessions/012-all-apps-smoke/notes.md` ("opened 15/20 apps"); `tests/dogfood/lib/founder.ts` (`openApp` retains pages; no per-iteration close).
 
-### F-294 — "Show all apps" grid has no search/filter, and it's now a 20-icon scroll
-- **session:** 015-shell-dashboard   **kind:** gap (design)   **app:** shell / app launcher   **status:** open
-- **what I was trying to do:** find a specific app from the dashboard's "Show all apps" grid.
-- **what happened:** the grid lists all 20 app icons with **no search/filter field** (`no app-grid-search found on dashboard`) — at 20 apps it's a hunt-and-scan.
-- **what I expected:** type-to-filter, like the vault search overlay already does for objects.
-- **why it matters:** the app count crossed the threshold where a flat grid stops scaling; the vault search overlay sets the pattern (a `Search the vault` field exists — apps just aren't in it). Discoverability + keyboard-first both want a filter here.
-- **triage:** small design add — a filter field on the app grid (or fold apps into the existing vault-search overlay as a result kind). Not beta-blocking; GA polish. No OQ needed (no design fork — the search-overlay pattern already exists).
-- **evidence:** `tests/dogfood/.sessions/015-shell-dashboard/notes.md` (testid/aria dump; "no app-grid-search found").
+### F-294 — "Show all apps" grid "has no search" — NOT A BUG, the probe never opened the grid
+- **session:** 015-shell-dashboard   **kind:** ~~gap~~ → not-a-bug   **app:** shell / app launcher   **status:** ✅ wontfix — already implemented (2026-06-27)
+- **what was logged:** the spec probed `[data-testid="app-grid-search"]` and found none → noted "no app-grid-search found on dashboard".
+- **root cause (verify-before-believe, 2026-06-27):** the **AppGrid already has a full search field** — `packages/shell/src/renderer/dashboard/app-grid.tsx` mounts a `TextField type="search"` (`data-testid="app-grid-search"`, autofocus) that filters via the launcher's `filterApps` ranking, with Enter-to-launch-top-result and ArrowDown/Right into a roving 2-D grid. The grid is a **popover** (opened from the footer "Show all apps" start button / `⌘⇧Space`); its search input only mounts when the popover is `open`. **Spec `015` never opened the popover** — it dumped *dashboard-page* testids directly — so the input wasn't in the DOM and the `count()===0` branch logged a phantom gap. Exactly the [format note](#format) class: "a zero `.foo` match usually means the selector missed, not that the thing is absent."
+- **fix (this turn):** `015-shell-dashboard.spec.ts` now clicks the "Show all apps" affordance to open the grid **before** probing `app-grid-search`, so the search is actually exercised and the false gap can't recur. No product change — the feature was always there.
+- **evidence:** `app-grid.tsx` (the search `TextField` + `filterApps`); `015-shell-dashboard.spec.ts` (probed the dashboard page, not the opened grid).
 
 ## Session 328 (re-run) — every-button sweep, fresh signal across all 20 apps (2026-06-26)
 
