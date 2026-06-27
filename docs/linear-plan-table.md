@@ -4,7 +4,7 @@ A flattened, dependency-ordered march through every open iteration in [implement
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · 🔴 release-blocking · 🟢 GA-only · 🚩 milestone
 
-**Keystones** (everything keys off these — pulled as early as actionable): `9.3.5.V` (Lists→vault entities) · `11.5` (AI broker) · Net-1 / `9.10` (network + Files host). `11.5` and `NAPI-3` are already in flight and run as background threads during the early app runs.
+**Keystones** (everything keys off these — pulled as early as actionable): `9.3.5.V` (Lists→vault entities) ✅ · `9.10` (Files host) ✅ · Net-1/Net-2 ✅ · `11.5` (AI broker, in flight). With those landed, **zero open iterations gate the `2026-09-01` beta** — what remains for beta is process (bug burn-down → feature freeze → RC cut), not features.
 
 ## ✅ Recently completed (newest first)
 
@@ -12,67 +12,69 @@ So progress is visible — this list grows as the open table below shrinks. Comp
 
 | Done | ID | Task | Landed |
 | ---- | -- | ---- | ------ |
+| ✅ | `012–028` | Dogfood app-sweep — fleet verified clean (0 page/console errors across 17 sessions · 20/20 apps clean on dark · 0 ICU plural leaks · cross-app clipboard + deeplink-open e2e); the two filed findings both verified non-product (F-293 smoke-harness pile-up, F-294 probe miss) | 2026-06-27 |
+| ✅ | `Asset-B2` / `Asset-B3` | Encrypted attachment sync — `WireKind.Asset` 4 MiB chunked transport (client) + durable-node content-addressed `AssetCas` (relay-blind, S3/R2/file backends) | 2026-06-27 |
+| ✅ | `Asset-B1` | Encrypted attachment sync rung 1 — per-asset DEK re-homes into the referencing entity's Y.Doc under the entity DEK (paired device can open a synced blob); migration OQ resolved | 2026-06-26 |
+| ✅ | Public-source split | `brainst0rm-os` org migration — `shell`/`sync` (AGPL-3.0) + `site`/`docs` (MIT) public, `harness`/`cloud` private; `Site-1` marketing + `Site-2` docs portal live; OQ-REPO-1/-2/-3 resolved | 2026-06-25 |
+| ✅ | `MCP-2` | Agent local-process (stdio) MCP servers via the default-off `mcp.spawn-local` cap — MCP client ladder (MCP-1..4) complete | 2026-06-24 |
+| ✅ | `14.29 → .34` | App-lifecycle catalog spine — signed-catalog install/update over `AppInstaller` (provenance · `CatalogClient` Ed25519 verify · Install/Update engines · `.brainstorm` package + CI publish · Marketplace + Updates panel · cloud `catalog-edge`); real-shell dogfood verified | 2026-06-24 |
+| ✅ | `SYNC-3` / `SYNC-4b` / `SYNC-5` | Durable sync node — pluggable object-store backend (S3/R2/MinIO) + entitlement-gated admission + ops limits (`../sync`, 84 node tests) | 2026-06-23 |
+| ✅ | `10.13` / `10.14` | Selective-sync policy + Settings picker · restore-from-zero consumer (keystore-intact) — real-shell wipe-and-restore dogfood verified (entity recovers byte-identically) | 2026-06-23 |
+| ✅ | `9.3.5.7…N` | Single-object-space migration **closed** — audit confirms every first-party app's domain objects live on real `entities.db` (Journal rides the Notes rung; the "…N" tail collapsed to zero) | 2026-06-23 |
+| ✅ | `Welcome-2` | First-launch template gallery — fresh launch → gallery mounts in real Electron → pick template → vault created+seeded → dashboard; real-shell verified | 2026-06-23 |
+| ✅ | `9.12.13(c)` | Contacts dashboard widget (re-scoped onto the 7.3b widget framework) — last of 3 beta-blockers closed | 2026-06-23 |
 | ✅ | `10.12` | Always-on live-sync — real-shell two-shell co-edit dogfood verified (collab `001`/`002`/`003`: multi-shell co-edit converges through the relay + real durable node, ciphertext durably persisted) | 2026-06-22 |
 | ✅ | `SYNC-2` | Durable sync node core (`brainstorm-sync`) — pluggable `SnapshotStore` + client-driven snapshot+tail compaction; OQ-SYNC-3 resolved | 2026-06-22 |
 | ✅ | `7.3` | Dashboard widgets host + widget-mode lifecycle (`7.3a` widget set → `7.3b` sandboxed `bswidget://` iframes; OQ-6) | 2026-06-20 |
 | ✅ | `9.20.8 → .9 → .10 → .11` | Preview viewers complete — HEIC/HEIF · Office (DOCX/XLSX/PPTX) · 3D (glTF/GLB/OBJ) · RAW | 2026-06-17 |
+| ✅ | `9.20.5` / `9.20.7` | Preview PDF renderer (lazy pdf.js, zero cold-start) + page/title/author inspector | 2026-06-02 |
 | ✅ | `9.18.7` | Bookmarks detail body editor — `<BrainstormEditor>` on `UniversalBody/v1` (PR #142) | 2026-06-15 |
 | ✅ | `9.18.2b` | Notes paste-URL → embedded-bookmark suggestion handler (PR #143; gate-opener built in-slice) | 2026-06-15 |
-| ✅ | `9.21.7` | Books `embedded-highlight` BP block + `/book` slash — last open Books rung (PR #145) | 2026-06-15 |
-| ✅ | `9.21.2` | Books EPUB reader — hybrid epub.js parser → existing reflow reader (OQ-BK-1) | 2026-06-15 |
+| ✅ | `9.21.7` / `9.21.2` | Books `embedded-highlight` BP block + `/book` slash · EPUB reader (epub.js → reflow reader, OQ-BK-1) | 2026-06-15 |
 | ✅ | `9.13.11` | Graph click=select + multi-selection + editable inspector property cells | 2026-06-15 |
-| ✅ | `B11.17` | Spellcheck custom dictionary — store + `editor.spellcheck.*` capability + Add/Ignore menu actions (a) + Settings manager panel (b); OQ-SP-2 | 2026-06-15 |
-| ✅ | `B11.16` | Inline spellchecking — engine + session enablement (a), editable opt-in (b), right-click suggestion menu (c); all 5 prose apps; OQ-SP-1/-3 | 2026-06-15 (`main`) |
+| ✅ | `B11.17` / `B11.16` | Spellcheck custom dictionary + inline spellchecking across all 5 prose apps (OQ-SP-1/-2/-3) | 2026-06-15 |
 | ✅ | `12.4` | a11y / KBN ladder COMPLETE — Database grid cell-nav + in-cell editing closed the last rung | 2026-06-15 |
-| ✅ | `13.10` | Packaged-app upgrade path (last beta-blocking 🔴 hardening rung) | 2026-06-15 |
-| ✅ | `13.5` / `13.7` | Vault portability test · design-doc consistency | 2026-06-15 |
-| ✅ | `13.2` / `13.4` | Bundle-hash recording · stress tests | 2026-06-14 |
-| ✅ | `11b.11` | Automations builder UI | 2026-06-14 |
-| ✅ | `9.12.6/.9` · `9.13.15` · `9.8.10` | Database view tab strip · Graph Pixi hardening · Files view options | 2026-06-14 |
-| ✅ | `9.7.3` | Code-editor core editing — autocomplete/completion popup + per-language keywords (last core rung) | 2026-06-14 |
-| ✅ | `9.12.3/.4/.5/.8/.10/.12/.14` | Database `ListView/v1` lifecycle — full rung (predicate compiler → tab strip → grid/list/group) | 2026-06-14 |
+| ✅ | `13.10` / `13.5` / `13.7` / `13.2` / `13.4` | Packaged-app upgrade path (last beta-blocking 🔴) · vault portability · doc consistency · bundle-hash · stress | 2026-06-14/15 |
 | ✅ | `9.3.5.V` | Lists/Collections → vault-level entities (**keystone**) — slices 7a–7d (codec → persist → cross-app → templates) | 2026-06-13 |
-| ✅ | `9.23.5` | Contacts inbound address → `Person/v1` resolver (link-to-existing, never auto-create) | 2026-06-10 |
 
 ---
 
 ## Open work (single-track order)
 
-Reconciled against `implementation-plan-table.md` ground truth, last 2026-06-22. **Stage-10 sync is now in the open table** — the always-on live-sync core (`10.12`), selective-sync policy + Settings picker (`10.13`), and restore-from-zero consumer (`10.14`) all landed and sit `🟡` pending a real two-shell dogfood (`SYNC-2` durable node ✅; cold/lost-keystore restore still gated on account recovery). **The DnD ladder is no longer design-only** — the shell-mediated spine shipped (selection host `DND-1` · drag-session + ghost overlay `DND-2` · drop-target primitive + wire `DND-3` · drag sources `DND-3b` · drop-semantics foundation `DND-4a`), so `DND-1→4` are now `🟡`; remaining is rolling drop targets across apps, file-out, and the a11y twins. **`Collab-C6`** (signed `Profile/v1` + `roster` service + @-mentions + Settings → Identity) landed slice-a `🟡`. **Notes templates** data layer (`B11.10a` `Template/v1` + codec) landed, so `B11.10` is `🟡`. The **AI/Stage-11 push** (`11.4` hybrid search · `11.5` verb set · `11.6`/`11.8`/`11.9` BYO key + provenance + Settings panel) and the **import/export track** (`IE-1…IE-6` + `IE-8` core, merged via #149 + follow-ups) have all **landed but stay `🟡` in the source plan** — each carries a documented residue tail (real vector recall via `11.3`, `extract intoType`/streaming, per-app budgets, IE single-writer rung, etc.), so they remain in the open table below rather than moving to ✅. **R3 Beta gates fully clear** — only the RC-cut milestone stands before Beta.
+Reconciled against `implementation-plan-table.md` ground truth, **last 2026-06-27** (Open: 64 — Beta-blocking 0 · GA 30 · v2/post-v2 34). **No open iteration gates the beta** — the only thing between here and `2026-09-01` is the RC-cut process work (row 6). Stage-10 sync (`10.12`/`10.13`/`10.14`) + the durable node (`SYNC-2..5`) are ✅ real-shell verified. **Encrypted attachment sync** is the live infra track: `Asset-B1`/`B2`/`B3` ✅ (DEK re-homing → chunked wire → durable CAS), `B4`/`B5`/`B6` next (GA). The DnD spine shipped (`DND-1`–`DND-5` ✅); only the a11y twins (`DND-6` ◑) remain. The AI/Stage-11 push (`11.4`/`11.5`/`11.6`/`11.8`/`11.9`) and import/export (`IE-1…IE-6` + `IE-8` core) have **landed but stay 🟡** behind documented residue tails (real vector recall via `11.3`, `extract intoType`/streaming, per-app budgets, IE-7 API source), so they remain below.
 
 | # | ID | Task | Run | Gate / dep | Status |
 | -: | -- | ---- | --- | ---------- | ------ |
-| 1 | `9.3.5.7…N` | per-app shared-object-space migration rungs | R1 Foundation | rides `9.3.5.V` ✅ (not gated — large) | ⚪ |
-| 2 | `9.13.10e` | Graph live bucketed event stream (`entities.subscribe`) | R2 Core apps | prior graph-streaming rung (dep-gated) | ⚪ |
-| 3 | `9.7.6` | Code-editor inline squiggles + problem list (code ✅) | R2 Core apps | LSP language-server binary (out-of-sandbox) | 🟡 |
-| 4 | `B11.10` | Notes templates — **OQ-TPL-1..4 resolved**; data layer (`B11.10a`) + **decision layer** (`buildCreateTemplateMenu`/`draftFromCreateOption`/`objectToTemplateProperties`, +18 tests) landed. Remaining (real-shell): fancy-menu wiring in "+ New" + cross-entity Yjs body copy + editor slash-snippet insert + save-selection-as-template | R2 Core apps | real-shell UI wiring | 🟡 |
-| 5 | `9.8.8 → .9 → .10` | Files routes + view options + inspector — **real-shell verified 2026-06-22** (specs 249 inspector property-rows · 233 sidebar + PDF teardown · 175 breadcrumbs/routes nav, all green; folder inspector renders cover/icon/rename — screenshot confirmed). *Note: dogfood specs 068 (`[data-testid=new-folder]`) + 176 (`.bs-cell-plain` name cell) are stale-selector false-fails, not Files bugs — flagged for spec maintenance.* | R2 Core apps | view-options/inspector verified; spec-selector refresh pending | ◑ |
-| 6 | `9.17.20` | Whiteboard canvas-renderer perf — **core ✅** (decision + 3 optimized-HTML increments: drag-without-rebuild · viewport-culling · keyed reconcile; jsdom op-cost 4–32×). Residue: real-Electron Playwright frame-time bench (Increment 4), escalate to canvas hybrid only if it misses budget | R2 Core apps | real-Electron bench only (post-beta perf track) | ◑ |
-| 7 | `8.10.3 → .4` | Form-designer group nesting → conditions (.2/.5 ✅) | R2 Core apps | 8.4 (OQ-90, post-v1) | ⚪ |
-| 8 | `F-229` / residual | Dogfood fixes real-shell verify (dates, clip, mention, props, Pin) | R2 Core apps | real-shell verify only | 🟡 |
-| 9 | — | bug burn-down + feature freeze → RC cut | 🚩 BETA `2026-09-01` | R3 gates ✅ | ⚪ |
-| 10 | `11.5` | AI broker host service (keystone) — verb set complete (generate/transform/extract/cost); residue: extract `intoType` + token streaming | R4 AI spine | *in flight* | 🟡 |
-| 11 | `11.0b / 11.3` | Tantivy bench · bundled embedding model (enables real `11.4` recall) | R4 AI spine | 11.5 ✅ | ⚪ |
-| 12 | `11.6 / 11.8 / 11.9` | BYO keys · provenance · Settings → AI panel — **all landed**; residue: real-key round-trip · budget enforcement (14.8) · per-app budgets / routing UI | R4 AI spine | 11.5 ✅ | 🟡 |
-| 13 | `Net-3` | live-DOM feeder (web.capture) | R5 Net + Files-host | Net-2 + Browser-1 | ⚪ |
-| 14 | `11b.10` | `FileWatch` / `Startup` triggers | R6 Automations | **actionable** (`9.10` ✅) | ⚪ |
-| 15 | `11b.6 / .15` | host **deploy landed** (PR #148: session-open reg + entity-change-emitter; security-reviewed, no must-fix) | R6 Automations | real-Electron verify only | 🟡 |
-| 16 | `11b.8b` · `11b.7` | **per-origin egress allowlist** (11b.8 HTTP step ✅ PR #148, egress fail-closed pending) · AICall/AIAgent | R6 Automations | **8b actionable** · 11b.7 Stage 11 | ⚪ |
-| 17 | `Mailbox-2 → -4 → -5 → -6 → -8 → -9` | Mailbox chain (compose, JMAP/OAuth, threading, triggers) | R7 Connectors | 11b · Stage 11 (9.10 ✅) | 🟡 |
-| 18 | `Browser-4 → -5 → -6 → -8` | blocklist · clip · downloads · agentic surface | R7 Connectors | Net-2 · Stage 11 (9.10 ✅) | 🟡 |
-| 19 | `Connector-7 → -6 → -8` | Mailbox reference · webhook-in · starter set | R7 Connectors | Mailbox-2 · Net-1 · 14.17 | ⚪ |
-| 20 | `Agent-3 → -4 → -5 → -6 → -7` | tools · retrieval · grants · save-as-automation · memory | R7 Connectors | Stage 11 · 11b | ⚪ |
-| 21 | `IE-7` · `IE-8` tail · `IE-9` | remaining import/export tail — authenticated-API Source (IE-7) · external scheduled export (IE-8) · marketplace (IE-9, v2). **IE-1/-2/-3/-4/-5/-6 + IE-8 core all landed** | R8 Import/export | IE-7 → Connector framework + IE-6 ✅ · IE-8 tail → OQ-186 egress | 🟡 |
-| 22 | `Welcome-2` | vault template gallery — first-launch UI (7d core ✅) | R8 Import/export | not gated — gallery-UI branch merged; verify/close | 🟡 |
-| 23 | `DND-4 → -5 → -6` | cross-app drag-and-drop ([65](platform/65-object-selection-and-cross-app-dnd.md)) — **spine landed 🟡** (DND-1 selection host · DND-2 drag-session + ghost overlay + `WindowIndex` hit-test · DND-3 drop-target primitive + wire reconcile · DND-3b drag sources · DND-4a drop-semantics); remaining: roll drop targets across apps (DND-4) · file-out via `startDrag` (DND-5) · keyboard/a11y twins (DND-6) | R8 platform interop | spine ✅; not beta-blocking | 🟡 |
-| 24 | `10.13 / 10.14` | sync — selective-sync policy + Settings picker (10.13) · restore-from-zero consumer (10.14); `10.12` co-edit ✅ verified + `SYNC-2` durable node ✅ | R9 Collab + sync | cores landed; remaining: **wipe-and-restore dogfood** (10.14) + cold/lost-keystore gated on account recovery | 🟡 |
-| 25 | `Collab-C6` | human-facing identity — **slice-a landed 🟡** (signed `Profile/v1` · `roster` service · chat/comment @-mentions · Settings → Identity) | R9 Collab + sync | remaining: petname UI · Contacts registry; cross-user mention sync gated on C5 | 🟡 |
-| 26 | `Collab-C5` | sharing UX (dialog, roles, presence) + authorization | R9 Collab + sync | not gated — multi-shell verify | ⚪ |
-| 27 | `10.10 / 10.11` | G2 perf tails (`NAPI-3` crypto consolidation ✅ — native XChaCha, `@noble` dropped, `5e8ca5c5`) | R9 Collab + sync | post-beta GA | 🟢 |
-| 28 | `14.1…14.16` | billing spine → Stripe/Paddle → quota/AI accounting — **billing-edge backend landed in `brainstorm-cloud`** (`14.2/14.3/14.4/14.7/14.12/14.13`); in-product Settings→Billing UI (`14.6`/`14.1`) + AI accounting (`14.8`) pending | R10 Commercial | Stage 14 billing infra | 🟡 |
-| 29 | `14.19…14.24` + infra | wallet · dev portal · company infra (Site/Account/Ops/Support) — **out-of-repo in [`brainstorm-cloud`](https://github.com/<owner-account>/brainstorm-cloud)**; backlog in its `docs/plan.md`, tracked in-vault as `seed_proj_cloud`. Landed: `billing-edge` (Phase 2 complete) + `apps/account` portal + self-serve Checkout; entitlement contract (`14.3` keystone) | R10 Commercial | Stage 14 infra | 🟡 |
-| 30 | `Community-1–8` · `Chats-1–7` · `DocsHub-1–5` · `14.25–28` | v2 apps · paid marketplace activation | 🚩 v2 | — | ⚪ |
+| 1 | `9.13.10e` | Graph live bucketed event stream (`entities.subscribe`) | R2 Core apps | prior graph-streaming rung (dep-gated) | ⚪ |
+| 2 | `9.7.6` | Code-editor inline squiggles + problem list (core ✅) | R2 Core apps | LSP language-server binary (out-of-sandbox) | 🟡 |
+| 3 | `B11.10` | Notes templates — **OQ-TPL-1..4 resolved**; data + decision layer (`B11.10a`: `Template/v1` codec, `buildCreateTemplateMenu`/`draftFromCreateOption`/`objectToTemplateProperties`) landed. Remaining (`B11.10b`, real-shell): create-flow picker in "+ New" · cross-entity Yjs body copy · editor slash-snippet insert · save-selection-as-template | R2 Core apps | un-gated (real-shell UI wiring) | 🟡 |
+| 4 | `9.18.8` | Bookmarks highlights & annotations on captured content + per-bookmark list | R2 Core apps | editor text-anchoring on captured body | ⚪ |
+| 5 | `9.18.9` | Bookmarks captured-image offline assets (store article images in the encrypted asset store) | R2 Core apps | asset Part-B (`Asset-B*`) + `assets.*` | ⚪ |
+| 6 | — | bug burn-down + feature freeze → RC cut | 🚩 BETA `2026-09-01` | all feature gates ✅ | ⚪ |
+| 7 | `12.15` | app-renderer locale propagation + per-app translation packs (the deferred 15d content fan-out) | GA polish | infra ✅; content fan-out | 🟡 |
+| 8 | `NAPI-P` | perf-bottleneck profiling sweep (gates NAPI-4 + any new native target) | GA / NAPI track | post-beta perf | ⚪ |
+| 9 | `11.0b` / `11.3` | Tantivy bench · bundled embedding model (`multilingual-e5-small`, enables real `11.4` recall) | R4 AI spine | `11.5` ✅ | ⚪ |
+| 10 | `11.5` residue | AI broker host service (keystone) — verb set complete; residue: `extract intoType` + token streaming | R4 AI spine | in flight | 🟡 |
+| 11 | `11.6 / 11.8 / 11.9` | BYO keys · provenance · Settings → AI panel — **landed**; residue: real-key round-trip · budget enforcement (`14.8`) · per-app budgets / routing UI | R4 AI spine | `11.5` ✅ | 🟡 |
+| 12 | `Asset-B4 → -B5 → -B6` | Encrypted attachment sync — lazy fetch + thumbnail tier · cold-restore re-materialise (`10.14`) · cross-device offline-peer GC (`B1`/`B2`/`B3` ✅) | R4 Infra | `Asset-B3` ✅ | 🟡 |
+| 13 | `Net-3` | live-DOM feeder (`web.capture`) | R5 Net + Files-host | Net-2 + Browser-1 | ⚪ |
+| 14 | `11b.8` / `11b.8b` | `Webhook` trigger + per-origin egress allowlist (HTTP step ✅ PR #148; egress fail-closed pending) | R6 Automations | network ingress | 🟡 |
+| 15 | `11b.10` | `FileWatch` / `Startup` triggers | R6 Automations | **actionable** (`9.10` ✅) | ⚪ |
+| 16 | `11b.7` | `AICall` / `AIAgent` steps | R6 Automations | Stage 11 | ⚪ |
+| 17 | `Mailbox-5 → -6 → -8 → -9` | Mailbox chain — JMAP/OAuth2 · threading UI + attachments · `Email/v1` trigger + AI-triage · official Google OAuth registration (org/process, start early) | R7 Connectors | `9.10` ✅ · 11b · Stage 11 · external | 🟡 |
+| 18 | `Browser-5 → -6 → -8` | clip-to-vault ◑ · downloads → Files host · agentic `web.browse:read-only` + summarize | R7 Connectors | `9.10` ✅ · Net-2 · Stage 11 | 🟡 |
+| 19 | `Connector-7 → -6 → -8` | Mailbox reference connector · webhook-in (ingress) · starter set + Marketplace content | R7 Connectors | Mailbox-2 · Net-1 + `11b.8` · `14.17` | ⚪ |
+| 20 | `8.10.2 → .3 → .4 → .5` | Form-designer editing canvas · group nesting · conditional visibility · save-as-`Layout/v1` | R8 Layouts | **Layouts render pipeline `8.3`/`8.4`** (post-v1) | 🟡 |
+| 21 | `IE-7` · `IE-9` | import/export tail — authenticated-API Source (Notion API) · adapter marketplace (v2) | R8 Import/export | Connector framework + IE-6 ✅ · Marketplace | ⚪ |
+| 22 | `DND-6` | cross-app DnD keyboard/a11y twins — "Move to… / Add to… / Link to…" (DND-1→5 ✅) | R8 platform interop | DND-1 ✅; not beta-blocking | ◑ |
+| 23 | `Collab-C6` | human-facing identity — slice-a landed (signed `Profile/v1` · `roster` · @-mentions · Settings → Identity); remaining: petname UI · Contacts registry; cross-user mention sync gated on C5 | R9 Collab + sync | partial | 🟡 |
+| 24 | `Collab-C5` | sharing UX (dialog, roles, presence) + authorization | R9 Collab + sync | not gated — multi-shell verify | 🟡 |
+| 25 | `10.10 / 10.11` | G2 perf tails — wrap-bundling · routing-token rotation (`NAPI-3` crypto consolidation ✅, native XChaCha) | R9 Collab + sync | post-beta GA | 🟢 |
+| 26 | `Asset-B7` | encrypted attachment sync — multi-user share fan-out (v2) | R10 Commercial | Collab-C5 (sharing) | ⚪ |
+| 27 | `14.5…14.16` | billing spine → Stripe/Paddle → quota/AI accounting — **billing-edge backend landed in `brainstorm-cloud`**; in-product Settings→Billing UI (`14.6`/`14.1`) + AI accounting (`14.8`) pending | R10 Commercial | Stage 14 billing infra | 🟡 |
+| 28 | `14.19…14.24` + infra | wallet · dev portal · company infra (Site/Account/Ops/Support) — **out-of-repo in `brainstorm-cloud`**; `Account-1` portal + self-serve Checkout + entitlement contract (`14.3` keystone) landed; `Site-3` Product Hunt · `Support-1`/`BugTrack-1`/`Ops-1` pending | R10 Commercial | Stage 14 infra | 🟡 |
+| 29 | `Community-1–8` · `Chats-1–7` · `DocsHub-1–5` · `14.25–28` | v2 apps · paid marketplace activation (a dogfood-scoped Chat app slice shipped early 2026-06-20; arbitrary-multi-user Chats stays v2) | 🚩 v2 | org/consumer accounts | ⚪ |
 
 ---
 
-**Resume pointer:** R2 Core-apps tail (`9.3.5.7…N`, Files `9.8.x` verify, Whiteboard `9.17.20`, code-editor `9.7.6`) is the top of the open list before the RC cut. The Stage-10 sync cores (`10.12`/`10.13`/`10.14`) need a real **two-shell dogfood** to flip 🟡 → ✅ (the durable-node E2E harness already co-edits two real shells). The AI spine (`11.x`) is now mostly landed — `11.3` bundled embedding model is the next real unblock there (enables `11.4` recall). Regenerate the source counts via `bun tools/gen-open-iterations.ts`; this linear file is hand-ordered and updated when dependency state changes.
+**Resume pointer:** No open iteration gates the beta, so the top of the list is the un-gated core-app tails — **`B11.10` Notes templates UI** (row 3, the highest-leverage un-gated item — every app inherits the create-flow picker + slash-snippet), then Graph `9.13.10e`, then the bug burn-down → RC cut (row 6) for `2026-09-01`. The live infra track is **encrypted attachment sync** (`Asset-B4`, row 12). Most remaining app rows are gate-blocked by design (Form-designer on the post-v1 Layouts pipeline; Mailbox/Browser agentic surfaces + Automations AI steps on Stage 11; Bookmarks annotations on editor text-anchoring). Regenerate the source counts via `bun tools/gen-open-iterations.ts`; this linear file is hand-ordered and updated when dependency state changes.
