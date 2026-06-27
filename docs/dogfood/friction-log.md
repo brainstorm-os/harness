@@ -27,6 +27,34 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 350 — Marcus design-reviews the Agent app (2026-06-27)
+
+`tests/dogfood/sessions/350-marcus-agent-design-review.spec.ts` — specialist
+turn (after 348/349 Mira). Marcus reviews the **Agent** app's craft: empty
+state, composer, context rail, conversation settings. **Verdict: design is
+strong; one minor finding (F-295).**
+
+- **Empty state is honest + clear.** Centered sparkle tile, "Ask the agent
+  anything", and a trust line that names the model story: *"Chat runs on your
+  local model. Your messages stay on this device."* (capture `01-empty-state.png`).
+- **Composer behaves.** Send is correctly **disabled when empty and enables on
+  input** (`02`); the **Add context** rail opens a clean menu — *Mention or link
+  a document* · *Upload media…* (`03`).
+- **Per-conversation settings are correctly gated.** The ⚙ Conversation
+  settings + ⋯ More buttons are **`disabled` in the empty state** (`activeConv
+  === null`, app.tsx:1211/1248) — settings are per-conversation, so there's
+  nothing to configure until a conversation exists. Honest, not a dead button.
+  *(My probe clicked the disabled ⚙ and saw no popover — confirmed via code-read
+  that this is correct gating, not a bug.)*
+- **0 console/page errors** across the review.
+
+### F-295 — Agent "Memory" header button uses a ★ star icon (reads as "favorite", not "memory")
+- **session:** 350-marcus-agent-design-review   **kind:** design   **app:** Agent   **status:** triaged (design call)
+- **what I saw:** the Agent header's **Memory** affordance (`aria-label="Memory"`, opens the memory popover) renders **`IconName.Star`** (`apps/agent/src/app.tsx:1224`). A star conventionally means *favorite / bookmark / important* — scanning the header, a user reads ★ as "favorite this conversation", not "open the agent's memory".
+- **why it matters:** the header packs five icon buttons (New chat `+`, Settings ⚙, **Memory ★**, Conversations ▦, More ⋯); the one whose meaning isn't load-bearing-obvious is the star. Agent memory (the persistent facts it recalls about you) is a trust-critical surface — its entry point should read unambiguously.
+- **recommendation (design call — not auto-applied):** swap `IconName.Star` for a memory-semantic glyph. Candidates in the registry: **`Database`** (a memory *store* — clearest, low collision), `Archive`, `Library`. ⚠️ avoid **`History`** here — it collides with the adjacent "Show conversations" (conversation history) button. Left **triaged** rather than fixed because picking the glyph is a genuine design judgment the docs don't position (the protocol's "surface a design fork, don't guess" rule).
+- **evidence:** `apps/agent/src/app.tsx:1219-1224`; capture `tests/dogfood/.sessions/350-marcus-agent-design-review/01-empty-state.png` (header ★).
+
 ## Session 349 — Mira builds an automation (in-flight-app deep probe) (2026-06-27)
 
 `tests/dogfood/sessions/349-mira-builds-automation.spec.ts` — first of the
