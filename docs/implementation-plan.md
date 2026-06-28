@@ -122,6 +122,8 @@ The roadmap's real schedule. Each blocks the gate shown; answering is a human ro
 
 ### Beta-exit checklist (`2026-09-01`)
 
+> **How to prove each box:** [ops/beta-exit-runbook.md](ops/beta-exit-runbook.md) — the runnable version (command/spec, pass criteria, current status). A box is done only when run **as a gate on the signed RC**, not when the code exists.
+
 - [ ] Core apps (11, above) usable; **no `◑` in the beta build for a core app**.
 - [ ] `10.9` green: two instances pair, edit concurrently, blind relay sees ciphertext only.
 - [ ] At-rest encryption flipped on-disk; startup contract probe passes against the real driver.
