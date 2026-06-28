@@ -73,7 +73,7 @@ for (const line of src) {
 type Phase = "Beta" | "GA" | "v2";
 const PHASE_ORDER: Phase[] = ["Beta", "GA", "v2"];
 const V2_SECTION_HINTS = ["Collaboration layer", "Company / operational", "Durable sync node"];
-const BETA_ID_PREFIXES = ["9.3.5", "10.12", "10.13", "10.14", "9.12.13", "Welcome-2"];
+const BETA_ID_PREFIXES = ["9.3.5", "10.12", "10.13", "10.14", "9.12.13", "Welcome-2", "13.11"];
 const V2_IDS = ["IE-9", "Connector-8", "Asset-B7"];
 
 function phaseFor(section: string, id: string): Phase {
