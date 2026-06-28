@@ -52,8 +52,10 @@ dogfood-verified each**. This entry covers the foundation + first two apps.
   `contenteditable` flips **true → false (locked) → true (unlocked)**; 0 console
   errors. (Test note: a journal entry must exist first — created via a template —
   before the lock affordance appears, which is correct.)
-- **rollout status:** ✅ Notes, ✅ Journal · ⏳ Tasks, Bookmarks, Code-editor,
-  Whiteboard, Database, Calendar (one verified commit each).
+- **rollout status:** ✅ Notes, ✅ Journal, ✅ **Code-editor** (`fe5dc2b`,
+  dogfood 355: `textarea.readOnly` flips on lock, read-only when locked OR
+  folded) · ⏳ Tasks, Bookmarks, Whiteboard, Database, Calendar (one verified
+  commit each).
 - **evidence:** `packages/sdk/src/lock-button/`, `packages/editor/src/editor.tsx`
   (EditableSync), `apps/journal/src/…`; `tests/dogfood/.sessions/354-journal-lock/`.
 
