@@ -57,8 +57,10 @@ dogfood-verified each**. This entry covers the foundation + first two apps.
   ✅ **Tasks** (`140b60f`, 357: body editor read-only via the imperative
   inspector mount + EditableSync; rebased onto the concurrent property-cells
   refactor), ✅ **Calendar** (`de96e68`, 358: EventDetail form wrapped in a
-  `<fieldset disabled>` + Save/Delete suppressed) · ⏳ Database, Bookmarks (one
-  verified commit each).
+  `<fieldset disabled>` + Save/Delete suppressed), ✅ **Database** (`dfad0fc`,
+  359: per-record lock gates the shared `editProperty` commit → cells read-only
+  across every view; inspector rename frozen) · ⏳ Bookmarks (its `BookmarkDetail`
+  is dead code — the real edit surface needs tracing).
 - **evidence:** `packages/sdk/src/lock-button/`, `packages/editor/src/editor.tsx`
   (EditableSync), `apps/journal/src/…`; `tests/dogfood/.sessions/354-journal-lock/`.
 
