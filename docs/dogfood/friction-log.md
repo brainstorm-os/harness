@@ -56,7 +56,9 @@ dogfood-verified each**. This entry covers the foundation + first two apps.
   355), ✅ **Whiteboard** (`3d08f1f`, 356: board-level engine `readonly`),
   ✅ **Tasks** (`140b60f`, 357: body editor read-only via the imperative
   inspector mount + EditableSync; rebased onto the concurrent property-cells
-  refactor) · ⏳ Bookmarks, Database, Calendar (one verified commit each).
+  refactor), ✅ **Calendar** (`de96e68`, 358: EventDetail form wrapped in a
+  `<fieldset disabled>` + Save/Delete suppressed) · ⏳ Database, Bookmarks (one
+  verified commit each).
 - **evidence:** `packages/sdk/src/lock-button/`, `packages/editor/src/editor.tsx`
   (EditableSync), `apps/journal/src/…`; `tests/dogfood/.sessions/354-journal-lock/`.
 
