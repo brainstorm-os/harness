@@ -59,8 +59,11 @@ dogfood-verified each**. This entry covers the foundation + first two apps.
   refactor), ✅ **Calendar** (`de96e68`, 358: EventDetail form wrapped in a
   `<fieldset disabled>` + Save/Delete suppressed), ✅ **Database** (`dfad0fc`,
   359: per-record lock gates the shared `editProperty` commit → cells read-only
-  across every view; inspector rename frozen) · ⏳ Bookmarks (its `BookmarkDetail`
-  is dead code — the real edit surface needs tracing).
+  across every view; inspector rename frozen), ✅ **Bookmarks** (`e728e95`, 360:
+  detail body editor read-only via EditableSync; the earlier "BookmarkDetail is
+  dead code" call was a grep-tool artifact — it's rendered at app.tsx:1494).
+  **🎉 ROLLOUT COMPLETE — all 8 apps (Notes, Journal, Code-editor, Whiteboard,
+  Tasks, Calendar, Database, Bookmarks) ship a synced read-only lock.**
 - **evidence:** `packages/sdk/src/lock-button/`, `packages/editor/src/editor.tsx`
   (EditableSync), `apps/journal/src/…`; `tests/dogfood/.sessions/354-journal-lock/`.
 
