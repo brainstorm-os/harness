@@ -158,9 +158,14 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
   markers; 595 files+calendar tests pass, css-tokens clean.
 - **remaining:** Database's local `EmptyState` (`mount.tsx:74`) — **renamed to `StageEmpty`
   (PR #25)** to stop shadowing the SDK name; kept intentionally minimal ("empty vault =
-  empty app"). Tasks (`surface-view.ts`) + Whiteboard (`engine.ts`, `layers-panel.ts`) are
-  DOM-built and ride the all-apps-React track; Journal empty (`app.tsx`) deferred to avoid
-  conflicting with the F-299 branch (PR #22).
+  empty app"). **Tasks (`surface-view.ts`) DONE (PR #29)** via a new SDK DOM twin
+  `createEmptyState()` (the imperative counterpart of `<EmptyState>`). Whiteboard
+  `engine.ts` (nav) + `layers-panel.ts` (layers) are **compact single-line panel-list
+  empties** (like the calendar sidebar empty) — reclassified as acceptable compact empties,
+  NOT full-pane Heroes (a Hero glyph in a narrow nav/layers list would look wrong). Journal
+  empty (`app.tsx`) deferred to avoid conflicting with the F-299 branch (PR #22).
+- **NEW SDK primitive (PR #29):** `createEmptyState()` (DOM twin of `<EmptyState>`) — use it
+  for any future imperative-DOM empty instead of hand-building `.bs-empty-state` markup.
 
 ## Session 361 — property-editing consistency audit (2026-06-29)
 
