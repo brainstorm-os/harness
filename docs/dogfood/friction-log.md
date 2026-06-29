@@ -110,11 +110,14 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
 - **DONE (PR #24):** SDK `dictionary-editor` row ⋯ menu now opens via `openAnchoredMenu`
   (removed `menuOpen` + `<div role="menu">` + local `MenuItem`; orphaned `.notes__dict-menu*`
   CSS deleted; test drives the real runtime). 198 property-ui tests pass.
-- **remaining:** Files bulk move/copy **destination picker** (`dialogs.tsx:381`) — a clear
-  pick-one menu but converting it changes a `<Popover>` open mechanism (follow-up). The
-  Files **sort popover** (`dialogs.tsx:171`) is a multi-control settings panel (radios +
-  direction + tile size + columns + apply-to-all), NOT a simple menu — it correctly stays a
-  `<Popover>` (reclassified: not a violation).
+- **remaining:** Files bulk move/copy **destination picker** (`DestinationPickerPopover`,
+  `dialogs.tsx:364`) — it's a CENTERED MODAL dialog (no anchor) triggered from the bulk
+  toolbar, listing folders; only its inner `<div role="menu">` is the technical nit. The
+  right fix is `openSearchPicker` (searchable destination, better for large vaults) — a
+  UX-affecting change, so deferred to a deliberate pass, not an autonomous rush. The Files
+  **sort popover** (`dialogs.tsx:171`) is a multi-control settings panel (radios + direction
+  + tile size + columns + apply-to-all), NOT a menu — it correctly stays a `<Popover>`
+  (reclassified: not a violation).
 
 ### F-301 — Several apps hand-roll full-pane empty states instead of `<EmptyState>`
 
@@ -134,11 +137,11 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
   (`agenda-view.tsx`) renders `<EmptyState icon=KindDate>` (orphaned `.cal-empty` CSS
   removed). Verified session 363: Files search-empty shows `.bs-empty-state`, zero legacy
   markers; 595 files+calendar tests pass, css-tokens clean.
-- **remaining (deferred):** Database's local `EmptyState` (`mount.tsx:74`) is intentionally
-  minimal ("empty vault = empty app") — left as-is, but rename to avoid shadowing the SDK
-  name; Tasks (`surface-view.ts`) + Whiteboard (`engine.ts`, `layers-panel.ts`) are
+- **remaining:** Database's local `EmptyState` (`mount.tsx:74`) — **renamed to `StageEmpty`
+  (PR #25)** to stop shadowing the SDK name; kept intentionally minimal ("empty vault =
+  empty app"). Tasks (`surface-view.ts`) + Whiteboard (`engine.ts`, `layers-panel.ts`) are
   DOM-built and ride the all-apps-React track; Journal empty (`app.tsx`) deferred to avoid
-  conflicting with the F-299 branch.
+  conflicting with the F-299 branch (PR #22).
 
 ## Session 361 — property-editing consistency audit (2026-06-29)
 
