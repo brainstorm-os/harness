@@ -183,7 +183,7 @@ centralised this well.** One real exception below.
 
 ### F-298 — Calendar's event editor reinvents property editing instead of using the shared cells
 
-- **session:** 361-property-editing-consistency   **kind:** design   **app:** calendar   **status:** open
+- **session:** 361-property-editing-consistency   **kind:** design   **app:** calendar   **status:** PARTIAL — Status unified (PR #28); structural migration still OQ-DM-gated
 - **what I was trying to do:** edit an event's status/colour/date the same way I
   edit a task's status or a bookmark's tags.
 - **what happened:** Calendar's `event-detail.tsx` hand-rolls its whole form — a
@@ -198,12 +198,15 @@ centralised this well.** One real exception below.
 - **evidence:** `apps/calendar/src/ui/react/event-detail.tsx:443,459` (RadioGroup
   status/colour), `:406,412` (DateTimeField), `:377,433,522` (native inputs);
   `apps/calendar/src/ui/react/radio-group.tsx` (calendar-only, not in the SDK).
-- **triage:** _(developer)_ Root cause is structural: a calendar Event is not yet
-  a property-bearing vault entity (OQ-DM), so there's no `values` map / catalog to
-  drive `getCell`. Two paths: (a) short-term, swap the Status/Colour `RadioGroup`
-  for the shared single-select control so at least the *interaction* matches; or
-  (b) proper fix — make Event property-bearing and adopt `<PropertiesPanel>` like
-  Tasks/Contacts. Until then, document as a known exception.
+- **DONE (PR #28, path a):** Status `<RadioGroup>` → shared `<SelectMenu>` (the one
+  Calendar already uses for time zone), so the single-select *interaction* now matches
+  the fleet. Colour stays a swatch radiogroup (a visual palette, deliberately not a
+  dropdown). Orphaned segmented CSS removed; 285 calendar tests pass; dogfood 365.
+- **remaining (path b, OQ-DM-gated):** the structural fix — make Event a property-bearing
+  vault entity (`values` map + catalog) and drive the form through `<PropertiesPanel>` /
+  `getCell` like Tasks/Contacts (which would also fold in the custom `DateTimeField` +
+  native title/location/notes inputs). Blocked on resolving OQ-DM; do NOT resolve that
+  open question unilaterally. `radio-group.tsx` stays (Colour still uses it).
 
 ## Session 354 — fleet read-only lock: foundation + Notes + Journal (2026-06-28)
 
