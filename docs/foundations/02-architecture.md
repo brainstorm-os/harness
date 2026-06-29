@@ -119,7 +119,7 @@ Reasoning:
 
 Trade-off: more memory and slower cold start than tab-style hosting. We accept this; Brainstorm targets desktops with reasonable RAM.
 
-**How apps in different processes share the same Yjs doc:** the entities service holds the canonical Y.Doc on the shell side and exposes a Yjs `Provider` over IPC to each renderer that has access. Whether the canonical lives in the main process or a dedicated yjs worker is OQ-18; the contract is the same. Specified in [06-collaboration-yjs.md](../editing/06-collaboration-yjs.md).
+**How apps in different processes share the same Yjs doc:** the entities service holds the canonical Y.Doc on the shell side and exposes a Yjs `Provider` over IPC to each renderer that has access. Whether the canonical lives in the main process or a dedicated yjs worker is OQ-18 *[RESOLVED 2026-06-29 — dedicated ydoc worker]*; the contract is the same. Specified in [06-collaboration-yjs.md](../editing/06-collaboration-yjs.md).
 
 ## Boundaries summarised
 

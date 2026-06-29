@@ -347,7 +347,7 @@ If a marketing claim contradicts a design doc, the design doc wins and the marke
 
 Surfaced for follow-up; added to [11-open-questions.md](../reference/11-open-questions.md).
 
-- **OQ-MK-1** — Domain choice. `brainstorm.app` vs `brainstorm.dev` vs `brainstorm.[country-tld]`. Some are squatted; some carry cost implications. Decision affects brand-recognition trajectory.
+- **OQ-MK-1** — Domain choice. `brainstorm.app` vs `brainstorm.dev` vs `brainstorm.[country-tld]`. Some are squatted; some carry cost implications. Decision affects brand-recognition trajectory. *[RESOLVED 2026-06-29 — getbrainstorm.online; site is live and public.]*
 - **OQ-MK-2** — Trademark posture. Register the word "Brainstorm" in the productivity-software class, or accept the generic-word risk? "Brainstorm" is a common English word; registration in a specific class is feasible but contested. Lean: register in the relevant classes once we have v1 revenue; accept the risk until then.
 - **OQ-MK-3** — Conference-talk strategy: pitch to existing conferences (Strange Loop / SREcon / RustConf / FOSDEM / equivalents) or organise our own (local-first / PKM / decentralised-knowledge) micro-conference once a year? Lean: pitch first; revisit in v2 once we have a real community.
 - **OQ-MK-4** — Should we run a **bug-bounty / responsible-disclosure program** as a marketing surface as well as a security surface? Per [09](../security/09-security-and-sandbox.md), the disclosure program is a security commitment. Whether we *also* surface it in marketing (badge on the landing, "we paid out $X this year") is a separate question; some teams find this credibility-positive, others find it noisy.

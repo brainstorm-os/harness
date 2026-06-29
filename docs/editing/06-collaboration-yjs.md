@@ -50,7 +50,7 @@ The exact shape per entity type is determined by the type's schema (see [05-data
 
 ## Where the canonical Y.Doc lives
 
-> **Decision:** the **shell** holds the canonical Y.Doc for each open entity (whether it lives in the main process or in a dedicated yjs worker process is OQ-18 in [11-open-questions.md](../reference/11-open-questions.md); the host-services contract is the same either way). App renderers see a *replica* that syncs to the canonical via IPC.
+> **Decision:** the **shell** holds the canonical Y.Doc for each open entity (whether it lives in the main process or in a dedicated yjs worker process is OQ-18 in [11-open-questions.md](../reference/11-open-questions.md) *[RESOLVED 2026-06-29 — dedicated ydoc worker process; the host-services contract is the same either way]*). App renderers see a *replica* that syncs to the canonical via IPC.
 
 This matters because:
 
@@ -77,7 +77,7 @@ Each entity's Y.Doc maps to one storage record. Storage is keyed by entity id.
 
 > **Decision:** sync is an *adapter*. The default transport is local-only (no network). Optional adapters add device-to-device, server-relayed, or peer-to-peer transports. Apps do not pick the transport; the shell does.
 
-Possible transports (out of scope for v1 to ship, in scope for v1 to design):
+Possible transports (local-only + device-to-device over a blind relay shipped in Stage 10; hosted relay + P2P remain v2):
 
 - **Local-only** — single device, no transport. Sync code paths are inert.
 - **Self-hosted relay** — `y-websocket` or similar to a user-owned server.
@@ -86,7 +86,7 @@ Possible transports (out of scope for v1 to ship, in scope for v1 to design):
 
 The transport sees only Yjs updates. It does **not** see entity types, app ids, or block content. This makes encrypted-at-rest, encrypted-in-transit straightforward later.
 
-> **Open:** what is the v1 device-pairing UX? QR-code-based key exchange? Account-based? Tracked in [11-open-questions.md](../reference/11-open-questions.md).
+> **Open:** what is the v1 device-pairing UX? QR-code-based key exchange? Account-based? *[RESOLVED 2026-06-29 — account-less QR/SAS device pairing shipped]* Tracked in [11-open-questions.md](../reference/11-open-questions.md).
 
 ## Awareness
 

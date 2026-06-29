@@ -45,7 +45,7 @@ The app-view factory (`runtime/launch-setup.ts`) listens to `webContents.on("con
 
 ## Privacy / offline note
 
-On Windows/Linux Chromium's hunspell downloads dictionaries from a Google-hosted CDN on first use (`session.setSpellCheckerDictionaryDownloadURL` can repoint it). macOS uses the OS speller with no download. For a privacy-focused product this is a known consideration; the dev/beta target (macOS) is unaffected. A bundled-dictionary or self-hosted download URL is a follow-up if Windows/Linux offline-first becomes a requirement.
+On Windows/Linux Chromium's hunspell downloads dictionaries from a Google-hosted CDN on first use (`session.setSpellCheckerDictionaryDownloadURL` can repoint it). macOS uses the OS speller with no download. For a privacy-focused product this is a known consideration; the macOS target is unaffected. A bundled-dictionary or self-hosted download URL is a follow-up if Windows/Linux offline-first becomes a requirement.
 
 ## Keyboard & a11y
 

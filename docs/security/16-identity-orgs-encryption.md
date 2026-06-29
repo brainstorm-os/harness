@@ -347,7 +347,7 @@ The v1 / v2 split is conservative. Designing the encryption and identity model n
 These are added to [11-open-questions.md](../reference/11-open-questions.md):
 
 - OQ-25: cipher selection (AES-GCM vs. XChaCha20-Poly1305) and protocol version negotiation.
-- OQ-26: device-pairing UX details (already partly OQ-10) — explicit choice between QR-only and code-fallback.
+- OQ-26: device-pairing UX details (already partly OQ-10) — explicit choice between QR-only and code-fallback. *[RESOLVED 2026-06-29 — account-less QR/SAS device pairing + E2E encrypted multi-device sync shipped in Stage 10.]*
 - OQ-27: whether server-readable spaces' keys can rotate independently of content keys (compliance scenario).
 - OQ-28: whether the org's relay endpoint config is enforced for E2E spaces too, or only server-readable ones.
 - OQ-29: how revoked-but-historical-access members appear in audit logs and access records (should they be visible permanently, or fade out?).

@@ -39,7 +39,7 @@ Provides:
 
 Apps use this package; they do not configure Lexical from scratch. This keeps node-type compatibility manageable.
 
-> **Open:** is `brainstorm-editor` shipped as a versioned library that apps bundle, or a host service the app loads at runtime? Bundling is simpler; host-loading would let us upgrade editor behavior across all apps at once. Tracked in [11-open-questions.md](../reference/11-open-questions.md).
+> **Open:** is `brainstorm-editor` shipped as a versioned library that apps bundle, or a host service the app loads at runtime? Bundling is simpler; host-loading would let us upgrade editor behavior across all apps at once. *[RESOLVED 2026-06-29 — bundled per app (Notes ships React + Lexical + Vite)]* Tracked in [11-open-questions.md](../reference/11-open-questions.md).
 
 ## Yjs binding
 
@@ -67,7 +67,7 @@ For these to render across apps, Brainstorm requires:
 2. The brainstorm-editor library knows how to render a "stranger" node when the originating app is not installed: it falls back to a generic placeholder bearing the node's known display hint.
 3. The shell's registry maps node type ids to the providing app, the same way it maps block ids.
 
-> **Open:** are custom Lexical nodes the same registry as Block Protocol blocks, or a separate registry? They serve adjacent purposes (embeddable UI in rich text vs. embeddable UI as standalone block). Tracked in [11-open-questions.md](../reference/11-open-questions.md).
+> **Open:** are custom Lexical nodes the same registry as Block Protocol blocks, or a separate registry? They serve adjacent purposes (embeddable UI in rich text vs. embeddable UI as standalone block). *[RESOLVED 2026-06-29 — separate registries bridged by BlockEmbedNode (OQ-12)]* Tracked in [11-open-questions.md](../reference/11-open-questions.md).
 
 ## Block embedding inside rich text
 
@@ -100,7 +100,7 @@ For fields typed as `text` (not `richtext`) — e.g. a note's title — the SDK 
 
 Lexical reconciles its whole node tree into the DOM, so very long documents are a DOM-size cost (not a model cost — the Yjs doc and EditorState stay cheap). How the editor stays within the `<16ms` keystroke→paint budget on large documents — a two-phase, measurement-gated virtualization that **never mutates the Yjs-bound state** (the §Yjs binding decision is load-bearing here) — is specified in [52-editor-virtualization.md](52-editor-virtualization.md).
 
-> **Open:** whether `content-visibility` + offscreen-decorator-unmount alone clears the budget or true reconciliation-windowing is required, and the threshold at which virtualization activates. Tracked as OQ-185 in [11-open-questions.md](../reference/11-open-questions.md).
+> **Open:** whether `content-visibility` + offscreen-decorator-unmount alone clears the budget or true reconciliation-windowing is required, and the threshold at which virtualization activates. *[RESOLVED 2026-06-29 — Phase-1 (content-visibility + decorator-unmount) always-on clears the budget; OQ-185 resolved at Stage 13.4a]* Tracked as OQ-185 in [11-open-questions.md](../reference/11-open-questions.md).
 
 ## Summary
 

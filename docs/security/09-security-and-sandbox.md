@@ -164,7 +164,7 @@ For v1:
 - Updates with new capability requests trigger a re-consent dialog.
 - The bundle hash is recorded after install; future updates show the user a diff hash and version delta.
 
-> **Open:** is "auto-update" something Brainstorm offers, or is the user always in the loop? Auto-update is convenient but conflicts with "user is the trust root". Likely: opt-in auto-update for capability-stable updates only. Tracked in [11-open-questions.md](../reference/11-open-questions.md).
+> **Open:** is "auto-update" something Brainstorm offers, or is the user always in the loop? Auto-update is convenient but conflicts with "user is the trust root". Likely: opt-in auto-update for capability-stable updates only. Tracked in [11-open-questions.md](../reference/11-open-questions.md). *[RESOLVED 2026-06-29 — OQ-147: shell-level in-app auto-update (electron-updater, checks GitHub Releases) shipped in v0.1.5, ON by default, disable in Settings → Updates.]*
 
 ## Logging and audit
 
@@ -179,10 +179,10 @@ The user can review the audit log per app. Logs do **not** include content (enti
 ## Encryption
 
 - **At rest** — Yjs storage on disk is encrypted with a key derived from a user-set passphrase or OS keychain entry. v1 may default to OS-keychain to keep onboarding simple; passphrase is an option.
-- **In transit** — sync transports are TLS-mandatory. The Yjs payload itself can additionally be end-to-end encrypted between the user's devices using identity keys (planned for v2).
+- **In transit** — sync transports are TLS-mandatory. The Yjs payload itself is additionally end-to-end encrypted between the user's devices using identity keys (shipped Stage 10; the relay is blind and sees ciphertext only).
 - **Apps** see decrypted entity content; encryption is below the entity layer.
 
-> **Open:** is end-to-end encryption part of v1? It complicates server-relayed sync but gives much stronger guarantees. Tracked in [11-open-questions.md](../reference/11-open-questions.md).
+> **Open:** is end-to-end encryption part of v1? It complicates server-relayed sync but gives much stronger guarantees. Tracked in [11-open-questions.md](../reference/11-open-questions.md). *[RESOLVED 2026-06-29 — OQ-18/OQ-26: E2E synced-payload encryption shipped in Stage 10 over a blind relay.]*
 
 ## Failure-open vs. fail-closed
 

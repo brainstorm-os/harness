@@ -56,7 +56,7 @@ The performance budgets at the bottom of this doc are how we know we're meeting 
 
 > **Decision:** the main process must never block on I/O. Filesystem and network operations live in worker processes, communicated to via Node's `MessagePort`. The main process is essentially a router and policy engine.
 
-> **Open:** is the canonical Yjs runtime in the *main* process or a dedicated *yjs worker*? Worker is better for isolation and to keep the main loop free; main is simpler. See OQ-18 in [11-open-questions.md](../reference/11-open-questions.md).
+> **Resolved (OQ-18):** the canonical Yjs runtime is a dedicated *yjs worker* — *[RESOLVED in implementation-plan Stage 3 — the ydoc worker is spawned alongside the storage worker by `startWorkers()`; keeps the main loop free under heavy concurrent editing]*. See OQ-18 in [11-open-questions.md](../reference/11-open-questions.md).
 
 ### Why this many processes
 
