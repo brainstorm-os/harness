@@ -203,7 +203,6 @@ const KNOWN_VIOLATION_PATHS: readonly string[] = [
 	"apps/chat/src/app.tsx",
 	"apps/code-editor/src/ui/code-pane.ts",
 	"apps/code-editor/src/ui/diff-view.ts",
-	"apps/tasks/src/app.tsx",
 	"apps/tasks/src/ui/board-view.ts",
 	"apps/tasks/src/ui/inline-edit.ts",
 	"apps/theme-editor/src/app.tsx",
