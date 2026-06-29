@@ -97,7 +97,7 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
 
 ### F-300 — Files hand-rolls menus instead of the shared fancy-menus runtime
 
-- **session:** 362-journal-first-char (menu audit)   **kind:** design   **app:** files   **status:** open
+- **session:** 362-journal-first-char (menu audit)   **kind:** design   **app:** files/sdk   **status:** PARTIAL (SDK dictionary row menu done, PR #24)
 - **what happened:** the sort menu and the bulk move/copy destination picker render a
   `<div role="menu">` with `role="menuitem(radio)"` buttons inside a shared `<Popover>`,
   instead of opening through `openAnchoredMenu` / `openSelectMenu`. Violates the standing
@@ -107,8 +107,14 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
   has the same `menuOpen`+`<div role="menu">` anti-pattern.
 - **evidence:** `apps/files/src/ui/dialogs.tsx:171` (sort), `:381` (destination);
   `packages/sdk/src/property-ui/dictionary-editor.tsx:407` (row menu).
-- **triage:** _(developer)_ migrate the destination picker + dictionary row menu to the
-  runtime; evaluate whether the sort popover should stay a settings popover.
+- **DONE (PR #24):** SDK `dictionary-editor` row ⋯ menu now opens via `openAnchoredMenu`
+  (removed `menuOpen` + `<div role="menu">` + local `MenuItem`; orphaned `.notes__dict-menu*`
+  CSS deleted; test drives the real runtime). 198 property-ui tests pass.
+- **remaining:** Files bulk move/copy **destination picker** (`dialogs.tsx:381`) — a clear
+  pick-one menu but converting it changes a `<Popover>` open mechanism (follow-up). The
+  Files **sort popover** (`dialogs.tsx:171`) is a multi-control settings panel (radios +
+  direction + tile size + columns + apply-to-all), NOT a simple menu — it correctly stays a
+  `<Popover>` (reclassified: not a violation).
 
 ### F-301 — Several apps hand-roll full-pane empty states instead of `<EmptyState>`
 
