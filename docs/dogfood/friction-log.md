@@ -623,7 +623,7 @@ Viewer read-only + rotate-on-revoke), not quick fixes.
 
 ### F-290 — durable-node collab sessions can't launch (`spawn bun ENOENT`)
 - **session:** collab-003 / collab-004   **kind:** gap (harness)   **app:** tests/dogfood (launch-durable-node)   **status:** ✅ done (2026-06-26)
-- **root cause (not bun):** `bun` was fine — `launch-relay.ts` spawns it bare and works. The real cause was a **non-existent `cwd`**, which also throws `spawn <cmd> ENOENT`: `launch-durable-node.ts` resolved `SYNC_MAIN` to `../brainstorm-sync/src/main.ts`, but the org migration renamed the durable-node repo to **`sync`** (`brainst0rm-os/sync`). The path didn't exist, so `cwd: dirname(SYNC_MAIN)` pointed at a missing dir. Same post-split path-rot class as the collab-005 import breakage.
+- **root cause (not bun):** `bun` was fine — `launch-relay.ts` spawns it bare and works. The real cause was a **non-existent `cwd`**, which also throws `spawn <cmd> ENOENT`: `launch-durable-node.ts` resolved `SYNC_MAIN` to `../brainstorm-sync/src/main.ts`, but the org migration renamed the durable-node repo to **`sync`** (`brainstorm-os/sync`). The path didn't exist, so `cwd: dirname(SYNC_MAIN)` pointed at a missing dir. Same post-split path-rot class as the collab-005 import breakage.
 - **fix (2026-06-26):** `SYNC_MAIN` now resolves the first existing of `../sync` then `../brainstorm-sync` (legacy), and throws a clear "not found under …" error instead of a cryptic ENOENT if neither exists. `existsSync` guard added.
 - **verified:** `003-durable-node` (1.5s) + `004-wipe-and-restore` (2.8s) pass again; the **full collab suite is 6/6 green** (001–006). SYNC-2 durable-node + cold-restore dogfood coverage restored.
 

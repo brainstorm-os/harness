@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
 const SIBLINGS = resolve(REPO_ROOT, "..");
 /** The durable-node repo's entry point. The org migration renamed it `sync`
- *  (`brainst0rm-os/sync`); `brainstorm-sync` was the pre-split sibling name.
+ *  (`brainstorm-os/sync`); `brainstorm-sync` was the pre-split sibling name.
  *  Resolve whichever exists so a stale name doesn't surface as a cryptic
  *  `spawn bun ENOENT` (a non-existent `cwd` throws that, not a missing bun). */
 const SYNC_MAIN = ((): string => {
