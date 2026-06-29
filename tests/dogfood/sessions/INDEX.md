@@ -19,7 +19,7 @@ slugs to tell which is which.
 
 ## Go-forward rule (the fix for the divergence)
 
-1. **A new dogfood session takes the next integer: `367`.** Never reuse an
+1. **A new dogfood session takes the next integer: `368`.** Never reuse an
    existing number for an unrelated session.
 2. **A single themed sweep may group multiple specs under one reserved number** using
    `NNN-<topic>-<facet>.spec.ts` naming (the `228` pattern). Reserve the number once.
@@ -27,9 +27,9 @@ slugs to tell which is which.
 
 ## Manifest
 
-- **Total spec files:** 380
-- **Distinct session numbers:** 297
-- **Highest number:** 366 → **next session = 367**
+- **Total spec files:** 381
+- **Distinct session numbers:** 298
+- **Highest number:** 367 → **next session = 368**
 - **Numbers shared by >1 spec (`×N`):** 51
 
 | Session | Spec file(s) |
@@ -331,6 +331,7 @@ slugs to tell which is which.
 | 363 | `363-empty-state-verify.spec.ts` |
 | 365 | `365-calendar-status-select.spec.ts` |
 | 366 | `366-tasks-empty-state.spec.ts` |
+| 367 | `367-files-destination-picker.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 

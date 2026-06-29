@@ -97,7 +97,7 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
 
 ### F-300 — Files hand-rolls menus instead of the shared fancy-menus runtime
 
-- **session:** 362-journal-first-char (menu audit)   **kind:** design   **app:** files/sdk   **status:** PARTIAL (SDK dictionary row menu done, PR #24)
+- **session:** 362-journal-first-char (menu audit)   **kind:** design   **app:** files/sdk   **status:** DONE (SDK dictionary menu PR #24; Files destination picker PR #30)
 - **what happened:** the sort menu and the bulk move/copy destination picker render a
   `<div role="menu">` with `role="menuitem(radio)"` buttons inside a shared `<Popover>`,
   instead of opening through `openAnchoredMenu` / `openSelectMenu`. Violates the standing
@@ -110,14 +110,11 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
 - **DONE (PR #24):** SDK `dictionary-editor` row ⋯ menu now opens via `openAnchoredMenu`
   (removed `menuOpen` + `<div role="menu">` + local `MenuItem`; orphaned `.notes__dict-menu*`
   CSS deleted; test drives the real runtime). 198 property-ui tests pass.
-- **remaining:** Files bulk move/copy **destination picker** (`DestinationPickerPopover`,
-  `dialogs.tsx:364`) — it's a CENTERED MODAL dialog (no anchor) triggered from the bulk
-  toolbar, listing folders; only its inner `<div role="menu">` is the technical nit. The
-  right fix is `openSearchPicker` (searchable destination, better for large vaults) — a
-  UX-affecting change, so deferred to a deliberate pass, not an autonomous rush. The Files
-  **sort popover** (`dialogs.tsx:171`) is a multi-control settings panel (radios + direction
-  + tile size + columns + apply-to-all), NOT a menu — it correctly stays a `<Popover>`
-  (reclassified: not a violation).
+- **DONE (PR #30):** Files bulk move/copy **destination picker** now uses the shared
+  `openSearchPicker` (anchored to the bulk-bar button; type-to-filter folders) instead of the
+  centered `<Popover>` + `<div role="menu">` list. The Files **sort popover** (`dialogs.tsx`)
+  is a multi-control settings panel (radios + direction + tile size + columns + apply-to-all),
+  NOT a menu — it correctly stays a `<Popover>` (reclassified: not a violation). F-300 closed.
 
 ### F-302 — Database stage shortcuts used raw `keydown`/`e.key` instead of the registry
 
