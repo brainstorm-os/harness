@@ -119,6 +119,25 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
   + tile size + columns + apply-to-all), NOT a menu — it correctly stays a `<Popover>`
   (reclassified: not a violation).
 
+### F-302 — Database stage shortcuts used raw `keydown`/`e.key` instead of the registry
+
+- **session:** 362-journal-first-char (keyboard audit)   **kind:** design   **app:** database (+ others)   **status:** PARTIAL (database done, PR #26)
+- **what happened:** a keyboard-handling audit (rule: keyboard via `useShortcut`/`attachShortcut`,
+  never raw `e.key`) found ~15 hits. The clearest high-severity one: Database's
+  `bindStageKeyboard` drove Escape (close inspector) / Mod+A (select all) / Space (Quick Look)
+  via a raw `addEventListener("keydown")` — right next to `bindViewTabKeyboard`, which already
+  uses the sanctioned `attachShortcut`.
+- **DONE (PR #26):** stage shortcuts moved onto `attachShortcut`; single-key chords inherit the
+  shared editable/menu suppression (deleted the hand-rolled `isTextInputFocused` guard). 820
+  database tests pass.
+- **remaining (tracked, NOT bundled):** Shell tab-strip `tab-strip.tsx:70` (Enter/Space activate)
+  + dashboard `app-grid.tsx:124` (input→grid nav) — small shell-chrome handlers; SDK
+  `add-property-picker.tsx:187` + `find-replace/find-bar.tsx:89` (Enter/arrows/Escape on a
+  search input — likely legit input-local, want `keyboard-exempt` annotations). The bulk of the
+  rest are inline-edit Enter/Escape commits (chat/whiteboard/files/contacts/notes-equation) where
+  the project's resolution is to MARK `keyboard-exempt` consistently, not rewire — a judgment-y
+  annotation pass, deferred (some siblings already carry the comment; these don't).
+
 ### F-301 — Several apps hand-roll full-pane empty states instead of `<EmptyState>`
 
 - **session:** 362-journal-first-char (empty-state audit)   **kind:** design   **app:** files/database/tasks/whiteboard/calendar/journal   **status:** PARTIAL (Files + Calendar done, branch `fix/empty-state-consistency-f301`)
