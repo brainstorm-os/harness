@@ -44,7 +44,7 @@ The visual-identity work has two horizons:
 
 | Horizon                | What lands                                                                                                                                                       |
 |------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Now (v0)**           | The shipped brain mark in `packages/shell/art/`; placeholder default-dark / default-light token sets (already in `packages/tokens/`); a single-color subtle accent. Enough to ship a usable shell. |
+| **Now (v0)**           | The shipped brain mark in `packages/shell/art/`; bundled default light / dark token sets (Rose / Midnight, in `packages/tokens/`) with runtime theme switching; a single-color subtle accent. Enough to ship a usable shell. |
 | **Claude-Design build** | Full token-value derivation from the brand kit; wordmark typeface selection + licensing; vector brain-mark masters (SVG family + brand assets); low-poly wallpaper palette; component grammar (radii, shadow recipes, motion easings, surface treatments); per-context illustration kit; print/PDF theme values. Slots into the token namespace below without changing its shape — only the *values* and the *icon-pack contents* change.    |
 
 > **Decision:** the **token namespace, semantic names, and architectural decisions** documented in this file are stable; the Claude-Design build only fills in values and produces brand assets. This means feature code written against tokens today won't need to change when the design system formally lands.

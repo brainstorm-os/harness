@@ -81,4 +81,4 @@ Beyond v1, Brainstorm aims to be the **operating system for an AI-native company
 - ~~An AI-first interface.~~ **AI is foundational** (see Principle 8 and [22-ai-foundations.md](../platform/22-ai-foundations.md)) — the shell brokers AI from day one. What's deferred is *the chat / agent app*, not the architecture.
 - Multi-tenant / org features. Brainstorm is a single-user product first; multi-device sync is the only collaboration surface in v1.
 
-> **Open:** is real-time multi-user collaboration in v1, or single-user multi-device only? Yjs supports both, but threat model and account system differ. Tracked in [11-open-questions.md](../reference/11-open-questions.md).
+> **Open:** is real-time multi-user collaboration in v1, or single-user multi-device only? Yjs supports both, but threat model and account system differ. Tracked in [11-open-questions.md](../reference/11-open-questions.md). *[RESOLVED 2026-06-29 — single-user multi-device only shipped (E2E sync over a blind relay); multi-user sharing is v2.]*

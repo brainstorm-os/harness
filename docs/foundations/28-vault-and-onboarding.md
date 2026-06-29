@@ -90,7 +90,7 @@ When the user opens Brainstorm and the vault registry is empty:
    ─────────────────────────────────────
      ◯  Create a new vault                    ← default
      ◯  Open an existing vault folder
-     ◯  Add a vault from another device      (post-v1; covered in 16's pairing flow)
+     ◯  Add a vault from another device      (covered in 16's pairing flow)
      ◯  Import from another tool             (Markdown / common third-party tools — see Import note below)
    ─────────────────────────────────────
                                   [Continue]

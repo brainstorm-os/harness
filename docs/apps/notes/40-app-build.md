@@ -1,6 +1,6 @@
 # Per-app build pipeline
 
-The Notes app today ships **vanilla ES modules** (HTML+JS, no bundler). That's fine for a scratchpad but unsuitable for the block editor: Lexical + React + many component files need bundling.
+The Notes app ships as a bundled **React + Lexical + Vite** app — it was originally vanilla ES modules (HTML+JS, no bundler), fine for a scratchpad but unsuitable for the block editor, where Lexical + React + many component files need bundling.
 
 This doc codifies the **per-app Vite pattern**. Every first-party app under `apps/<id>/` adopts it.
 

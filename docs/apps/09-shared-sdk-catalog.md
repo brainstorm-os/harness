@@ -175,7 +175,7 @@ Over-extraction is also a smell. These stay per-app on purpose — do **not** tr
 
 - **Properties-panel *wrappers*.** The `PropertiesPanel` chrome is shared; the per-app adapter that maps an entity's `values` to rows and writes changes back is app-specific and correct.
 - **App sidebars and content lists.** Calendar's mini-calendar+source filters, Tasks' projects+archived tree, Files' folder tree, Notes' note list — these are different UI schemas. They share *primitives* (virtualization, DnD, list rows) but not algorithms.
-- **App bootstrap / state machines / event wiring** in each `app.ts`.
+- **App bootstrap / state machines / event wiring** in each `app.tsx`.
 - **i18n manifests** (the strings) — only the `createT` machinery and cross-app label helpers are shared.
 - **Domain codecs** (URL normalization, recurrence rules, node-kind dispatch) — only the primitive helpers (`nullableString`, enum coercion) are shared.
 - **The pixi `unsafe-eval` import** — a one-line idiom per renderer (see [`feedback_pixi_unsafe_eval_in_sandbox`]).

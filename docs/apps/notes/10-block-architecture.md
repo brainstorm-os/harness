@@ -129,4 +129,4 @@ Lexical `EditorThemeClasses` maps to a flat set of class names (`notes__block--p
 
 ## Build pipeline prerequisite
 
-The Notes app currently ships vanilla ES modules. Lexical + React requires bundling. See [40-app-build.md](40-app-build.md) for the per-app Vite pattern.
+The Notes app ships bundled via the per-app Vite pattern (Lexical + React require bundling). See [40-app-build.md](40-app-build.md).

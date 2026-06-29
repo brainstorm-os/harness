@@ -48,4 +48,4 @@ A block-protocol-style document editor, with three deliberate improvements over 
 
 ## Status
 
-Scaffolding ships today (single-document plain `<input>` + `<textarea>` under `apps/notes/` — pre-React). The block editor lands across the phases tracked in `docs/implementation-plan.md` Stage 9-13 window.
+Shipped (public beta v0.1.5): a bundled React + Lexical block editor under `apps/notes/`, on real `entities.db`. The block surfaces continue to fill in across the phases tracked in `docs/implementation-plan.md` Stage 9-13 window.

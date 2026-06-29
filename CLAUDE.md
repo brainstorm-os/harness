@@ -59,7 +59,7 @@ Workspace scripts proxy to `@brainstorm/shell` via `bun run --filter @brainstorm
 
 ## Stage gating (how to think about progress)
 
-Work proceeds through the 14 stages in `docs/implementation-plan.md`. Each stage has **blocking OQs** that must be resolved (a position taken, documented in `11-open-questions.md`) before code lands. **Stages 0–4 are DONE; Stage 5 is in progress.** Don't start a stage's iterations without resolving its OQs first. When an OQ is resolved during a stage, mark it `*[RESOLVED in implementation-plan Stage N]*` in `11-open-questions.md` and note the resolution in the plan's stage section.
+Work proceeds through the 14 stages in `docs/implementation-plan.md`. Each stage has **blocking OQs** that must be resolved (a position taken, documented in `11-open-questions.md`) before code lands. **Stages 0–13 are essentially DONE — the public beta `v0.1.5` shipped 2026-06-29** (signed + notarized macOS, Windows, Linux on GitHub Releases, with in-app auto-update). What remains is **GA polish** (a11y/perf tails, Windows EV signing, vector/embedding search) and the **v2 commercial/multi-user stack** (Stage 14). Don't start a stage's iterations without resolving its OQs first. When an OQ is resolved during a stage, mark it `*[RESOLVED in implementation-plan Stage N]*` in `11-open-questions.md` and note the resolution in the plan's stage section.
 
 **Update the implementation plan in the same turn an iteration lands** (this is a workflow rule, not aspirational): mark the iteration ✓ DONE with a one-line note on what changed; update the status snapshot; note OQs resolved.
 

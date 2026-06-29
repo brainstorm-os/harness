@@ -1387,7 +1387,7 @@ Format:
 - **Tentative leaning:** Brainstorm intercepts via `setPermissionRequestHandler`; if app has the corresponding `media.camera` / `geolocation` / etc. capability, Brainstorm forwards to OS; otherwise refuses without prompting OS.
 - **Blocking?:** Yes for media-using apps.
 
-#### OQ-147 — Shell auto-update mechanism
+#### OQ-147 — Shell auto-update mechanism  *[RESOLVED 2026-06-29 — in-app auto-update (electron-updater) shipped against GitHub Releases; ON by default, disable in Settings → Updates]*
 - **Where:** [14-app-store.md](../apps/14-app-store.md).
 - **Question:** Does the shell update via Squirrel + Brainstorm-hosted update server, or via platform stores (Mac App Store, Microsoft Store)?
 - **Options:**
@@ -1395,6 +1395,7 @@ Format:
   - (b) Platform store; offload distribution but slower turnaround for security patches.
   - (c) Both — primary distribution via Squirrel for users who download direct; platform store as a secondary channel.
 - **Tentative leaning:** (c). Direct download is the primary; platform stores as additional reach.
+- **Resolution (2026-06-29):** direct-download path (a-flavored) shipped for public beta v0.1.5 — `electron-updater` checks GitHub Releases (`latest*.yml`) → downloads → installs on relaunch. ON by default (disable in Settings → Updates), no longer a v2 exclusion. Platform-store channel (c) stays a later option.
 - **Blocking?:** No (v1 distribution detail).
 
 #### OQ-148 — Extended notification model  *[RESOLVED — pulled forward 2026-06-06]*
@@ -3174,7 +3175,7 @@ Opened by the bookmark favicon/cover work — the first consumer of a synced, en
 
 ### MCP integrations
 
-#### OQ-MCP-1 — MCP server config scope: per-vault vs. per-device
+#### OQ-MCP-1 — MCP server config scope: per-vault vs. per-device  *[RESOLVED 2026-06-29 — adopted: per-vault config record + per-device enablement; shipped with MCP-1..4]*
 - **Where:** [64-mcp-integrations.md](../platform/64-mcp-integrations.md).
 - **Question:** Is a connected MCP server stored as per-vault config (syncs across the user's devices, like other settings) or per-device (a stdio server's command line / local path may not exist on every device)?
 - **Options & trade-offs:** Per-vault = configure once, available everywhere, but a local command may be invalid on another device. Per-device = always valid locally, but reconfigure on each device.
@@ -3188,7 +3189,7 @@ Opened by the bookmark favicon/cover work — the first consumer of a synced, en
 - **Resolution (MCP-2):** **Plain child + explicit `mcp.spawn-local` consent** (the adopted leaning). A local stdio server spawns as a plain `child_process.spawn` with **`shell: false`** (no shell interpolation — argv is passed verbatim), gated on a **scarce, default-off `mcp.spawn-local` capability** re-checked against the live ledger in the broker (never trusting `envelope.caps`), in addition to the per-server `mcp.server:<id>` grant. The exact command line is shown for consent in Settings. Spawn is **per-RPC** (spawn → `initialize` handshake → the one method → kill) so no long-lived process lingers and there is no cross-call state leak; output is size-capped and timeout-bounded (reusing the HTTP transport's caps), killed on timeout. v1 carries `command` + `args` only — **no config-supplied env** (env is a secret-leak/attack surface; the parent env is inherited so PATH resolves). The hardened-sandbox option is deferred: when the code-runner runtime (OQ-AH-4) lands, stdio servers can converge onto it without a contract change (the `mcp.spawn-local` gate stays; only the spawn mechanism hardens).
 - **Blocking?:** Blocked the stdio rung (MCP-2) — now resolved; HTTP-only first cut (MCP-1) was never blocked.
 
-#### OQ-MCP-3 — Conversation grant granularity
+#### OQ-MCP-3 — Conversation grant granularity  *[RESOLVED 2026-06-29 — adopted: server-level grant + destructive-tool confirm gate; tool-level scopes stay post-v1]*
 - **Where:** [64-mcp-integrations.md](../platform/64-mcp-integrations.md), [55-agent-app.md](../apps/55-agent-app.md) (three-tier intersection).
 - **Question:** Is a conversation grant `mcp.server:<id>` (all of a server's tools) or down to `mcp.tool:<id>/<tool>`?
 - **Tentative leaning:** Server-level grant in v1, with a destructive-tool confirm gate (writes confirm regardless); tool-level scopes post-v1.

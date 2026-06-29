@@ -4,7 +4,7 @@ A flattened, dependency-ordered march through every open iteration in [implement
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · 🔴 release-blocking · 🟢 GA-only · 🚩 milestone
 
-**Keystones** (everything keys off these — pulled as early as actionable): `9.3.5.V` (Lists→vault entities) ✅ · `9.10` (Files host) ✅ · Net-1/Net-2 ✅ · `11.5` (AI broker, in flight). With those landed, **zero open iterations gate the `2026-09-01` beta** — what remains for beta is process (bug burn-down → feature freeze → RC cut), not features.
+**Keystones** (everything keys off these — pulled as early as actionable): `9.3.5.V` (Lists→vault entities) ✅ · `9.10` (Files host) ✅ · Net-1/Net-2 ✅ · `11.5` (AI broker, in flight). **✅ The public beta shipped 2026-06-29 as `v0.1.5`** (signed + notarized macOS, Windows + Linux on GitHub Releases, in-app auto-update; `13.11`/`13.12` done) — ~9 weeks ahead of the `2026-09-01` target. What remains is GA polish + the v2 commercial stack, ordered below.
 
 ## ✅ Recently completed (newest first)
 

@@ -52,7 +52,7 @@ This is the product surface other knowledge tools variously call a "database", a
 
 ## Status
 
-Not started. The app lives downstream of the entities service (Stage 9.3) and the React-Yjs hooks (Stage 9.1), and benefits from `@react-fancy-menus/core` (Stage 8). The implementation iterations are recorded as **Stage 9.12.x** in [implementation-plan.md](../../implementation-plan.md); the design positions in this folder must hold before code lands.
+Shipped (bundled React app on real `entities.db`, public beta v0.1.5). The app lives downstream of the entities service (Stage 9.3) and the React-Yjs hooks (Stage 9.1), and uses `@react-fancy-menus/core` (Stage 8). The implementation iterations are recorded as **Stage 9.12.x** in [implementation-plan.md](../../implementation-plan.md).
 
 ## Source material this design draws on
 
