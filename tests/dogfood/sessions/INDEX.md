@@ -326,6 +326,8 @@ slugs to tell which is which.
 | 358 | `358-calendar-lock.spec.ts` |
 | 359 | `359-database-lock.spec.ts` |
 | 360 | `360-bookmarks-lock.spec.ts` |
+| 361 | `361-property-editing-consistency.spec.ts` |
+| 362 | `362-journal-first-char.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 

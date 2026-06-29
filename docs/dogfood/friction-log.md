@@ -27,6 +27,148 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 362 — app consistency + functionality loop (2026-06-29)
+
+Functionality: re-ran the deep-CRUD verify (342) — create works in Notes, Tasks,
+Database, Calendar, Contacts, Bookmarks, Files. One real data-loss bug surfaced
+(F-299). Consistency: three code audits (header chrome / menus / empty-states).
+**Headers are clean** across all 20 apps (an audit claim that "Bookmarks has no
+app-header" was a FALSE POSITIVE — grep silently missed `app.tsx:1000`; verified
+by hand). Menus + empty-states have real debt (F-300, F-301).
+
+### F-299 — Journal eats the first word when I start writing on a new day
+
+- **session:** 362-journal-first-char   **kind:** bug   **app:** journal   **status:** DONE (branch `fix/journal-first-char-f299`)
+- **what I was trying to do:** open Journal on a day with no entry yet and just start typing.
+- **what happened:** the leading character(s) are dropped, **deterministically**.
+  Typing "Pipeline ready" lands as "ipeline ready" / "peline ready" (the number
+  lost grows with how slow the implicit-create handoff is). A **Lexical error #94**
+  also fires (uncaught `pageerror`) during the handoff. Confirmed 3/3 on fresh
+  dates; an already-created entry (real editor already mounted) does NOT drop.
+- **what I expected:** every character I type lands, from the first.
+- **root cause (mechanism):** an entry-less date renders `.journal__write-placeholder`
+  (`ImplicitCreateBody`, `apps/journal/src/app.tsx:1904`). The first keystroke arms
+  `entities.create`; on resolve the app seeds the real `<EntryEditorIsland>` from the
+  placeholder text and calls `focusEditorAtEnd`. The seed is applied via Lexical
+  `setEditorState` inside `initialEditorState` (`apps/journal/src/ui/entry-editor.tsx:235-265`)
+  but races the Yjs `CollaborationPlugin` hydration and throws #94, so the seed text
+  is lost — the real editor mounts empty, focus lands, and only post-handoff
+  keystrokes survive (hence the *first* chars vanish). The code already has layered
+  fixes + comments about this exact "first character lost" symptom, so it's fragile.
+- **evidence:** `tests/dogfood/.sessions/362-journal-first-char/` (notes + `step-*.png`);
+  repro spec `tests/dogfood/sessions/362-journal-first-char.spec.ts`.
+- **Lexical #94 decoded:** "splice: could not find collab element node" — a
+  `@lexical/yjs` binding error. The seed of the freshly-created Yjs doc races the
+  binding bootstrap: the splice throws, the seed aborts, the doc stays empty, and
+  only post-handoff keystrokes survive (so the *first* word — the seeded text — is
+  what's lost).
+- **partial fix shipped (branch `fix/journal-first-char-f299`, status: reduced, not closed):**
+  (1) `apps/journal/src/ui/entry-editor.tsx` — the seed plant called
+  `editor.setEditorState()` + a nested `editor.update`/`editor.focus` inside
+  CollaborationPlugin's bootstrap update (illegal); replaced with the update-safe
+  `plantJournalSeed` (deserialize blocks via `$parseSerializedNode`, append,
+  `selectEnd`). Unit-tested (`entry-editor-seed-plant.test.tsx`, 4 tests).
+  (2) `apps/journal/src/app.tsx` `focusEditorAtEnd` — dropped the raw
+  `window.getSelection()`/range manipulation that raced the binding (caret now set
+  by the plant). **Effect: dropped chars 2→1, #94 3×→1×** (measured via session 362)
+  — better, but NOT closed; a char is still lost.
+- **FIX (option a — eliminate the handoff):**
+  1. `apps/journal/src/app.tsx` `EntryBody` — an entry-less mutable day now renders
+     the real `<EntryEditorIsland>` directly (bound to the deterministic stable id),
+     not the placeholder. The id is identical before/after the entity exists, and the
+     island sits at the same JSX slot in both cases, so React keeps ONE editor mounted
+     across the create — no handoff, no seed, no lost first word. Template chips moved
+     above the editor; `ImplicitCreateBody` + `seedFromText` deleted.
+  2. The entity is created on **focus** of the writing area (intent to write, before
+     the first keystroke), with lazy-create on first edit as a backstop — so browsing
+     doesn't mint empty days but the row exists in time for content persists.
+  3. `packages/react-yjs/src/resolver-accessor.ts` — `persist` now swallows a
+     not-found `applyDoc` (symmetric with `load`'s existing handling) so the
+     editor-mounts-before-create window doesn't emit unhandled rejections.
+  4. `apps/journal/src/ui/entry-editor.tsx` — seed plant rewritten to update-safe
+     `plantJournalSeed` (`$parseSerializedNode` + `selectEnd`, no `setEditorState`);
+     `app.tsx` `focusEditorAtEnd` dropped its racy DOM-selection manipulation.
+- **VERIFY (session 362, 2 trials):** first char survives in-session AND persists
+  across away+back ("Pipeline ready" intact); **Lexical #94 = 0, applyDoc not-found = 0.**
+  Deep-CRUD verify (342) journal step now clean. 285 journal+react-yjs unit tests pass
+  (incl. new `entry-editor-seed-plant.test.tsx`); packages + journal-app typecheck clean.
+  (Unrelated: 342's Database add-row check reports a non-deterministic count 22→22 / 25→22
+  — the known unreliable virtualized-grid row count, see session 344, not this change.)
+
+### F-300 — Files hand-rolls menus instead of the shared fancy-menus runtime
+
+- **session:** 362-journal-first-char (menu audit)   **kind:** design   **app:** files   **status:** open
+- **what happened:** the sort menu and the bulk move/copy destination picker render a
+  `<div role="menu">` with `role="menuitem(radio)"` buttons inside a shared `<Popover>`,
+  instead of opening through `openAnchoredMenu` / `openSelectMenu`. Violates the standing
+  "every menu through the shared runtime" rule. (The sort one is really a multi-control
+  settings popover, so it's borderline; the destination "pick a folder" picker is a clear
+  candidate for `openSearchPicker`.) The SDK `dictionary-editor.tsx:407` row-action menu
+  has the same `menuOpen`+`<div role="menu">` anti-pattern.
+- **evidence:** `apps/files/src/ui/dialogs.tsx:171` (sort), `:381` (destination);
+  `packages/sdk/src/property-ui/dictionary-editor.tsx:407` (row menu).
+- **triage:** _(developer)_ migrate the destination picker + dictionary row menu to the
+  runtime; evaluate whether the sort popover should stay a settings popover.
+
+### F-301 — Several apps hand-roll full-pane empty states instead of `<EmptyState>`
+
+- **session:** 362-journal-first-char (empty-state audit)   **kind:** design   **app:** files/database/tasks/whiteboard/calendar/journal   **status:** open
+- **what happened:** a shared `<EmptyState>` Hero exists (`@brainstorm/sdk/empty-state`),
+  but several full-pane empties are hand-rolled: Files `.content-empty`
+  (`content-list.tsx:361` — glyph+title+body+CTA, duplicates the Hero; note it doubles as
+  an OS-drop target, so wrap rather than replace), Database defines a **local component
+  literally named `EmptyState`** shadowing the SDK one (`mount.tsx:74`, minimal title+body,
+  no Hero glyph), Tasks (`surface-view.ts:539`, DOM-built) and Whiteboard
+  (`engine.ts:2274`, `layers-panel.ts:91`, DOM-built) build empties imperatively,
+  Calendar agenda (`agenda-view.tsx:36`), Journal empty entry (`app.tsx:1816`).
+- **evidence:** file:lines above (verified by hand-read, not just grep).
+- **triage:** _(developer)_ migrate the React ones to `<EmptyState>`; the DOM-built ones
+  (Tasks/Whiteboard) ride the all-apps-React track. Some are intentionally minimal
+  (Database "empty vault = empty app") — confirm before changing.
+
+## Session 361 — property-editing consistency audit (2026-06-29)
+
+**What I checked:** the worry that every app reinvents property editing. I drove
+the property surface of every property-bearing app and cross-read the code:
+all of them — Notes, Journal, Database, Tasks, Contacts, Books, Bookmarks, Files,
+Graph, Preview — render and edit properties through the SAME shared stack
+(`<PropertiesPanel>` / `EntityPropertiesPanel` chrome whose value column resolves
+through the `getCell(valueType, view)` registry in `@brainstorm/sdk/property-ui`).
+Database's `EditableCell` and the per-app row adapters still bottom out in
+`getCell`, so the *editing* interaction is genuinely identical; only the row
+bridging (typed field → PropertyDef) is app-local, which is correct. No native
+`<select>` survives anywhere. **The fear is mostly unfounded — the team already
+centralised this well.** One real exception below.
+
+- **evidence:** `tests/dogfood/.sessions/361-property-editing-consistency/` —
+  Database inspector (`01`/`02`, shared Properties/Comments tabs + editable
+  cells) and Bookmarks (`05`, `.bs-props` = 10 rows / 18 shared `.bs-cell-*`
+  editors, click-value → shared popover). Spec: `tests/dogfood/sessions/361-property-editing-consistency.spec.ts`.
+
+### F-298 — Calendar's event editor reinvents property editing instead of using the shared cells
+
+- **session:** 361-property-editing-consistency   **kind:** design   **app:** calendar   **status:** open
+- **what I was trying to do:** edit an event's status/colour/date the same way I
+  edit a task's status or a bookmark's tags.
+- **what happened:** Calendar's `event-detail.tsx` hand-rolls its whole form — a
+  custom `RadioGroup` for **Status** and **Colour** (vs the vocabulary-backed
+  single-select `TagCell` every other app uses for status), a custom
+  `DateTimeField`, and native `<input>`/`<textarea>` for title/location/notes.
+  It imports neither `<PropertiesPanel>` nor `getCell`. So the one place I'd most
+  expect "status is status everywhere" breaks: switching between Tasks/Contacts
+  (TagCell menu) and Calendar (radio buttons) is two different interactions for
+  the same concept. (`SelectMenu` for the timezone *is* shared — partial reuse.)
+- **what I expected:** the same status/select/date editors as the rest of the fleet.
+- **evidence:** `apps/calendar/src/ui/react/event-detail.tsx:443,459` (RadioGroup
+  status/colour), `:406,412` (DateTimeField), `:377,433,522` (native inputs);
+  `apps/calendar/src/ui/react/radio-group.tsx` (calendar-only, not in the SDK).
+- **triage:** _(developer)_ Root cause is structural: a calendar Event is not yet
+  a property-bearing vault entity (OQ-DM), so there's no `values` map / catalog to
+  drive `getCell`. Two paths: (a) short-term, swap the Status/Colour `RadioGroup`
+  for the shared single-select control so at least the *interaction* matches; or
+  (b) proper fix — make Event property-bearing and adopt `<PropertiesPanel>` like
+  Tasks/Contacts. Until then, document as a known exception.
+
 ## Session 354 — fleet read-only lock: foundation + Notes + Journal (2026-06-28)
 
 **User feature:** "lock should be present in all apps where possible, and synced."
