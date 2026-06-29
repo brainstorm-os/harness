@@ -118,7 +118,7 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
 
 ### F-302 — Database stage shortcuts used raw `keydown`/`e.key` instead of the registry
 
-- **session:** 362-journal-first-char (keyboard audit)   **kind:** design   **app:** database (+ others)   **status:** PARTIAL (database done, PR #26)
+- **session:** 362-journal-first-char (keyboard audit)   **kind:** design   **app:** database (+ others)   **status:** DONE (database converted PR #26; input-local handlers annotated PR #31)
 - **what happened:** a keyboard-handling audit (rule: keyboard via `useShortcut`/`attachShortcut`,
   never raw `e.key`) found ~15 hits. The clearest high-severity one: Database's
   `bindStageKeyboard` drove Escape (close inspector) / Mod+A (select all) / Space (Quick Look)
