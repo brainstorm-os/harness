@@ -112,7 +112,7 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
 
 ### F-301 — Several apps hand-roll full-pane empty states instead of `<EmptyState>`
 
-- **session:** 362-journal-first-char (empty-state audit)   **kind:** design   **app:** files/database/tasks/whiteboard/calendar/journal   **status:** open
+- **session:** 362-journal-first-char (empty-state audit)   **kind:** design   **app:** files/database/tasks/whiteboard/calendar/journal   **status:** PARTIAL (Files + Calendar done, branch `fix/empty-state-consistency-f301`)
 - **what happened:** a shared `<EmptyState>` Hero exists (`@brainstorm/sdk/empty-state`),
   but several full-pane empties are hand-rolled: Files `.content-empty`
   (`content-list.tsx:361` — glyph+title+body+CTA, duplicates the Hero; note it doubles as
@@ -122,9 +122,17 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
   (`engine.ts:2274`, `layers-panel.ts:91`, DOM-built) build empties imperatively,
   Calendar agenda (`agenda-view.tsx:36`), Journal empty entry (`app.tsx:1816`).
 - **evidence:** file:lines above (verified by hand-read, not just grep).
-- **triage:** _(developer)_ migrate the React ones to `<EmptyState>`; the DOM-built ones
-  (Tasks/Whiteboard) ride the all-apps-React track. Some are intentionally minimal
-  (Database "empty vault = empty app") — confirm before changing.
+- **DONE (this PR):** Files folder/search empty (`content-list.tsx`) now renders the shared
+  `<EmptyState>` inside the drop-target wrapper (kept as the OS-drop zone; dead
+  `.content-empty__glyph/h2/p/__cta` CSS removed); Calendar agenda empty
+  (`agenda-view.tsx`) renders `<EmptyState icon=KindDate>` (orphaned `.cal-empty` CSS
+  removed). Verified session 363: Files search-empty shows `.bs-empty-state`, zero legacy
+  markers; 595 files+calendar tests pass, css-tokens clean.
+- **remaining (deferred):** Database's local `EmptyState` (`mount.tsx:74`) is intentionally
+  minimal ("empty vault = empty app") — left as-is, but rename to avoid shadowing the SDK
+  name; Tasks (`surface-view.ts`) + Whiteboard (`engine.ts`, `layers-panel.ts`) are
+  DOM-built and ride the all-apps-React track; Journal empty (`app.tsx`) deferred to avoid
+  conflicting with the F-299 branch.
 
 ## Session 361 — property-editing consistency audit (2026-06-29)
 

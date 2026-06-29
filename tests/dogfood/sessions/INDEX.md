@@ -328,6 +328,7 @@ slugs to tell which is which.
 | 360 | `360-bookmarks-lock.spec.ts` |
 | 361 | `361-property-editing-consistency.spec.ts` |
 | 362 | `362-journal-first-char.spec.ts` |
+| 363 | `363-empty-state-verify.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 
