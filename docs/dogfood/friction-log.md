@@ -41,12 +41,13 @@ on-system, well-spaced. **Tasks** and the **dashboard** read well.
 **What doesn't** — four findings below (F-304 the systemic one).
 
 ### F-304 — text inputs and buttons don't share a control height (whole fleet)
-- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** fleet (notes/tasks/books/whiteboard/files + others)   **status:** open
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** fleet (notes/tasks/books/whiteboard/files + others)   **status:** triaged — Files slice ✅ (2026-06-30), fleet migration ladder open
 - **what I was trying to do:** check that a text field sitting next to a button lines up — the thing that's been bugging Mira.
 - **what happened:** measured the first input vs the first button in each surface — they almost never match. **Books** input=22px next to a 32px button (10px off). **Notes / Tasks / Whiteboard** input=22 vs button=26. **Files** has *three* heights in one toolbar row: input=23, select=24, button=26. Inputs render ~22px (an ad-hoc field) while `.bs-btn` is 26–32px, so any input-beside-button row steps.
 - **what I expected:** one control height. A field, a select, and a button on the same row are the same height — that's what the new `.bs-input` primitive is for.
 - **evidence:** notes.md control-height lines; tests/dogfood/.sessions/368-marcus-design-system-audit/14-files-01-full.png (search input vs "List" / "Sort by" controls), 24-books-01-full.png.
-- **triage:** _root cause is the design system isn't ENFORCED — `.bs-input` (DS-input-1) landed but only Calendar migrated; the rest still use bare inputs. This is the recurring "adjacent control heights" complaint. Likely a DS-input migration ladder across the fleet + a CI ratchet, not a per-app polish pass. Surface for prioritization._
+- **triage:** _root cause is the design system isn't ENFORCED — `.bs-input` (DS-input-1) landed but only Calendar migrated; the rest still use bare inputs. The `check-control-faces.mjs` shrinking-baseline ratchet already exists; the fix is to migrate apps onto `.bs-input` and shrink the baseline._
+- **resolution (Files slice, 2026-06-30):** shell branch `fix/f304-files-control-faces` (313ff75). Files migrated: toolbar search wrapper → `.bs-input--sm` (field now 24px, pixel-exact with the sort/view controls — the 3-heights-in-one-row offender), bulk-rename + smart-folder dialogs → `.bs-input` (md), inline row rename → `.bs-input--sm` + accent-border delta; per-app box CSS deleted. Baseline 29 → 27 (dropped dialogs.tsx + content-list.tsx). Verified by dogfood session **369** (search field / `.bs-input` / toolbar button all 24px). **Remaining: 27 baselined files across ~17 apps** (agent, automations, browser, chat, contacts, database, form-designer, graph, journal, mailbox, notes, preview, theme-editor, whiteboard) — same mechanical migration, ratchet-gated. Continue per prioritization._
 
 ### F-305 — Books shows two empty states at once
 - **session:** 368-marcus-design-system-audit   **kind:** design   **app:** books   **status:** open
