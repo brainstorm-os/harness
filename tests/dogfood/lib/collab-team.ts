@@ -88,9 +88,19 @@ export const NORTHBOUND_THEMES: Readonly<Record<string, ThemeName>> = {
 type CollabDevApi = {
 	whoami: () => Promise<CollabIdentity>;
 	createInvite: (label: string) => Promise<ShareInvite>;
-	provisionEntity: (entityId: string, type: string) => Promise<{ ok: boolean }>;
+	provisionEntity: (
+		entityId: string,
+		type: string,
+		properties?: Record<string, unknown>,
+	) => Promise<{ ok: boolean }>;
 	installShareReceiver: (entityId: string, type: string) => Promise<{ ok: boolean }>;
 	share: (
+		entityId: string,
+		type: string,
+		invite: ShareInvite,
+		role: AccessRole,
+	) => Promise<CollabAccessView[]>;
+	shareCollection: (
 		entityId: string,
 		type: string,
 		invite: ShareInvite,
@@ -129,9 +139,21 @@ export type CollabShell = {
 	/** This shell's sovereign identity (cached after first call). */
 	whoami: () => Promise<CollabIdentity>;
 	createInvite: (label: string) => Promise<ShareInvite>;
-	provisionEntity: (entityId: string, type: string) => Promise<void>;
+	provisionEntity: (
+		entityId: string,
+		type: string,
+		properties?: Record<string, unknown>,
+	) => Promise<void>;
 	installShareReceiver: (entityId: string, type: string) => Promise<void>;
 	share: (
+		entityId: string,
+		type: string,
+		invite: ShareInvite,
+		role: AccessRole,
+	) => Promise<CollabAccessView[]>;
+	/** Collection share (design 71): share the container + cascade onto its
+	 *  existing children. */
+	shareCollection: (
 		entityId: string,
 		type: string,
 		invite: ShareInvite,
@@ -279,13 +301,15 @@ export async function launchCollabShell(
 			return cachedIdentity;
 		},
 		createInvite: (label) => collab("createInvite", label),
-		provisionEntity: async (entityId, type) => {
-			await collab("provisionEntity", entityId, type);
+		provisionEntity: async (entityId, type, properties) => {
+			await collab("provisionEntity", entityId, type, properties);
 		},
 		installShareReceiver: async (entityId, type) => {
 			await collab("installShareReceiver", entityId, type);
 		},
 		share: (entityId, type, invite, role) => collab("share", entityId, type, invite, role),
+		shareCollection: (entityId, type, invite, role) =>
+			collab("shareCollection", entityId, type, invite, role),
 		editText: async (entityId, text) => {
 			await collab("editText", entityId, text);
 		},
