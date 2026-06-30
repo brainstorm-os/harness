@@ -27,6 +27,81 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-310 — the drag/reorder grip sticks to the row content in every list & table
+- **source:** user (real-shell dogfood)   **kind:** design   **app:** database + files (shared)   **status:** ✅ done (2026-06-30)
+- **what happened:** the hover-revealed reorder drag-handle (six-dot grip) crowds the row — it's pinned over the first cell with no gap, so it touches / overlaps the leading status glyph + title in the Database grid (and the icon/name in the Files list).
+- **what I expected:** the grip sits in a gutter to the LEFT of the content with breathing room, like every other product's row handle — it never overlaps what it's a handle for.
+- **evidence:** user screenshot (Database grid row, grip flush against the status circle + title). Repro + fix captured in dogfood session **372**.
+- **triage:** _root cause is the same class as F-304: the grip element + its spacing CSS were **re-implemented per surface** (`.dbv-grid__drag-grip` / `.content-row__drag-grip` — identical copy-pasted blocks), both `position:absolute; left:0` over the first cell with no reserved gutter, so the 16px grip overlapped content that starts at only ~8px of cell padding. No single place owned "the grip clears the content."_
+- **resolution (DS-grip-1, 2026-06-30):** shell branch `feat/sdk-control-face-primitive`. Extracted a shared **`.bs-drag-grip`** face into `@brainstorm/sdk/app-theme.css` (box / grab cursor / hidden→revealed transition / absolute pin), and migrated both surfaces onto it — each now reserves a real leading gutter so the grip parks **clear** of the first cell (the scroll containers clip overflow-x, so the gutter is reserved *inside* the row, not floated into negative space). Measured **4px gap** grip→content on both, no clipping; head/body/foot share `.dbv-grid__row` so the grid columns stay aligned. Plan rung **DS-grip-1**; catalog updated. typecheck (apps) + database/files build + css-token/control-face/biome clean.
+
+## User-reported while dogfooding the real shell (2026-06-30)
+
+Two issues hit directly in the running app (screenshots in the chat), fixed the
+same turn.
+
+### F-308 — PDF preview opens clipped / doesn't fit or respond to the pane
+- **source:** user (real-shell dogfood)   **kind:** bug   **app:** preview   **status:** ✅ done (2026-06-30)
+- **what happened:** opening a wide slide deck (`brainstorm-deck.pdf`) in Preview rendered the page at 100% — wider than the pane — so the left edge ("A desktop OS for…") was cut off, and resizing the window didn't reflow.
+- **what I expected:** the page fits the pane on open and re-fits as the pane resizes.
+- **evidence:** user screenshot (Preview, brainstorm-deck.pdf, "A desktop OS" clipped at left).
+- **resolution:** shell branch `fix/preview-pdf-fit`. The viewer initialised `zoom=1` but only applied fit-to-width when `zoom<=0` (an "unset" sentinel that never triggered). Replaced with a `userZoomed` flag: fit-to-page on load AND on every resize until the user picks an explicit zoom; the Fit control returns to responsive. `fitScale` already caps at 100% (no upscaling). typecheck + 55 preview tests green.
+
+### F-309 — Database inspector properties look unpolished + show a Collections block
+- **source:** user (real-shell dogfood)   **kind:** design   **app:** database (+ shared inspector)   **status:** ✅ done (2026-06-30)
+- **what happened:** the entity inspector read as an airy form, mixed a "COLLECTIONS" membership block into the Properties tab, and (for a file-backed DesignDoc) the fields weren't editable.
+- **what I expected:** a dense, polished property sheet consistent across apps, no collections block, with vault properties editable (file-derived fields may stay read-only).
+- **evidence:** user screenshot (inspector for "70 — Encrypted attachment…" with Path/Slug/Category + COLLECTIONS).
+- **resolution:** shell branch `fix/inspector-consistency`. Tightened the **shared** `.bs-props` row padding (space-2 → space-1 vertical), so every app's inspector reads as a dense property sheet — this lands in one place since all apps render through the shared panel.
+- **correction (2026-06-30):** an earlier draft of this branch ALSO dropped the database's COLLECTIONS block — that was a **misread of "do not show collections properties" and is reverted.** Collections are load-bearing: a `PropertySchema` with `scope.kind = "list"` is *resolved against List membership* (per [docs/apps/database/01-data-model.md](../apps/database/01-data-model.md)) — i.e. adding an object to a collection (e.g. a book → Horror / Fantasy) makes that collection's properties "light up" on the object, editable, and they're preserved (not surfaced) when it leaves. So the Database inspector's Collections block is the **reference** behaviour. The real complaint, re-read: **other apps' inspectors do NOT surface those list-scoped (collection-inherited) properties and aren't editable, unlike the database** — "the logic should be consistent with databases." Session 371's "0 collections" assertion is void (superseded by the revert). **Forward work:** bring collection-inherited properties + editing to the non-database app inspectors so all apps match the database. Still open.
+
+## Session 368 — Marcus: cross-app design-system audit (2026-06-30)
+
+Mira had been collecting visual snags (paddings, off-system controls, layouts
+that don't hold), so Marcus did a **measured** sweep across 12 apps + the shell:
+header baselines, input-vs-button control heights, inspector padding, empty/detail
+layouts. Method: crop the chrome, measure the contracts, file specific offenders.
+
+**What holds (praise, earned):** the **44px app-header baseline is exact on all
+12 apps** (off-by 0.0 everywhere). **Settings → AI** and **Bookmarks** are clean,
+on-system, well-spaced. **Tasks** and the **dashboard** read well.
+
+**What doesn't** — four findings below (F-304 the systemic one).
+
+### F-304 — text inputs and buttons don't share a control height (whole fleet)
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** fleet (notes/tasks/books/whiteboard/files + others)   **status:** triaged — Files + Contacts-compose + Whiteboard ✅ (baseline 29→25, 2026-06-30), fleet ladder open
+- **what I was trying to do:** check that a text field sitting next to a button lines up — the thing that's been bugging Mira.
+- **what happened:** measured the first input vs the first button in each surface — they almost never match. **Books** input=22px next to a 32px button (10px off). **Notes / Tasks / Whiteboard** input=22 vs button=26. **Files** has *three* heights in one toolbar row: input=23, select=24, button=26. Inputs render ~22px (an ad-hoc field) while `.bs-btn` is 26–32px, so any input-beside-button row steps.
+- **what I expected:** one control height. A field, a select, and a button on the same row are the same height — that's what the new `.bs-input` primitive is for.
+- **evidence:** notes.md control-height lines; tests/dogfood/.sessions/368-marcus-design-system-audit/14-files-01-full.png (search input vs "List" / "Sort by" controls), 24-books-01-full.png.
+- **triage:** _root cause is the design system isn't ENFORCED — `.bs-input` (DS-input-1) landed but only Calendar migrated; the rest still use bare inputs. The `check-control-faces.mjs` shrinking-baseline ratchet already exists; the fix is to migrate apps onto `.bs-input` and shrink the baseline._
+- **resolution (Files slice, 2026-06-30):** shell branch `fix/f304-files-control-faces` (313ff75). Files migrated: toolbar search wrapper → `.bs-input--sm` (field now 24px, pixel-exact with the sort/view controls — the 3-heights-in-one-row offender), bulk-rename + smart-folder dialogs → `.bs-input` (md), inline row rename → `.bs-input--sm` + accent-border delta; per-app box CSS deleted. Baseline 29 → 27 (dropped dialogs.tsx + content-list.tsx). Verified by dogfood session **369** (search field / `.bs-input` / toolbar button all 24px)._
+- **resolution (round 2, 2026-06-30):** shell branch `polish/r2-books-contacts-whiteboard` (8099fb9, stacked on the Files branch). **Contacts** compose field → `.bs-input` (md; input now == the dialog button at 32px) and **Whiteboard** board-name rename → `.bs-input--sm` (24px); per-app box CSS deleted, both files dropped from the baseline (**27 → 25**). Verified by dogfood session **370**. **Remaining: 25 baselined files across ~15 apps** (agent, automations, browser, chat, contacts[detail/list], database, form-designer, graph, journal, mailbox, notes, preview, theme-editor) — same mechanical migration, ratchet-gated; a few carry legitimate exceptions (borderless title inputs, composite search wrappers) that stay baselined by design. Continue per prioritization._
+
+### F-305 — Books shows two empty states at once
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** books   **status:** ✅ done (2026-06-30)
+- **what happened:** on an empty library the **sidebar** shows a "No books yet / Import a PDF or EPUB…" block with a full-width primary **"Import a book"** button, and at the same time the **center** shows a separate shared hero "Nothing to read yet / Import a book from the library to start reading" — with *no* action. Two empty states, two messages, and the CTA is split off from the prominent surface.
+- **what I expected:** one empty state. The prominent center hero carries the single primary action; the sidebar doesn't duplicate it.
+- **evidence:** tests/dogfood/.sessions/368-marcus-design-system-audit/24-books-01-full.png
+- **triage:** _design — collapse to one empty state (hero owns the CTA), or suppress the center hero while the library panel's empty block is showing._
+- **resolution (2026-06-30):** shell branch `polish/r2-books-contacts-whiteboard` (8099fb9). The prominent reader-pane hero now carries the single "Import a book" CTA (new `ReaderNotice` `onImport` prop); the sidebar empty block is a quiet "No books yet" note with its redundant primary button removed (Import also stays in the header menu). Verified by dogfood session **370** (1 hero CTA, 0 sidebar CTA; screenshot `01-books-empty-full.png`)._
+
+### F-306 — Automations & Mailbox headers break the shared chrome contract
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** automations / mailbox   **status:** wontfix — by-design (2026-06-30)
+- **what happened:** **Automations** header has the title floating with **no back/forward nav and nothing on the right at all** — no object ⋯ menu (the contract says ⋯ is the last/rightmost element of every header). **Mailbox** likewise has no nav arrows, so its title starts at a different x (~88px) than the rest of the fleet (~150px, after the `‹ ›` nav). Every other app I swept (Notes/Tasks/Files/Bookmarks/Contacts/Books) carries nav-then-title and a trailing ⋯.
+- **what I expected:** identical header skeleton everywhere — nav on the left, content actions then the ⋯ object menu last on the right.
+- **evidence:** tests/dogfood/.sessions/368-marcus-design-system-audit/34-automations-02-header.png, 33-automations-01-full.png, 37-mailbox-02-header.png, 36-mailbox-01-full.png
+- **triage:** _design/bug — align both to the SDK `.app-header` left/right groups + the ⋯-last rule (per CLAUDE.md header conventions)._
+- **resolution (2026-06-30): WONTFIX — by-design.** Re-examined the source on the fix pass: Automations' empty `app-header__right` is deliberate and **test-asserted** (`app.test.tsx`: "renders the app-header with NO trailing object ⋯") — its comment notes "a permanently-disabled ⋯ reads as broken" since no Automations surface has a header *object* to act on (actions live on rows / the visible toolbar). Mailbox's right group is simply empty in the no-account state (nothing to compose yet). The title-x difference vs Notes/Files is because those apps carry nav-history `‹ ›` arrows and Automations/Mailbox don't — also legitimate. The ⋯-last contract is about *ordering when a ⋯ exists*, not a requirement that every header have one. No fix; the verify-before-patch pass caught this before "fixing" intentional behavior._
+
+### F-307 — Contacts empty state points at a list that isn't there
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** contacts   **status:** wontfix — mostly harness artifact (2026-06-30)
+- **what happened:** with no person selected the surface shows a centered hero "No contact selected / Choose a person from the list, or create a new contact" — but no people list is visible (empty/collapsed) and there's no create action in the hero; the only "create" is the header `+`. So it tells me to pick from a list I can't see and offers no way forward from the hero itself.
+- **what I expected:** when there are no contacts, the hero says so and offers a primary "New contact" action (matching Books/Mailbox, which put the CTA in the hero).
+- **evidence:** tests/dogfood/.sessions/368-marcus-design-system-audit/21-contacts-01-full.png
+- **triage:** _design — give the no-contacts hero a primary create action and reconcile the copy with whether a list is shown._
+- **resolution (2026-06-30): WONTFIX — mostly a harness artifact.** Re-examined the source: the Contacts **list panel already renders an `EmptyState` with a primary "New contact" CTA** (`person-list.tsx`, `data-testid="contacts-empty-new"`) when there are zero people. The "blank list + centered placeholder" I captured was the generic-sweep collapsing the list panel (a known harness limitation — see [[dogfood-inspector-navigation]]), not a product state. The "No contact selected" centered placeholder is the correct two-pane behavior when a populated list has no selection. Residual nit (the detail placeholder copy says "choose from the list" even when the list is empty) is minor and low-value; left unfixed. No code change._
+
 ## Iteration-chores retrospective — 2-day review sweep (2026-06-30)
 
 Ran `/iteration-chores` over the last 2 days of merged work (shell PRs #14–#46:
