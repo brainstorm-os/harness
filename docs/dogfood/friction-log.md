@@ -27,6 +27,25 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Iteration-chores retrospective — 2-day review sweep (2026-06-30)
+
+Ran `/iteration-chores` over the last 2 days of merged work (shell PRs #14–#46:
+read-only lock fleet, shared `<EmptyState>`/`<SelectMenu>`/`<LockButton>`,
+dictionary-editor menu migration, settings frost-in perf). Security ✅ (no new
+IPC/capability/dep surface; lock is advisory-by-design), pentest ✅ (no
+exploitable findings), performance ✅ (all size budgets pass), memory-leak ✅
+(lock fleet *reduces* lifetime surface). Code review surfaced one real class of
+bug — partial lock enforcement (F-303). Design review flagged nice-to-fix nits
+(emoji-as-icons now fleet-wide via the shared inline toolbar; ColorMenu/OverflowMenu
+in that toolbar still bespoke — pending the fancy-menus migration; LockButton
+double tooltip).
+
+### F-303 — read-only lock left secondary write paths editable (database/bookmarks/code-editor)
+- **source:** iteration-chores code review (not a dogfood session)   **kind:** bug   **app:** Database / Bookmarks / Code-editor   **status:** ✅ done (2026-06-30)
+- **what happened:** the Lock-2 rollout gated each app's *primary* surface but missed *secondary* ones, so a record showing "locked" could still be edited: **database** — inspector Properties tab, cover, icon, and board/calendar/timeline drag all persisted on a locked record (only grid cells + title rename were gated; the plan's "cells read-only across every view" over-claimed); **bookmarks** — cover button + full properties panel stayed editable; **code-editor** — a locked file was still renamable/deletable via the ⋯ menu.
+- **what I expected:** a locked object is read-only on every surface.
+- **resolution (developer, 2026-06-30):** shell PR #47 (`83ac38d`). Database routes cover/icon/inspector + drag through a new exported `isRecordLocked()` and passes `onEdit: undefined` to `InspectorProperties` (read-only paint); bookmarks gate the cover button + OR `locked` into every panel row; code-editor extracts `isCodeFileEditable()` gating rename/delete + defense-in-depth guards. Lock stays an advisory affordance (the entities-service write is still capability-gated). Tests: `isCodeFileEditable` matrix + bookmark-panel-locked + new `inspector-properties` read-only test. typecheck (packages+apps) + lint clean; affected app suites green. Tracked as plan **Lock-4**.
+
 ## Session 362 — app consistency + functionality loop (2026-06-29)
 
 Functionality: re-ran the deep-CRUD verify (342) — create works in Notes, Tasks,
