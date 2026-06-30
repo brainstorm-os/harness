@@ -1303,6 +1303,14 @@ User feature (2026-06-28): *"lock should be present in all apps where possible, 
 
 ---
 
+## Shared control-face primitive (design-system enforcement)
+
+User feedback (2026-06-30): *"we have a design system, so [an input not matching the button beside it] should not happen."* Right — the failure (Calendar New-event date field taller than the time `.bs-select` next to it) wasn't a weak polish pass; it was that the design system shipped a control-height **scale** (`--control-height-*`) and button/select faces (`.bs-btn`/`.bs-select`) but **no input face** and **no enforcement**, so apps hand-rolled `<input>` boxes with padding-based heights that drift. The fix makes the system *prevent* the drift, not just describe it. Logged as **F-304**.
+
+- ✅ DS-input-1 — **`.bs-input` primitive + ratchet + Calendar migration** *(shell branch `feat/sdk-control-face-primitive`, 2026-06-30)*. **Primitive:** `.bs-input` in `@brainstorm/sdk/app-theme.css` — the text-field counterpart to `.bs-btn`/`.bs-select`, on the same `--control-height-*` scale (`--sm`/`--lg`/`--multiline`, placeholder/hover/focus/disabled), for text inputs, `<textarea>`, and field-trigger buttons (e.g. a date picker). A control's height comes from the scale, never hand-rolled padding; apps supply only layout deltas. **Enforcement:** `tools/check-control-faces.mjs` (in `bun run lint`/`lint:apps`) — a grep-grade shrinking-baseline ratchet (same shape as `check-app-reactivity.mjs`) that fails when a non-baselined app file gains a native `<input>`/`<textarea>`/`<select>` without a face class; **29 pre-existing offender files baselined** for later migration. **Migration (proof):** Calendar's date trigger + title/location/description/search/attendee/caldav inputs all moved onto `.bs-input` (date field now lines up pixel-exact with the time select — the reported bug); title row swatch bumped to `--lg` to match the title input. Documented in [apps/09-shared-sdk-catalog.md](apps/09-shared-sdk-catalog.md) → "Control faces". typecheck (apps) + calendar build + 18 calendar tests + css-token/control-face/biome checks clean. **Remaining (DS-input-2):** migrate the 29 baselined apps' inputs onto `.bs-input` (baseline shrinks to zero → absolute ban). **Gate: none.**
+
+---
+
 ## Open questions that gate work
 
 Resolving these is the precondition for the work they gate (full ledger: [reference/11-open-questions.md](reference/11-open-questions.md)).
