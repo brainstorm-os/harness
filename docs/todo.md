@@ -1,25 +1,9 @@
-The one-line difference
+I've spent a lot of time in note/PKM tools, and the thing that always got me is that they're one big editor with plugins — a single document model everything has to extend. Every time I wanted a new kind of thing, it had to become a first-class concept in the core, and the core just kept growing.
 
-  Notion, Obsidian, and Anytype each nailed one axis. Brainstorm is the only one combining all three: local-first + encrypted data, apps that share one typed graph through an open standard, and AI agents as governed first-class citizens. None of the three can add the missing axes without rebuilding from the data model up.
+So I tried the opposite. This is a desktop shell that knows nothing about meaning — there's no built-in "page" or "task" or "note". It just hosts apps: launches them, gives them a window, persists and syncs their state, and gets out of the way. The actual concepts live inside small sandboxed apps, and they talk to each other through Block Protocol instead of sharing internals.
 
-  Head-to-head
+Right now there are about 20 of these apps sharing one SDK — notes, a database, files, a PDF viewer, calendar, a graph view, code editor, browser, and so on. Everything is local-first: each doc is a Yjs CRDT, offline works, and sync is something you add rather than something you depend on. There's end-to-end encrypted sync across your own devices over a relay that never sees plaintext. 
 
-  vs. Notion — Notion is cloud-first, account-required, and its AI is a chat bolt-on with no user control over what data the model sees. Brainstorm is local-first and end-to-end encrypted, and
-  agents act through a capability-gated sandbox on data you own. Notion can't match this without re-architecting auth + storage; their data model assumes cloud routing.
+It's single-user for now; sharing with other people is the next big piece. Builds for macOS, Windows, and Linux are on the Releases page.
 
-  vs. Obsidian — Obsidian got local-first right but is single-user markdown + plugins with no shared schema. Each plugin is its own island; there's no typed entity graph two plugins agree on.
-  Brainstorm's apps share one graph natively via Block Protocol, plus real multi-device CRDT sync (Yjs) and governed agents.
-
-  vs. Anytype (your own house) — closest peer: local-first, encrypted, object-graph. Brainstorm's two deltas are (1) apps as first-class composable units, not an object model with views — a real
-  sandboxed-app platform with an SDK and capability ledger, and (2) agent governance built into the foundation — the same ledger that isolates apps lets agents act on your private graph with a scoped, auditable, revocable trail. Anytype would have to add a process/capability model it doesn't have today.
-
-  The moat
-
-  The doc states it as "ecosystem lock-in without data lock-in" — three layers:
-
-  1. Agent governance as infrastructure, not a feature. The capability ledger isn't a permissions UI bolted on later — it's the same primitive that sandboxes apps. Agents are just another
-  principal with scoped, revocable, audited caps. Incumbents treat agents as a UI layer; matching this means rebuilding their trust model.
-  2. Interop via an open standard (Block Protocol), not a proprietary schema. Switching the shell is cheap for users (data is portable) — but building a third Block-Protocol app is expensive, so
-  apps accumulate around the platform. Stickiness lives in the ecosystem, not in trapping your data.
-  3. A segment incumbents structurally can't serve: orgs that can't send operational data to a third-party model — regulated, sovereignty-sensitive, IP-paranoid teams that still want agents doing
-  real work. The claim no cloud incumbent can make: encrypted data + on-device agents + capability audit trail.
+Mostly I built it to get out of my own way, and at this point it more or less builds itself. The part I'm least sure about is the central bet: shoving all the meaning out of the shell and into apps that speak a shared protocol. I'd genuinely like to know whether that holds up or whether it just moves the coupling somewhere I can't see yet.
