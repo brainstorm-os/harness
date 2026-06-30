@@ -27,6 +27,48 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## Session 368 — Marcus: cross-app design-system audit (2026-06-30)
+
+Mira had been collecting visual snags (paddings, off-system controls, layouts
+that don't hold), so Marcus did a **measured** sweep across 12 apps + the shell:
+header baselines, input-vs-button control heights, inspector padding, empty/detail
+layouts. Method: crop the chrome, measure the contracts, file specific offenders.
+
+**What holds (praise, earned):** the **44px app-header baseline is exact on all
+12 apps** (off-by 0.0 everywhere). **Settings → AI** and **Bookmarks** are clean,
+on-system, well-spaced. **Tasks** and the **dashboard** read well.
+
+**What doesn't** — four findings below (F-304 the systemic one).
+
+### F-304 — text inputs and buttons don't share a control height (whole fleet)
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** fleet (notes/tasks/books/whiteboard/files + others)   **status:** open
+- **what I was trying to do:** check that a text field sitting next to a button lines up — the thing that's been bugging Mira.
+- **what happened:** measured the first input vs the first button in each surface — they almost never match. **Books** input=22px next to a 32px button (10px off). **Notes / Tasks / Whiteboard** input=22 vs button=26. **Files** has *three* heights in one toolbar row: input=23, select=24, button=26. Inputs render ~22px (an ad-hoc field) while `.bs-btn` is 26–32px, so any input-beside-button row steps.
+- **what I expected:** one control height. A field, a select, and a button on the same row are the same height — that's what the new `.bs-input` primitive is for.
+- **evidence:** notes.md control-height lines; tests/dogfood/.sessions/368-marcus-design-system-audit/14-files-01-full.png (search input vs "List" / "Sort by" controls), 24-books-01-full.png.
+- **triage:** _root cause is the design system isn't ENFORCED — `.bs-input` (DS-input-1) landed but only Calendar migrated; the rest still use bare inputs. This is the recurring "adjacent control heights" complaint. Likely a DS-input migration ladder across the fleet + a CI ratchet, not a per-app polish pass. Surface for prioritization._
+
+### F-305 — Books shows two empty states at once
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** books   **status:** open
+- **what happened:** on an empty library the **sidebar** shows a "No books yet / Import a PDF or EPUB…" block with a full-width primary **"Import a book"** button, and at the same time the **center** shows a separate shared hero "Nothing to read yet / Import a book from the library to start reading" — with *no* action. Two empty states, two messages, and the CTA is split off from the prominent surface.
+- **what I expected:** one empty state. The prominent center hero carries the single primary action; the sidebar doesn't duplicate it.
+- **evidence:** tests/dogfood/.sessions/368-marcus-design-system-audit/24-books-01-full.png
+- **triage:** _design — collapse to one empty state (hero owns the CTA), or suppress the center hero while the library panel's empty block is showing._
+
+### F-306 — Automations & Mailbox headers break the shared chrome contract
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** automations / mailbox   **status:** open
+- **what happened:** **Automations** header has the title floating with **no back/forward nav and nothing on the right at all** — no object ⋯ menu (the contract says ⋯ is the last/rightmost element of every header). **Mailbox** likewise has no nav arrows, so its title starts at a different x (~88px) than the rest of the fleet (~150px, after the `‹ ›` nav). Every other app I swept (Notes/Tasks/Files/Bookmarks/Contacts/Books) carries nav-then-title and a trailing ⋯.
+- **what I expected:** identical header skeleton everywhere — nav on the left, content actions then the ⋯ object menu last on the right.
+- **evidence:** tests/dogfood/.sessions/368-marcus-design-system-audit/34-automations-02-header.png, 33-automations-01-full.png, 37-mailbox-02-header.png, 36-mailbox-01-full.png
+- **triage:** _design/bug — align both to the SDK `.app-header` left/right groups + the ⋯-last rule (per CLAUDE.md header conventions)._
+
+### F-307 — Contacts empty state points at a list that isn't there
+- **session:** 368-marcus-design-system-audit   **kind:** design   **app:** contacts   **status:** open
+- **what happened:** with no person selected the surface shows a centered hero "No contact selected / Choose a person from the list, or create a new contact" — but no people list is visible (empty/collapsed) and there's no create action in the hero; the only "create" is the header `+`. So it tells me to pick from a list I can't see and offers no way forward from the hero itself.
+- **what I expected:** when there are no contacts, the hero says so and offers a primary "New contact" action (matching Books/Mailbox, which put the CTA in the hero).
+- **evidence:** tests/dogfood/.sessions/368-marcus-design-system-audit/21-contacts-01-full.png
+- **triage:** _design — give the no-contacts hero a primary create action and reconcile the copy with whether a list is shown._
+
 ## Iteration-chores retrospective — 2-day review sweep (2026-06-30)
 
 Ran `/iteration-chores` over the last 2 days of merged work (shell PRs #14–#46:
