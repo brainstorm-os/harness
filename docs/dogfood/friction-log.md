@@ -27,6 +27,25 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+## User-reported while dogfooding the real shell (2026-06-30)
+
+Two issues hit directly in the running app (screenshots in the chat), fixed the
+same turn.
+
+### F-308 — PDF preview opens clipped / doesn't fit or respond to the pane
+- **source:** user (real-shell dogfood)   **kind:** bug   **app:** preview   **status:** ✅ done (2026-06-30)
+- **what happened:** opening a wide slide deck (`brainstorm-deck.pdf`) in Preview rendered the page at 100% — wider than the pane — so the left edge ("A desktop OS for…") was cut off, and resizing the window didn't reflow.
+- **what I expected:** the page fits the pane on open and re-fits as the pane resizes.
+- **evidence:** user screenshot (Preview, brainstorm-deck.pdf, "A desktop OS" clipped at left).
+- **resolution:** shell branch `fix/preview-pdf-fit`. The viewer initialised `zoom=1` but only applied fit-to-width when `zoom<=0` (an "unset" sentinel that never triggered). Replaced with a `userZoomed` flag: fit-to-page on load AND on every resize until the user picks an explicit zoom; the Fit control returns to responsive. `fitScale` already caps at 100% (no upscaling). typecheck + 55 preview tests green.
+
+### F-309 — Database inspector properties look unpolished + show a Collections block
+- **source:** user (real-shell dogfood)   **kind:** design   **app:** database (+ shared inspector)   **status:** ✅ done (2026-06-30)
+- **what happened:** the entity inspector read as an airy form, mixed a "COLLECTIONS" membership block into the Properties tab, and (for a file-backed DesignDoc) the fields weren't editable.
+- **what I expected:** a dense, polished property sheet consistent across apps, no collections block, with vault properties editable (file-derived fields may stay read-only).
+- **evidence:** user screenshot (inspector for "70 — Encrypted attachment…" with Path/Slug/Category + COLLECTIONS).
+- **resolution:** shell branch `fix/inspector-consistency`. (1) Dropped the COLLECTIONS section from the Database inspector — only the database showed one; membership stays managed via the object-menu "Add to collection"; deleted the now-dead `inspector-collections` renderer + test. (2) Tightened the **shared** `.bs-props` row padding (space-2 → space-1 vertical), so every app's inspector reads as a dense property sheet — the cross-app consistency win lands in one place since all apps render through the shared panel. (3) Editability confirmed per the agreed rule: vault properties edit through the shared cells; file-derived/system fields keep read-only paint. Verified by dogfood session **371** (0 collections sections, rows 32px). biome + db typecheck + 735 db/sdk tests. **Remaining (tracked):** a deeper cross-app polish pass on the per-app inspector *wrappers* (each app still wraps the shared rows in its own chrome) — the shared-panel change covers the row rhythm everywhere; bespoke wrapper differences are the next round.
+
 ## Session 368 — Marcus: cross-app design-system audit (2026-06-30)
 
 Mira had been collecting visual snags (paddings, off-system controls, layouts
