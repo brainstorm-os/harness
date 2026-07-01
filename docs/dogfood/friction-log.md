@@ -27,6 +27,54 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-321 — Automations greets me with "No device hosts automations yet — claim it" — I don't know what a device host is
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** automations   **status:** open
+- **what I was trying to do:** open Automations to set up a reminder.
+- **what happened:** the first thing in the app is an info banner in infra jargon — "No device hosts automations yet — claim it to run schedules here." with a "Claim" button. I had to reverse-engineer that it means "schedules run on one of your devices; make it this one."
+- **what I expected:** plain-language copy, e.g. "Schedules need one of your devices to run on. Use this device" — or just claim automatically on first workflow save and say so.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/14-app-automations.png
+- **triage:** _(open)_
+
+### F-320 — Graph nodes are labelled "ent_mr15" and "ote"
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** graph   **status:** open
+- **what I was trying to do:** look at my vault's graph.
+- **what happened:** several visible node labels are raw id fragments ("ent_mr15" on ~7 nodes) and one is "ote" — a clipped "Note". Whatever these entities are, the graph shows me internals, not names.
+- **what I expected:** a human title on every node (derived title or type name + ordinal for untitled), and labels that truncate with an ellipsis, never by dropping leading characters.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/06-app-graph.png
+- **triage:** _(open — related: session-336 ruled raw ids for title-less entities "as-is"; this is the visible cost of that call. The "ote" clip is a separate label-layout bug.)_
+
+### F-319 — the Agent's answers show raw markdown (`###`, `**`) and raw node ids in the transcript
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** agent   **status:** open
+- **what I was trying to do:** re-read an agent conversation about my Q3 plan.
+- **what happened:** the stored transcript renders the reply as literal `### Summary of Northbound Q3 Plan`, `**Documents:**` — and cites documents as `[n_mqz1aegg_2qmlcl] Northbound Q3 plan 32834`, a raw node id in my face.
+- **what I expected:** formatted markdown and entity references rendered as clickable titles — i.e. what F-312 says was fixed. Either the fix doesn't cover historical/stored messages in the transcript view, or it regressed.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/12-app-agent.png
+- **triage:** _(open — verify against F-312's fix (commit f19ed23): fresh build, fresh boot, transcript still raw. Check whether markdown rendering applies only to newly streamed messages.)_
+
+### F-318 — the Files vault browser is a wall of "(untitled) Message" rows
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** files   **status:** open
+- **what I was trying to do:** browse my vault in Files.
+- **what happened:** the first full screen of "Vault" is ~20 identical "(untitled) · Message · Today" rows — chat messages surfaced as top-level untitled items, burying my real documents. Database's "All vault items" (153) has the same pollution (36 Messages).
+- **what I expected:** child/derived entities (chat messages, similar plumbing types) either excluded from the universal browsers by default or given derived titles (first line of the message) — and never sorted above my named documents.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/08-app-files.png
+- **triage:** _(open)_
+
+### F-317 — Preview's empty state sits far left of centre, and the Details panel opens on the LEFT over blurred content
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** preview   **status:** open
+- **what I was trying to do:** open Preview, then toggle the right panel.
+- **what happened:** (a) the "Nothing to preview" empty state is centred on x≈200 of an 1100px window — it hugs the left edge; (b) the right-panel toggle opens a floating "Details" card pinned to the LEFT side, overlapping and blurring the empty state under it. Every other app docks the inspector on the right.
+- **what I expected:** empty state centred in the pane; Details as a right-docked panel like the rest of the fleet.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/14-app-preview.png, 19-app-preview.png
+- **triage:** _(open — likely a regression from the 9.20.12 React conversion; session-368 audit also measured Files "inspector w=6px" — same family of panel-layout suspects.)_
+
+### F-316 — multi-day calendar events render as per-day pills with the title clipped mid-word ("ipeline ready", "peline ready")
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** calendar   **status:** open
+- **what I was trying to do:** glance at July in Month view.
+- **what happened:** one "Pipeline ready" event spanning many days renders a pill in every day cell, each showing the title clipped by a character offset — "ipeline ready", "peline ready" — and the first cell shows it doubled ("Pipeline readyPipe…"). Fifteen day cells of near-identical broken pills.
+- **what I expected:** a single continuous spanning bar with the title drawn once (or per-week), leading characters never clipped.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/04-app-calendar.png
+- **triage:** _(open)_
+
 ### F-315 — the Conversation settings dialog looks off — default-looking controls + bad paddings
 - **source:** user (real-shell dogfood, Agent → Conversation settings)   **kind:** design   **app:** agent   **status:** ✅ done (2026-07-01)
 - **what I was trying to do:** open the Agent's per-conversation settings.
