@@ -1,9 +1,21 @@
-I've spent a lot of time in note/PKM tools, and the thing that always got me is that they're one big editor with plugins — a single document model everything has to extend. Every time I wanted a new kind of thing, it had to become a first-class concept in the core, and the core just kept growing.
+Hi HN, I've been building Brainstorm, a knowledge-management tool modeled as a small desktop operating system rather than a single monolithic app.
 
-So I tried the opposite. This is a desktop shell that knows nothing about meaning — there's no built-in "page" or "task" or "note". It just hosts apps: launches them, gives them a window, persists and syncs their state, and gets out of the way. The actual concepts live inside small sandboxed apps, and they talk to each other through Block Protocol instead of sharing internals.
+The core idea: instead of one editor that owns your notes, Brainstorm is an Electron shell that hosts sandboxed apps - Notes, Database, Calendar, Graph, Whiteboard, Browser, Mailbox, and more - that all read and write the same local data. Apps are isolated from each other behind a capability ledger and an IPC broker, so a misbehaving or untrusted app can't reach data it wasn't granted.
 
-Right now there are about 20 of these apps sharing one SDK — notes, a database, files, a PDF viewer, calendar, a graph view, code editor, browser, and so on. Everything is local-first: each doc is a Yjs CRDT, offline works, and sync is something you add rather than something you depend on. There's end-to-end encrypted sync across your own devices over a relay that never sees plaintext. 
+What it's built on:
 
-It's single-user for now; sharing with other people is the next big piece. Builds for macOS, Windows, and Linux are on the Releases page.
+- Block Protocol for data interop, so blocks and entity types are portable across apps instead of locked into one tool.
+- Yjs (CRDTs) for the data layer, so editing is conflict-free and ready for multi-device sync.
+- Lexical for rich text.
 
-Mostly I built it to get out of my own way, and at this point it more or less builds itself. The part I'm least sure about is the central bet: shoving all the meaning out of the shell and into apps that speak a shared protocol. I'd genuinely like to know whether that holds up or whether it just moves the coupling somewhere I can't see yet.
+Everything is local-first. Your vault is four SQLite databases plus a snapshot+tail file format for the CRDT state, all on your own disk. There's no server in the loop for normal use, and the identity keys never leave the machine.
+
+A few things I'm happy with:
+
+- The security model is fail-closed: any error in a capability check returns unavailable, never access.
+- Every app is a real React app over a shared SDK and design system, so the whole thing feels like one product rather than a pile of plugins.
+- It's signed and notarized on macOS, Windows, and Linux, with in-app auto-update.
+
+It's a public beta (v0.1.5) - downloads are on GitHub Releases. Still rough in places, and I'd genuinely like feedback on the app-sandbox model and whether the OS framing makes sense to people, or just adds friction.
+
+Happy to answer anything about the architecture, the CRDT storage format, or the capability/IPC design.
