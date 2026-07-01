@@ -34,8 +34,8 @@ import { findRelayImportViolations, isRelayModulePath } from "./tools/relay-nobl
 import { listIterations, listOpenQuestions } from "./tools/search.ts";
 import { checkSize } from "./tools/size.ts";
 import { diffBaseline, snapshotStage } from "./tools/stage-boundary-audit.ts";
-import { auditUntestedIterations } from "./tools/untested-iterations.ts";
 import { baselineFor } from "./tools/stage-boundary-baselines.ts";
+import { auditUntestedIterations } from "./tools/untested-iterations.ts";
 import { registerVisualTools } from "./tools/visual.ts";
 import {
 	appendImplementationLogEntry,

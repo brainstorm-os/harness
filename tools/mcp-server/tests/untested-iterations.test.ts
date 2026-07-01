@@ -24,7 +24,9 @@ function log(body: string): LogEntryLike {
 
 describe("findUntestedIterations", () => {
 	it("passes a Done iteration whose log narrative mentions tests", () => {
-		const stages = [{ stageId: "9", iterations: [iter({ id: "9.1", status: IterationStatus.Done })] }];
+		const stages = [
+			{ stageId: "9", iterations: [iter({ id: "9.1", status: IterationStatus.Done })] },
+		];
 		const logs = new Map([["9.1", log("Shipped the grid; added a vitest round-trip suite.")]]);
 		const report = findUntestedIterations(stages, logs);
 		expect(report.ok).toBe(true);
@@ -33,7 +35,9 @@ describe("findUntestedIterations", () => {
 	});
 
 	it("flags a Done code iteration whose log entry mentions no test", () => {
-		const stages = [{ stageId: "9", iterations: [iter({ id: "9.2", status: IterationStatus.Done })] }];
+		const stages = [
+			{ stageId: "9", iterations: [iter({ id: "9.2", status: IterationStatus.Done })] },
+		];
 		const logs = new Map([["9.2", log("Refined `apps/notes/src/header.tsx` chrome and spacing.")]]);
 		const report = findUntestedIterations(stages, logs);
 		expect(report.ok).toBe(false);
@@ -46,7 +50,9 @@ describe("findUntestedIterations", () => {
 		const stages = [
 			{
 				stageId: "9",
-				iterations: [iter({ id: "9.3", status: IterationStatus.Done, body: "tweak packages/tokens/src/themes.ts" })],
+				iterations: [
+					iter({ id: "9.3", status: IterationStatus.Done, body: "tweak packages/tokens/src/themes.ts" }),
+				],
 			},
 		];
 		const report = findUntestedIterations(stages, new Map());
@@ -58,7 +64,9 @@ describe("findUntestedIterations", () => {
 		const stages = [
 			{
 				stageId: "9",
-				iterations: [iter({ id: "9.3b", status: IterationStatus.Done, body: "resolve OQ-34; reconcile the plan" })],
+				iterations: [
+					iter({ id: "9.3b", status: IterationStatus.Done, body: "resolve OQ-34; reconcile the plan" }),
+				],
 			},
 		];
 		const report = findUntestedIterations(stages, new Map());
@@ -71,7 +79,9 @@ describe("findUntestedIterations", () => {
 		const stages = [
 			{
 				stageId: "9",
-				iterations: [iter({ id: "9.4", status: IterationStatus.Done, body: "add a Playwright assertion" })],
+				iterations: [
+					iter({ id: "9.4", status: IterationStatus.Done, body: "add a Playwright assertion" }),
+				],
 			},
 		];
 		const report = findUntestedIterations(stages, new Map());
@@ -83,18 +93,26 @@ describe("findUntestedIterations", () => {
 		const stages = [
 			{
 				stageId: "9",
-				iterations: [iter({ id: "9.5", status: IterationStatus.Pending, body: "scaffold apps/x/src/index.ts" })],
+				iterations: [
+					iter({ id: "9.5", status: IterationStatus.Pending, body: "scaffold apps/x/src/index.ts" }),
+				],
 			},
 		];
 		expect(findUntestedIterations(stages, new Map()).considered).toBe(0);
-		const widened = findUntestedIterations(stages, new Map(), { statuses: [IterationStatus.Pending] });
+		const widened = findUntestedIterations(stages, new Map(), {
+			statuses: [IterationStatus.Pending],
+		});
 		expect(widened.considered).toBe(1);
 		expect(widened.flagged).toHaveLength(1);
 	});
 
 	it("does not false-positive on 'latest' / 'fastest' substrings", () => {
-		const stages = [{ stageId: "9", iterations: [iter({ id: "9.6", status: IterationStatus.Done })] }];
-		const logs = new Map([["9.6", log("Bumped `packages/shell` to the latest deps for the fastest startup.")]]);
+		const stages = [
+			{ stageId: "9", iterations: [iter({ id: "9.6", status: IterationStatus.Done })] },
+		];
+		const logs = new Map([
+			["9.6", log("Bumped `packages/shell` to the latest deps for the fastest startup.")],
+		]);
 		expect(findUntestedIterations(stages, logs).flagged).toHaveLength(1);
 	});
 });
