@@ -27,6 +27,25 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-314 — editing a status/select cell drops me into a plain text field, no value picker
+- **source:** user (real-shell dogfood, Database grid)   **kind:** design   **app:** database   **status:** 🚧 in progress
+- **what I was trying to do:** edit a status/select-style cell in the grid.
+- **what happened:** the cell became a bare free-text input — I had to retype the value with no list of the options already in use.
+- **what I expected:** a value picker — type to filter **and** select from the values already in that column (a combobox), the way a status field should work.
+- **triage (DS-cell-combobox-1):** the picker (`TagCell`) only fires for columns whose effective `PropertyDef` carries a `vocabulary` (catalog-backed). Inferred columns resolve to a `Pill`/plain-text editor (`effective-def.ts` deliberately never attaches a vocabulary). Fix = a real feature, not a CSS tweak: source the column's distinct existing values in the grid, thread them through `EditableCell` into a new combobox text editor (input + shared fancy-menu suggestions, free text still allowed). Tracked as its own plan iteration with tests; **does not** ship in the polish pass below.
+
+### F-313 — Database grid + Properties popover polish (hovers, padding, ellipsis, checkbox, action rows)
+- **source:** user (real-shell dogfood, Database)   **kind:** design   **app:** database   **status:** ✅ done (2026-07-01)
+- **what happened (five nits, one screenshot each):** (1) row + sidebar **hovers didn't follow the accent scheme** (neutral grey) and the cell under the cursor **overlaid a second hover tint** on the row, reading as a darker patch; (2) the grid carried **redundant inline padding** — table padding-inline *and* the row grip gutter *and* the cell padding stacked, pushing the first column 16px past the stage-header baseline; (3) long **text-cell values weren't ellipsized** — they hard-clipped; (4) the Properties popover **checkboxes were a bespoke red box**, not our shared checkbox; (5) the popover's **"Add column / rollup / formula" rows** were bare text, uneven height, with no separation from the list.
+- **triage / resolution (2026-07-01):**
+  - **Hover overlay:** `--hover` is translucent, so the editable cell button's own `:hover` painted a *second* `--hover` over the row's. Dropped the in-grid cell-button hover (the row hover is the affordance + the button fills the whole cell).
+  - **Hover scheme:** overrode `--hover` on the app `body` to a faint accent tint (`color-mix(--accent 7%)`, fainter than the ~12% accent-subtle SELECTED fill, derived from the injected `--accent` so it themes) — every `var(--hover)` site (rows, sidebar, popover/menu) now reads on-scheme from one place.
+  - **Padding:** removed `.dbv-grid__table` `padding-inline`; the row grip gutter (12px) + cell padding (8px) now sum to the 20px stage-header baseline, and rows go full-bleed.
+  - **Ellipsis:** the stretched value button (`flex:1`) lacked `min-width:0`, so it kept `min-width:auto` (= content width) and never shrank; added `min-width:0` (+ ellipsis on the editable title label).
+  - **Checkbox:** Properties visibility toggle now uses the shared `createCheckbox` (`@brainstorm/sdk/checkbox`); deleted the bespoke `.db-popover__column-toggle` paint CSS.
+  - **Action rows:** `buildPopoverAction` helper — leading Plus glyph + label on a 28px menu-row face, below a new `.db-popover__divider`. All three add-* rows go through it.
+  - **checks:** biome + css-tokens + database typecheck clean; 746 database tests green.
+
 ### F-312 — the Agent's replies show raw markdown (`###`, `**bold**`, lists) as literal text
 - **source:** user (real-shell dogfood, session 372)   **kind:** bug   **app:** agent   **status:** ✅ done (2026-06-30)
 - **what happened:** the model answers in markdown (headings, bold, bullet/numbered lists, inline code), but the Agent rendered the message body as raw text — so `### Summary`, `1. **Documents:**`, `- **Goals:**` all showed literally instead of as formatted blocks.
@@ -42,6 +61,14 @@ Newest sessions on top.
 - **evidence:** tests/dogfood/.sessions/372-agent-dynamic-context-qwen/04-reply-business-summary.png (fabricated clients) + the captured per-turn prompts (no retrieval block).
 - **triage / root cause:** two independent defects. (1) **Search NL bug** — the Agent feeds the *whole user turn* into `search.hybrid`, but `buildMatchExpression` ANDed **every** token (stopwords included), so a full sentence (`"what" AND "is" AND … AND "clients"*`) matched no document; with the semantic half gated off, hybrid degraded to lexical → 0 hits → ungrounded chat. The FTS index itself was fine (119 docs; a keyword probe returned hits). (2) **Retrieval self-pollution** — the just-asked question is persisted + indexed as a `Message/v1`, so once the AND query *did* match, it matched the conversation's own echo and outranked every real note (and the OR fallback never fired). Plus the model happily fabricated when ungrounded.
 - **resolution (Agent-grounding, 2026-06-30):** shell branch `feat/agent-vault-grounding`. (a) **`buildMatchExpression` NL fallback** (`search/search-indexer.ts`): the precise AND stays the primary path (launcher unchanged); on an empty AND match it retries as an **OR over content words** (small stopword set dropped), bm25-ranked — natural-language queries now return relevant hits. (b) **`excludeTypes`** added through the search stack (`SearchQuery` → indexer → service) so the Agent excludes its own Conversation/Message/Memory from retrieval and grounds on the user's content, not its transcript. (c) **Anti-fabrication guard** — a shared grounding clause appended to both agent system prompts: answer only from provided context, say "not in your vault" rather than invent. +tests (search-indexer NL/exclude, grounding-prompt). Re-dogfooded with Qwen (session 372): retrieval now injects real vault objects.
+
+### F-310 — the drag/reorder grip sticks to the row content in every list & table
+- **source:** user (real-shell dogfood)   **kind:** design   **app:** database + files (shared)   **status:** ✅ done (2026-06-30)
+- **what happened:** the hover-revealed reorder drag-handle (six-dot grip) crowds the row — it's pinned over the first cell with no gap, so it touches / overlaps the leading status glyph + title in the Database grid (and the icon/name in the Files list).
+- **what I expected:** the grip sits in a gutter to the LEFT of the content with breathing room, like every other product's row handle — it never overlaps what it's a handle for.
+- **evidence:** user screenshot (Database grid row, grip flush against the status circle + title). Repro + fix captured in dogfood session **372**.
+- **triage:** _root cause is the same class as F-304: the grip element + its spacing CSS were **re-implemented per surface** (`.dbv-grid__drag-grip` / `.content-row__drag-grip` — identical copy-pasted blocks), both `position:absolute; left:0` over the first cell with no reserved gutter, so the 16px grip overlapped content that starts at only ~8px of cell padding. No single place owned "the grip clears the content."_
+- **resolution (DS-grip-1, 2026-06-30):** shell branch `feat/sdk-control-face-primitive`. Extracted a shared **`.bs-drag-grip`** face into `@brainstorm/sdk/app-theme.css` (box / grab cursor / hidden→revealed transition / absolute pin), and migrated both surfaces onto it — each now reserves a real leading gutter so the grip parks **clear** of the first cell (the scroll containers clip overflow-x, so the gutter is reserved *inside* the row, not floated into negative space). Measured **4px gap** grip→content on both, no clipping; head/body/foot share `.dbv-grid__row` so the grid columns stay aligned. Plan rung **DS-grip-1**; catalog updated. typecheck (apps) + database/files build + css-token/control-face/biome clean.
 
 ## User-reported while dogfooding the real shell (2026-06-30)
 
