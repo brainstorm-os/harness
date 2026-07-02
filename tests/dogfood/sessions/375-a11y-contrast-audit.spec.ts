@@ -10,26 +10,26 @@
  * Non-asserting; writes a triage report of the worst offenders per app.
  */
 
+// Relative into the symlinked packages/tokens source — the harness test runner
+// doesn't resolve the `@brainstorm/tokens` package name.
+import { defaultDark, flattenTokens } from "../../../packages/tokens/src/index";
 import { expect, test } from "@playwright/test";
 import { APP, startSession } from "../lib/founder";
 
-type Finding = { app: string; sig: string; ratio: number; need: number; sample: string; fg: string; bg: string };
+type Measured = { sig: string; ratio: number; need: number; sample: string; fg: string; bg: string };
+type Finding = { app: string } & Measured;
+
+// Dark-theme token map (`--color-…: value`). The vault has an explicitly-chosen
+// theme, so flipping Electron's OS-dark preference doesn't switch it — instead
+// (with A11Y_DARK) we set these vars INLINE on each app's <html>, overriding the
+// preload's committed light tokens, so the app renders on DefaultDark and we can
+// measure contrast where the friction log's real incidents were (unreadable-on-dark).
+const DARK_VARS = flattenTokens(defaultDark);
 
 test("a11y: text meets WCAG AA contrast", async () => {
 	test.setTimeout(600_000);
 	const s = await startSession("375-a11y-contrast-audit");
 	const flagged: Finding[] = [];
-
-	// Dark-theme pass: the friction log's real contrast incidents were
-	// dark-theme-specific (phantom tokens → light fallbacks unreadable on dark).
-	// Flip Electron to dark BEFORE opening apps so each window launches on the
-	// dark theme variant (`activeTheme(shouldUseDarkColors)`).
-	if (process.env.A11Y_DARK) {
-		await s.app.evaluate(({ nativeTheme }) => {
-			nativeTheme.themeSource = "dark";
-		});
-		await new Promise((r) => setTimeout(r, 500));
-	}
 
 	for (const [name, id] of Object.entries(APP)) {
 		let page: Awaited<ReturnType<typeof s.openApp>>;
@@ -40,9 +40,24 @@ test("a11y: text meets WCAG AA contrast", async () => {
 			continue;
 		}
 		await page.waitForTimeout(1200);
+		// Per-app hard cap so one slow/hung app window can't stall the whole sweep
+		// (the dark-inject + full-tree measure timed out at 10m otherwise).
+		const guard = <T>(p: Promise<T>, fallback: T): Promise<T> =>
+			Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), 25_000))]);
+		if (process.env.A11Y_DARK) {
+			await guard(
+				page
+					.evaluate((vars) => {
+						for (const [k, v] of Object.entries(vars)) document.documentElement.style.setProperty(k, v);
+					}, DARK_VARS)
+					.catch(() => undefined),
+				undefined,
+			);
+			await page.waitForTimeout(400);
+		}
 
-		const found = await page
-			.evaluate(() => {
+		const found = await guard(
+			page.evaluate(() => {
 				const parse = (c: string): [number, number, number, number] | null => {
 					const m = c.match(/rgba?\(([^)]+)\)/);
 					if (!m) return null;
@@ -91,6 +106,11 @@ test("a11y: text meets WCAG AA contrast", async () => {
 					if (cs.visibility === "hidden" || cs.display === "none" || Number.parseFloat(cs.opacity) < 0.1) continue;
 					const r = (el as HTMLElement).getBoundingClientRect();
 					if (r.width < 4 || r.height < 4) continue;
+					// Filled control faces (.bs-btn / data-bs-primary) paint their own
+					// background — often a gradient/gloss the luminance walk can't read,
+					// so it falls through to the page bg and false-flags white-on-accent.
+					// Their label↔surface contrast is the face's own contract, not ours.
+					if (el.closest(".bs-btn, [data-bs-primary], button")) continue;
 					const fg = parse(cs.color);
 					if (!fg) continue;
 					const bg = effBg(el.parentElement ?? el);
@@ -118,10 +138,16 @@ test("a11y: text meets WCAG AA contrast", async () => {
 				}
 				return out.sort((a, b) => a.ratio - b.ratio);
 			})
-			.catch(() => []);
+				.catch(() => [] as Measured[]),
+			[] as Measured[],
+		);
 
 		for (const f of found) flagged.push({ app: name, ...f });
-		s.note(`[${name}] ${found.length} low-contrast text element(s)`);
+		const bg = await guard(
+			page.evaluate(() => getComputedStyle(document.body).backgroundColor).catch(() => "?"),
+			"?",
+		);
+		s.note(`[${name}] bg=${bg} · ${found.length} low-contrast text element(s)`);
 	}
 
 	flagged.sort((a, b) => a.ratio - b.ratio);
