@@ -28,52 +28,52 @@ Newest sessions on top.
 <!-- Entries land below this line, newest session first. -->
 
 ### F-321 — Automations greets me with "No device hosts automations yet — claim it" — I don't know what a device host is
-- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** automations   **status:** open
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** automations   **status:** ✅ done (2026-07-02)
 - **what I was trying to do:** open Automations to set up a reminder.
 - **what happened:** the first thing in the app is an info banner in infra jargon — "No device hosts automations yet — claim it to run schedules here." with a "Claim" button. I had to reverse-engineer that it means "schedules run on one of your devices; make it this one."
 - **what I expected:** plain-language copy, e.g. "Schedules need one of your devices to run on. Use this device" — or just claim automatically on first workflow save and say so.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/14-app-automations.png
-- **triage:** _(open)_
+- **triage / resolution (2026-07-02, branch `fix/dogfood-visual-audit`):** the whole `host.*` copy family in `apps/automations/src/i18n.ts` spoke scheduler jargon. Rewritten in plain device language: banner → "Schedules need one of your devices to run on.", button → "Use this device", plus takeover/status/failure variants. 4 exact-copy test assertions updated + a button-label assertion added; 153 automations tests green.
 
 ### F-320 — Graph nodes are labelled "ent_mr15" and "ote"
-- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** graph   **status:** open
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** graph   **status:** ✅ done (2026-07-02)
 - **what I was trying to do:** look at my vault's graph.
 - **what happened:** several visible node labels are raw id fragments ("ent_mr15" on ~7 nodes) and one is "ote" — a clipped "Note". Whatever these entities are, the graph shows me internals, not names.
 - **what I expected:** a human title on every node (derived title or type name + ordinal for untitled), and labels that truncate with an ellipsis, never by dropping leading characters.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/06-app-graph.png
-- **triage:** _(open — related: session-336 ruled raw ids for title-less entities "as-is"; this is the visible cost of that call. The "ote" clip is a separate label-layout bug.)_
+- **triage / resolution (2026-07-02, branch `fix/dogfood-visual-audit`):** two distinct verdicts. **(a) "ent_mr15" fixed** — `rawNodeLabel` fell back to `entity.id.slice(0, 8)`, and since ids are `ent_` + base36 timestamp, *every* title-less entity minted the same ~17h window collapses to the identical fragment — the 7 labels were 7 distinct title-less entities. Fallback is now a human caption `t("node.untitled")` = "{Type} (untitled)" via new shared `typeDisplayName()` (`@brainstorm/sdk/system-entities`); also killed the last raw-id paint in the LocalBadge ("(missing entity)"). This overturns session-336's "as-is" ruling. **(b) "ote" is not a clip** — pixel-measured: the label is centred exactly on its node, no ellipsis, and appears identically in session 340 on an older build; the vault genuinely contains an entity *named* "ote" (F-299-era first-chars-eaten residue). No leading-clip code path exists (both label layers truncate end-only); a regression test now pins the end-only invariant. Graph 463 + SDK 2390 tests green.
 
 ### F-319 — the Agent's answers show raw markdown (`###`, `**`) and raw node ids in the transcript
-- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** agent   **status:** open
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** agent   **status:** ✅ done (2026-07-02)
 - **what I was trying to do:** re-read an agent conversation about my Q3 plan.
 - **what happened:** the stored transcript renders the reply as literal `### Summary of Northbound Q3 Plan`, `**Documents:**` — and cites documents as `[n_mqz1aegg_2qmlcl] Northbound Q3 plan 32834`, a raw node id in my face.
 - **what I expected:** formatted markdown and entity references rendered as clickable titles — i.e. what F-312 says was fixed. Either the fix doesn't cover historical/stored messages in the transcript view, or it regressed.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/12-app-agent.png
-- **triage:** _(open — verify against F-312's fix (commit f19ed23): fresh build, fresh boot, transcript still raw. Check whether markdown rendering applies only to newly streamed messages.)_
+- **triage / resolution (2026-07-02, branch `fix/dogfood-visual-audit`):** split verdict. **Raw `###`/`**` markdown: not a bug on main** — F-312's fix (shell PR #60) renders stored and new assistant messages identically through the shared `<Markdown>`; a repro test with a persisted message passed unmodified on HEAD. The screenshot came from a build of `feat/sdk-control-face-primitive`, which forked *before* PR #60 merged — stale-bundle artifact, the documented CLAUDE.md trap. A pinning test now guards it anyway. **Raw `[n_…]` node ids: real display-time bug, fixed** — the retrieval context feeds the model `- [<id>] <title>` lines (`buildRetrievalContextBlock`), small models echo that format verbatim, and the renderer only resolved `[label](id)` links, so bracket-ids printed literally. New pure `linkifyEntityRefs()` (`apps/agent/src/logic/transcript.ts`) rewrites `[<id>] Title` → `[Title](<id>)` at display time (stored body + AI wire transcript stay canonical); bare `[<id>]` keeps id-as-label like `citationsToLinks`. Fail-first tests; 169 agent tests green. Residue noted for the SDK parser: nested list structure under an ordered item still flattens (deliberate parser scope, not agent).
 
 ### F-318 — the Files vault browser is a wall of "(untitled) Message" rows
-- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** files   **status:** open
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** files   **status:** ✅ done (2026-07-02)
 - **what I was trying to do:** browse my vault in Files.
 - **what happened:** the first full screen of "Vault" is ~20 identical "(untitled) · Message · Today" rows — chat messages surfaced as top-level untitled items, burying my real documents. Database's "All vault items" (153) has the same pollution (36 Messages).
 - **what I expected:** child/derived entities (chat messages, similar plumbing types) either excluded from the universal browsers by default or given derived titles (first line of the message) — and never sorted above my named documents.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/08-app-files.png
-- **triage:** _(open)_
+- **triage / resolution (2026-07-02, branch `fix/dogfood-visual-audit`):** root cause — the intents bus synthesizes a generic fallback viewer for *every* typed entity, so Files' "browsable when an opener resolves" test over-includes, and `brainstorm/Message/v1` matched no internal-type suffix. No existing flag fit (SYSTEM is presentation-only and excludes deliberate creations), so the same shared chokepoint gained a **new classification**: `ChildEntityType` / `isChildEntityType` (`@brainstorm/sdk/system-entities`) — parent-scoped child content (Message, Comment) that default top-level browse listings may exclude. Files' `browsableTypeSet` consumes it; Database's "All vault items" (separate code path) consumes the same flag, and its auto-minted "Messages"/"Comments" type-lists now group under the collapsed System disclosure (still browsable by deliberate drill-in). Search untouched. Repro-first tests both sides (messages excluded; untitled Notes still listed); files+database+sdk 3487 tests green. Catalog doc updated.
 
 ### F-317 — Preview's empty state sits far left of centre, and the Details panel opens on the LEFT over blurred content
-- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** preview   **status:** open
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** preview   **status:** ✅ done (2026-07-02)
 - **what I was trying to do:** open Preview, then toggle the right panel.
 - **what happened:** (a) the "Nothing to preview" empty state is centred on x≈200 of an 1100px window — it hugs the left edge; (b) the right-panel toggle opens a floating "Details" card pinned to the LEFT side, overlapping and blurring the empty state under it. Every other app docks the inspector on the right.
 - **what I expected:** empty state centred in the pane; Details as a right-docked panel like the rest of the fleet.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/14-app-preview.png, 19-app-preview.png
-- **triage:** _(open — likely a regression from the 9.20.12 React conversion; session-368 audit also measured Files "inspector w=6px" — same family of panel-layout suspects.)_
+- **triage / resolution (2026-07-02, branch `fix/dogfood-visual-audit`):** ONE root cause, both symptoms. `.preview` is `grid-template-columns: auto minmax(0,1fr)` and the collapsed sidebar is `display:none` — a none'd grid item generates no box, so `.preview__main` auto-placed into the `auto` column and shrink-wrapped to ~398px. The empty state centred in that 398px stage (symptom a), and the inspector — which is the standard fleet right-edge glass overlay, `position:absolute; inset-inline-end:0`, same as Files/Database — anchored to the shrunk container's right edge at x≈398 (symptom b; the "blur" is the normal `.glass--strong` surface). Fix: one declaration, `grid-column: 2` on `.preview__main`. Reproduced and re-verified in real Chromium at 1100px (before: main 0–358; after: main flush 0–1100 collapsed / 260–1100 open, inspector docked 780–1100). 3 layout-contract tests added (red-checked); 297 preview tests green.
 
 ### F-316 — multi-day calendar events render as per-day pills with the title clipped mid-word ("ipeline ready", "peline ready")
-- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** calendar   **status:** open
+- **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** bug   **app:** calendar   **status:** ✅ done (2026-07-02)
 - **what I was trying to do:** glance at July in Month view.
 - **what happened:** one "Pipeline ready" event spanning many days renders a pill in every day cell, each showing the title clipped by a character offset — "ipeline ready", "peline ready" — and the first cell shows it doubled ("Pipeline readyPipe…"). Fifteen day cells of near-identical broken pills.
 - **what I expected:** a single continuous spanning bar with the title drawn once (or per-week), leading characters never clipped.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/04-app-calendar.png
-- **triage:** _(open)_
+- **triage / resolution (2026-07-02, branch `fix/dogfood-visual-audit`):** the visual is **vault-data residue, not a render bug** — the pills are ~12 distinct per-day journal entries whose *stored bodies* are "ipeline ready"/"peline ready"/doubled "Pipeline ready Pipeline ready": they were typed by session 362 walking days forward while F-299 (journal eats the first word's leading chars) was still live. The writer fix already landed, so the data can't regrow; the mangled titles live only in `tests/dogfood/.data` (vault-hygiene rule says don't hand-edit — they age out as the calendar moves on). Multi-day events already render as one ribbon per week row, titled once per segment, end-ellipsized. **However the investigation found a real bug in exactly this machinery, fixed:** `month-view.tsx` paired day cells to compiled events via a render-order counter (`cellCounter`) that desyncs whenever the child grid re-renders without the parent (React StrictMode double-render → dev builds painted the whole month with ZERO events; reproduced red first). `MonthGridReactCell` now carries a stable row-major `index` and the pairing uses it. Calendar+SDK 326 and journal 190 tests green.
 
 ### F-315 — the Conversation settings dialog looks off — default-looking controls + bad paddings
 - **source:** user (real-shell dogfood, Agent → Conversation settings)   **kind:** design   **app:** agent   **status:** ✅ done (2026-07-01)
