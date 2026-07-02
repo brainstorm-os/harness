@@ -21,5 +21,6 @@ tests/dogfood/.data/
 tests/dogfood/.data-collab/
 tests/dogfood/.screenshots/
 tests/dogfood/.screenshots-data/
+tests/dogfood/.app-screenshots-data/
 tests/dogfood/.sessions/
 tests/dogfood/Singleton*
