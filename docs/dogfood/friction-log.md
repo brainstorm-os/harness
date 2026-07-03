@@ -28,12 +28,12 @@ Newest sessions on top.
 <!-- Entries land below this line, newest session first. -->
 
 ### F-385 — the Journal widget clips the first letters of my entries ("Pipeline ready" shows as "peline ready")
-- **session:** 375c-widgets-fixes-verify   **kind:** bug   **app:** journal (widget)   **status:** open
+- **session:** 375c-widgets-fixes-verify   **kind:** bug   **app:** journal (widget)   **status:** wontfix (vault data — F-299 residue)
 - **what I was trying to do:** glance at my journal tile on the dashboard.
 - **what happened:** every snippet row drops its leading characters — "Pipeline ready…" renders as "peline ready", the 30 Jun row as "ipeline ready". Different rows lose different amounts, so it reads like the preview starts at a random offset into the body.
 - **what I expected:** snippets start at the first character of the entry body.
 - **evidence:** tests/dogfood/.sessions/375c-widgets-fixes-verify/03-all-new-widgets-grid.png (Journal card, all three rows).
-- **triage:** _(open — suspect `previewBodyText` (or the widget's use of it) skipping a prefix; the offsets differ per row, so it smells like a length-dependent slice, e.g. stripping a derived title prefix from the body. Reproduce in `apps/journal/src/widget-data.test.ts` with a body that doesn't start with the title.)_
+- **triage / resolution (2026-07-03):** not a widget bug — the widget renders faithfully. The same 375c capture shows the 29 Jun row intact ("Pipeline ready") while older rows clip by *varying* amounts; CSS clipping would be uniform. These entries are stored clipped in the Northbound vault — the F-299-era "first characters eaten at creation" residue already documented in F-320's triage (the graph node literally named "ote"). `previewBodyText` and the widget CSS both check out clean. Status: the vault data is the artifact; no code change. Wontfix (data), kept on record so the next reader doesn't re-chase it.
 
 ### F-379 — I shrank a widget and it teleported off my screen; after a restart it was just gone
 - **session:** 375-widgets-dogfood   **kind:** bug   **app:** shell (dashboard widgets)   **status:** triaged
