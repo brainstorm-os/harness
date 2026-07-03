@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-378 — apps remember my right panel across windows — every new window opens with the inspector already on
+- **session:** user report (razor, 2026-07-03)   **kind:** design   **app:** notes, journal, tasks, books, preview, code-editor   **status:** ✅ done (2026-07-03)
+- **what I was trying to do:** open an app window fresh and look at an object.
+- **what happened:** because I'd toggled the properties/inspector panel open in some earlier window, every later window of that app opens with the right panel already on — the open state is saved in `localStorage`, so it outlives the window that set it.
+- **what I expected:** the panel keeps its state while I switch objects inside one window, but a new app window always starts with the right panel closed (the app default).
+- **evidence:** user report; `localStorage` writes at notes `PROPS_PREF_KEY`, journal `PROPS_OPEN_PREF_KEY`, tasks `PROPS_OPEN_KEY`, books/preview `INSPECTOR_PREF_KEY`, code-editor `REFS_OPEN_KEY`.
+- **triage / resolution (2026-07-03, shell PR #90 `fix/right-panel-session-scope`):** new SDK helper `@brainstorm/sdk/panel-state` (`readPanelOpen`/`writePanelOpen`, backed by `sessionStorage` — window-scoped, survives reloads within a window, resets per new window). All six apps' right-panel open prefs routed through it; left nav sidebars stay in `localStorage` (durable device pref, intended). Books keeps its deliberate open-by-default inspector. SDK unit tests + 192 affected suites green.
+
 ### F-377 — @-mentioning someone dumps a chip above the composer and a boxed "attachment" under the message — not an inline mention like Slack
 - **session:** 377-inline-mentions (user report, 2026-07-03)   **kind:** design   **app:** Chat + Agent   **status:** ✅ done (2026-07-03)
 - **what I was trying to do:** mention a teammate in a chat message, the way I would in Slack.
