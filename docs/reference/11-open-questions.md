@@ -770,12 +770,12 @@ Format:
 - **Resolution (11.1):** **`sqlite-vec`.** This is an ecosystem/maintenance call, not a perf-benched one — the 11.0 spike landed only its FTS5 (lexical) half; the vector half was deferred, so there are no comparative vector numbers yet. The decision is taken now to unblock **11.2** (vector index alongside lexical): `sqlite-vss` is effectively superseded and no longer actively maintained, while `sqlite-vec` is the author's current, actively-developed successor with native SQL-syntax integration and a far simpler build/load story (single loadable extension, no faiss dependency) — exactly the integration profile that keeps the v1 build pipeline lean (consistent with the OQ-128 FTS5-for-v1 posture: stay inside SQLite, add native binaries only when measured need justifies them). Vector query latency + recall get measured in-context during **11.2** against the same `BenchEngine`-style harness; if `sqlite-vec` misses a budget there, that's an 11.2 finding, not a reason to pre-adopt the unmaintained alternative.
 - **Blocking?:** No longer — `sqlite-vec` is the committed v1 vector extension; 11.2 builds on it.
 
-#### OQ-62 — Local embedding model choice
+#### OQ-62 — Local embedding model choice  *[RESOLVED in implementation-plan 11.3, 2026-07-03 — `bge-small-en-v1.5`, first-run download]*
 - **Where:** [22-ai-foundations.md](../platform/22-ai-foundations.md).
 - **Question:** Which embedding model bundles with the shell?
 - **Options:** `bge-small` (~130MB, English-strong), `all-MiniLM-L6-v2` (~80MB, English), `multilingual-e5-small` (~470MB, multilingual), platform-native.
-- **Tentative leaning:** `multilingual-e5-small` — multilingual support matters once we go past English.
-- **Blocking?:** Yes for installer / first-launch UX.
+- **Resolution:** **`bge-small-en-v1.5`** (~130MB, 384-d, English) via a custom napi-rs/`fastembed-rs` addon — user-chosen (2026-07-03). `multilingual-e5-small` (470MB) was rejected as too heavy for the download; MiniLM/bge/e5 are **all 384-d**, so switching among them is a one-line change to the `EmbeddingModel` variant with **no vec0-table migration** — multilingual is a later swap once the product goes past English. **Not bundled** — weights are downloaded on first run into `userData/models` (keeps the installer small; the offline-first story is the deferred first-run-download UX + OQ-58). This also settles the OQ-57 disk-budget concern for embeddings: nothing ships in the installer.
+- **Blocking?:** Was yes (installer / first-launch UX). Resolved.
 
 #### OQ-65 — Biome's TypeScript rule coverage gap
 - **Where:** [13-frontend-stack.md](../shell/13-frontend-stack.md).
