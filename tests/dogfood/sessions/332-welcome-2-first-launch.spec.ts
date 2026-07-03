@@ -58,7 +58,7 @@ test("Welcome-2 — fresh launch shows the template gallery and a chosen templat
 		win.on("pageerror", (err) => consoleErrors.push(err.message));
 
 		// 1. Fresh launch → the Welcome menu (no vault yet).
-		const createCta = win.locator("button.welcome__cta:not(.welcome__cta--alt)").first();
+		const createCta = win.locator('[data-testid="welcome-create-cta"]');
 		await expect(createCta).toBeVisible({ timeout: 30_000 });
 		await createCta.click();
 
@@ -102,7 +102,7 @@ test("Welcome-2 — fresh launch shows the template gallery and a chosen templat
 				{ timeout: 60_000, intervals: [250, 500, 1000] },
 			)
 			.toBe(true);
-		await expect(win.locator("button.welcome__cta:not(.welcome__cta--alt)")).toHaveCount(0);
+		await expect(win.locator('[data-testid="welcome-create-cta"]')).toHaveCount(0);
 
 		// 8. No renderer errors during the first-launch flow (a real-Electron mount
 		//    regression — stripped type-import, missing icon — would surface here).
