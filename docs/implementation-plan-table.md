@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected · 🔴 release-blocking · 🟢 GA-only (not beta-blocking)
 
-**Last updated:** 2026-07-03 — this session landed **`Asset-B4` byte-plane transport** (shell PR #73/#75 — upload-on-bind + serve-on-miss, manifest `mime`, pentest found no exploitable path; still 🟡 pending the live 2-device relay-loop dogfood + the split-out `Asset-B4b` thumbnail tier / `Asset-B4c` cold-first-fetch), **`11.3` local embedding-model core** (shell PR #79 — `@brainstorm/native-embed` fastembed/ONNX, `bge-small-en-v1.5` 384-d, first-run download, defensive degrade to lexical-only; 🟡 pending the cross-platform packaging tail), and **`12.16` accent-as-text WCAG AA + a base-theme contrast ratchet** (shell PR #82 — the `accent.onFill` inverse concern is now tracked as `12.17`). A CI hotfix (shell PR #81) un-broke `verify` after #79. **Open: 70 — Beta-blocking 0 · GA 34 · v2/post-v2 36.** **🎉 Public beta shipped 2026-06-29 (`v0.1.5`)** — signed + notarized macOS/Windows/Linux + in-app auto-update; **no beta-blockers remain**, everything open is GA polish or the v2 commercial stack. Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git.
+**Last updated:** 2026-07-03 (pm) — landed this session, all merged: **`12.17`** a11y `accent.onFill` ([shell PR #83](https://github.com/brainstorm-os/shell/pull/83) — the theme-contrast ratchet is now green with **zero deferrals**; completes the accent a11y story with 12.16), the **`11.3` embedding packaging tail** ([shell PR #84](https://github.com/brainstorm-os/shell/pull/84) — `ort` statically links ONNX Runtime, so `native-embed` ships like the crypto `.node` across all 6 targets; 11.3 stays 🟡 for its GA polish tails: first-run-download UX, incremental vector maintenance, ANN bench), and **`B11.10` Templates COMPLETE** ([shell PR #85](https://github.com/brainstorm-os/shell/pull/85) — editor snippet insert + save-as-template; snippets store as serialized-blocks JSON in `prototype.snippet`, no headless Yjs binding). Earlier this session: `Asset-B4` byte-plane transport (🟡, dogfood-gated; split `Asset-B4b`/`B4c`), `11.3` core, `12.16`. **Open: 68 — Beta-blocking 0 · GA 32 · v2/post-v2 36.** **🎉 Public beta shipped 2026-06-29 (`v0.1.5`)** — signed + notarized macOS/Windows/Linux + in-app auto-update; **no beta-blockers remain**, everything open is GA polish or the v2 commercial stack. Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git.
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -32,7 +32,7 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 
 ✅ **Cleared 2026-06-29 — public beta v0.1.5 shipped.** `13.11` (code-signing + notarisation) and `13.12` (in-app auto-update) both landed: signed + notarized macOS (Apple silicon + Intel), Windows + Linux, published to GitHub Releases with a working in-app updater. No beta-blocking iterations remain. *(GA residual, not beta-blocking: Windows EV signing `DQ-13.1-B`.)*
 
-## GA — GA (v1, post-beta) (34)
+## GA — GA (v1, post-beta) (32)
 
 ### AI broker & vector / hybrid search *(Stage 11; lexical half shipped early as Shell 9.22)*
 
@@ -45,7 +45,6 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `12.17` | accent.onFill token | ⚪ pending | none |
 | `12.15` | app-renderer locale propagation + per-app translation packs (the explicitly-deferred "Sti… | 🟡 in flight |  |
 
 ### Native acceleration *(NAPI-RS, post-beta perf track)*
@@ -81,12 +80,6 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `IE-7` | one-shot authenticated-API Source (Notion API import, OQ-243): the non-file Source stage… | ⚪ pending | Connector framework ✅ + IE-6 |
-
-### Notes (text-editor) *(9.6)*
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `B11.10` | Templates (cross-app platform foundation | 🟡 in flight |  |
 
 ### Graph *(9.13)*
 
