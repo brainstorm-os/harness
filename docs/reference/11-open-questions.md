@@ -3015,11 +3015,12 @@ Opened by the bookmark favicon/cover work — the first consumer of a synced, en
 - **Tentative leaning:** Owner-graph reachability if frame→app mapping on `protocol.handle` proves reliable; signed-token fallback otherwise.
 - **Blocking?:** No for Part A (matches existing posture); resolve before assets are shared cross-app.
 
-#### OQ-238 — Does `network.preview` implicitly authorize `assets.bind`?
+#### OQ-238 — Does `network.preview` implicitly authorize `assets.bind`?  *[RESOLVED in implementation-plan Asset-B4, 2026-07-01 — no separate cap; binding folds into entity-write]*
 - **Where:** `packages/shell/src/main/assets/` (the Part-B bind method); `apps/*/manifest.json`.
 - **Question:** Binding a preview-minted asset to an arbitrary entity id is an authority the preview cap arguably shouldn't silently confer. Separate `assets.bind` cap, or folded into `network.preview`?
 - **Tentative leaning:** Separate `assets.bind` cap.
-- **Blocking?:** No — gates Part B (bind + GC); Part A stores assets without binding (no reap wired, so nothing is reclaimed yet).
+- **Resolution:** **There is no bind *verb* to authorize — binding is derived, not requested.** `asset_refs` is now written implicitly by the entities service: after a committed entity create/update/delete it scans the row's properties for `brainstorm://asset/<id>` URLs and reconciles the refs (`derive-asset-refs.ts` + `reconcileAssetRefs`, shell PR #73). An app never calls a bind method — it authorizes the reference by writing the property, which the **entity-write capability it already holds** governs. So no separate `assets.bind` cap and nothing extra folded into `network.preview`. Rationale: (1) an explicit bind cap is forgeable-by-omission — an app could store the URL without ever binding, leaving `asset_refs` (which asset-DEK re-homing, GC reachability, and sync all read) silently empty; implicit derivation can't be skipped and self-heals on the next write. (2) The bind confers no authority the writer lacks — the reconciler only ever binds assets **already stored locally** (dangling/remote ids are filtered out), so it can't be used to claim or reach another app's asset. (3) It matches the existing posture where reachability is a property of the data, not a grantable verb. Cross-app *read* access to a referenced asset remains the separate concern tracked in OQ-237; orphan reap in OQ-239.
+- **Blocking?:** No — gated Part B (bind + GC). Resolved.
 
 #### OQ-239 — Orphan-asset TTL for preview-minted assets
 - **Where:** `packages/shell/src/main/assets/asset-store.ts` (`reapOrphans`, `listUnboundCreatedBefore`).
