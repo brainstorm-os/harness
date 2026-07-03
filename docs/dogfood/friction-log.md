@@ -27,6 +27,22 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-377 — @-mentioning someone dumps a chip above the composer and a boxed "attachment" under the message — not an inline mention like Slack
+- **session:** 377-inline-mentions (user report, 2026-07-03)   **kind:** design   **app:** Chat + Agent   **status:** ✅ done (2026-07-03)
+- **what I was trying to do:** mention a teammate in a chat message, the way I would in Slack.
+- **what happened:** picking the person from the `@` typeahead removed my `@…` text and stuck a chip in a rail ABOVE the message form; after sending, the message carried a boxed chip with a cube icon under the text. The mention never appeared *in* the text. The Agent composer behaved the same way.
+- **what I expected:** the mention renders inline in the draft as I type (editable around it) and inline in the sent message — identical in Chat and Agent.
+- **evidence:** user screenshot (chat transcript with `Razor` box chip); fix evidence `tests/dogfood/.sessions/377-inline-mentions/02-inline-chip-in-composer.png`, `03-sent-message-inline-mention.png`, `05-agent-inline-chip.png`
+- **triage (developer, 2026-07-03):** the composer plugin deliberately excised the `@token` and routed the person into the composer-context rail (`candidateToAttachment`), so the mention only existed as a `MessageAttachment` chip. Fix (shell PR #74 `65bdf2a`): `MentionComposerPlugin` gained an `insertNode` commit mode planting a real inline `MentionNode`; `renderEditorState` renders `mention` nodes as chips (was the `⟦mention⟧` fallback); the send path lifts inline mentions into wire attachments (`withMentionAttachments`) so the mention-notifier + agent grounding still work, and `visibleAttachments` hides the redundant chip (legacy messages keep theirs). The Agent's `<textarea>` composer was migrated onto the same CompactEditor+mention surface (user turns persist + render `richBody`). Real-shell verified: inline chip in both composers, zero rail/attachment chips.
+
+### F-376 — user avatars in chat draw as a square photo floating inside a circle
+- **session:** 377-inline-mentions (user report, 2026-07-03)   **kind:** design   **app:** Chat   **status:** ✅ done (2026-07-03)
+- **what happened:** my profile photo rendered as a small rounded SQUARE centred inside a larger grey circle with a ring — instead of the photo filling the circle.
+- **what I expected:** the photo fills the circular avatar, clipped round, like every other chat product.
+- **evidence:** user screenshot (message gutter avatars).
+- **triage (developer, 2026-07-03):** the SDK image icon hard-codes a 4px corner radius and chat rendered it at 28px inside a 34px bordered circle — a square in a ring. Fix (same PR #74): `Avatar` sizes image icons to the full host diameter so the host's `radius-full + overflow:hidden` clips them round; glyph (emoji/pack) avatars stay centred at ~0.8× so they don't crop; the members-panel avatar now sizes to its 26px row (the component previously hard-coded 28px inside it).
+
+
 ### F-321 — Automations greets me with "No device hosts automations yet — claim it" — I don't know what a device host is
 - **session:** 012-all-apps-smoke (2026-07-01 re-run)   **kind:** design   **app:** automations   **status:** ✅ done (2026-07-02)
 - **what I was trying to do:** open Automations to set up a reminder.
