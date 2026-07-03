@@ -19,7 +19,7 @@ slugs to tell which is which.
 
 ## Go-forward rule (the fix for the divergence)
 
-1. **A new dogfood session takes the next integer: `368`.** Never reuse an
+1. **A new dogfood session takes the next integer: `903`.** Never reuse an
    existing number for an unrelated session.
 2. **A single themed sweep may group multiple specs under one reserved number** using
    `NNN-<topic>-<facet>.spec.ts` naming (the `228` pattern). Reserve the number once.
@@ -27,10 +27,10 @@ slugs to tell which is which.
 
 ## Manifest
 
-- **Total spec files:** 381
-- **Distinct session numbers:** 298
-- **Highest number:** 367 → **next session = 368**
-- **Numbers shared by >1 spec (`×N`):** 51
+- **Total spec files:** 400
+- **Distinct session numbers:** 309
+- **Highest number:** 902 → **next session = 903**
+- **Numbers shared by >1 spec (`×N`):** 54
 
 | Session | Spec file(s) |
 | ------- | ------------ |
@@ -332,7 +332,19 @@ slugs to tell which is which.
 | 365 | `365-calendar-status-select.spec.ts` |
 | 366 | `366-tasks-empty-state.spec.ts` |
 | 367 | `367-files-destination-picker.spec.ts` |
+| 368 | `368-marcus-design-system-audit.spec.ts` |
+| 369 | `369-files-control-face-verify.spec.ts` |
+| 370 | `370-polish-r2-verify.spec.ts` |
+| 371 | `371-inspector-no-collections-verify.spec.ts` |
+| 372 ×2 | `372-agent-dynamic-context-qwen.spec.ts`<br>`372-drag-grip-gutter-verify.spec.ts` |
+| 373 | `373-focus-frame-audit.spec.ts` |
+| 374 ×5 | `374-a11y-name-audit.spec.ts`<br>`374-bin-purge-repro.spec.ts`<br>`374b-bin-empty-persistence.spec.ts`<br>`374c-bin-keyboard-multiselect.spec.ts`<br>`374d-bin-reactivity-repro.spec.ts` |
+| 375 ×3 | `375-a11y-contrast-audit.spec.ts`<br>`375-widgets-dogfood.spec.ts`<br>`375b-widgets-probe.spec.ts` |
+| 377 | `377-inline-mentions.spec.ts` |
+| 901 | `901-notes-select-placeholder.spec.ts` |
+| 902 | `902-notes-all-blocks.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 
+- `site-app-screenshots.spec.ts`
 - `site-screenshots.spec.ts`
