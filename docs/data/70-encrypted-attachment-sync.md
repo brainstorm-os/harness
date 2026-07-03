@@ -87,9 +87,9 @@ A blob is dead when **no live `File/v1` reference** points at its `assetId` anyw
 - An offline laptop may still reference a blob the phone just "deleted." If the node reclaims it, the laptop's file is gone forever on next sync.
 - CRDT deletes are tombstones that converge eventually, so "no peer references this" is never instantaneously knowable.
 
-> **Decision (proposed):** the node never GCs on a single device's say-so. Reclamation is **conservative mark-and-sweep against the converged metadata state**, gated by: (1) a grace period after a chunk's last reference is tombstoned; (2) a **last-seen guard** — do not reclaim chunks referenceable by any device that has synced within a retention window (default 90 days, matching the tail-prune policy in OQ-46); (3) reclamation is reversible within the grace window (mark, don't immediately delete). Surfacing GC activity (the silent-vs-visible question) inherits OQ-43.
+> **Decision (resolved in `Asset-B6`, sync PR #2):** the node never GCs on a single device's say-so. Reclamation is **conservative mark-and-sweep against the converged metadata state**, gated by: (1) a grace period after a chunk's last reference is tombstoned; (2) a **last-seen guard** — do not reclaim chunks referenceable by any device that has synced within a retention window (default 90 days, matching the tail-prune policy in OQ-46); (3) reclamation is reversible within the grace window (mark, don't immediately delete). Surfacing GC activity (the silent-vs-visible question) inherits OQ-43.
 
-This is the design risk to socialize before implementation — not the crypto, which is settled.
+This was the design risk to socialize before implementation — resolved in `Asset-B6`: converged refs arrive as **client-reported full ref-sets** (a `refs` verb on the asset channel; hashes are already the node's opaque addresses, so reports leak nothing new), tracked per device with an owned-index recorded on gated PUT. The client-side report sender is `Asset-B6b`.
 
 ## Recovery — phrase-only, end to end
 
@@ -128,7 +128,7 @@ Already filed (Part A → resolve before/at Part B):
 New, to file via the dev-MCP server (not yet numbered):
 
 - **Asset-DEK re-homing migration** ✅ *(resolved in implementation-plan Asset-B1, 2026-06-26)* — `asset_deks` rows are master-key-wrapped; the open-time pass (`entities/rehome-asset-deks.ts`) re-homes each referenced asset's DEK into the owning entity's Y.Doc under the entity DEK (`brainstorm.meta → assetDeks` map). Idempotent via the `asset_refs.rehomed_at` schema-v7 marker (cf. the 10.x retro-wrap pass); the local `asset_deks` row is **left in place as a derived cache** (not stripped); absent-key pairs defer, non-syncable singletons stamp local-only.
-- **Cross-device / offline-peer asset GC** — node-side reclamation grace window + last-seen retention guard (default 90 days, tied to OQ-46), and whether reclamation is surfaced or silent (inherits OQ-43). Gates `Asset-B6`. *The design risk of this whole subsystem.*
+- **Cross-device / offline-peer asset GC** — *[RESOLVED in Asset-B6 (sync PR #2)]*: client-reported full ref-sets; grace-mark (30d default) + last-seen guard (90d, tied to OQ-46) + ledger-commit-first deletion; owned-index closes hostile co-claim. Surfacing (silent vs visible) still inherits OQ-43 and moves to `Asset-B6b`.
 
 Design notes (not OQs): chunk size is fixed 4 MiB for v1 (content-defined chunking is a later delta-dedup optimization behind the same manifest); the eager-vs-lazy derivative tier (which thumbnail/preview size prefetches) is tunable per the selective-sync tiers in [20](20-database-growth-and-sync.md).
 

@@ -27,13 +27,29 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
-### F-385 — the Journal widget clips the first letters of my entries ("Pipeline ready" shows as "peline ready")
+### F-387 — the Journal widget clips the first letters of my entries ("Pipeline ready" shows as "peline ready")
 - **session:** 375c-widgets-fixes-verify   **kind:** bug   **app:** journal (widget)   **status:** wontfix (vault data — F-299 residue)
 - **what I was trying to do:** glance at my journal tile on the dashboard.
 - **what happened:** every snippet row drops its leading characters — "Pipeline ready…" renders as "peline ready", the 30 Jun row as "ipeline ready". Different rows lose different amounts, so it reads like the preview starts at a random offset into the body.
 - **what I expected:** snippets start at the first character of the entry body.
 - **evidence:** tests/dogfood/.sessions/375c-widgets-fixes-verify/03-all-new-widgets-grid.png (Journal card, all three rows).
-- **triage / resolution (2026-07-03):** not a widget bug — the widget renders faithfully. The same 375c capture shows the 29 Jun row intact ("Pipeline ready") while older rows clip by *varying* amounts; CSS clipping would be uniform. These entries are stored clipped in the Northbound vault — the F-299-era "first characters eaten at creation" residue already documented in F-320's triage (the graph node literally named "ote"). `previewBodyText` and the widget CSS both check out clean. Status: the vault data is the artifact; no code change. Wontfix (data), kept on record so the next reader doesn't re-chase it.
+- **triage / resolution (2026-07-03):** not a widget bug — the widget renders faithfully. The same 375c capture shows the 29 Jun row intact ("Pipeline ready") while older rows clip by *varying* amounts; CSS clipping would be uniform. These entries are stored clipped in the Northbound vault — the F-299-era "first characters eaten at creation" residue already documented in F-320's triage (the graph node literally named "ote"). `previewBodyText` and the widget CSS both check out clean. Status: the vault data is the artifact; no code change. Wontfix (data), kept on record so the next reader doesn't re-chase it. *(Filed as F-385 in session 375c; renumbered — main's F-385/F-386 landed first.)*
+
+### F-385 — selecting text in the chat composer pops a broken shard of a toolbar — two stacked letters in a clipped box
+- **session:** user report (2026-07-03)   **kind:** bug   **app:** Chat   **status:** ✅ done (2026-07-03)
+- **what I was trying to do:** select "hello" in the chat composer to bold it.
+- **what happened:** a tiny box appeared above the selection showing "B" with half of an "I" clipped under it — the formatting toolbar rendered as a vertical stack cut off after ~1.5 buttons.
+- **what I expected:** the horizontal B/I/U/S/code/link pill that Notes shows on selection.
+- **evidence:** user screenshot (composer with "hello" selected).
+- **triage (developer, 2026-07-03, shell branch `chat-rich-composer`):** CSS cascade order, not a layout bug. The toolbar borrows the fancy-menus `.fm-menu` glass, and `.fm-menu` ships `flex-direction: column; overflow: hidden`. `editor-theme.css` pinned `row`/`visible` at equal specificity (0,1,0) — so whichever stylesheet the app's bundle emits LAST wins. Notes happened to order editor-theme after the runtime CSS; chat ordered it before, so `.fm-menu` won and stacked+clipped the buttons. Fix: compound selector `.fm-menu.notes__inline-toolbar` (0,2,0) — the same order-proof pattern the toolbar's own colour/overflow dropdowns already used. Real-shell verified via `tests/visual/specs/chat-rich-composer.spec.ts` (asserts computed `flex-direction: row`, `overflow: visible`, and a wide-not-tall pill).
+
+### F-386 — I can't make a list in chat — no bullets, no numbers, no checkboxes, and `- ` just sits there as text
+- **session:** user report (2026-07-03)   **kind:** gap   **app:** Chat (shared composer)   **status:** ✅ done (2026-07-03)
+- **what I was trying to do:** send a teammate a short checklist in a channel — the kind of message I'd write in Slack without thinking.
+- **what happened:** the composer only does inline marks + links; typing `- `, `1. ` or `[] ` does nothing, and there's no list affordance anywhere.
+- **what I expected:** Slack-level markup: bulleted / numbered / checkbox lists, quotes, code blocks, mentions inline in the text, links — the whole message vocabulary.
+- **evidence:** user report (with the F-385 screenshot).
+- **triage (developer, 2026-07-03, shell branch `chat-rich-composer`):** shipped as a `<CompactEditor>` upgrade so chat, comments and the Agent composer all get it: list/quote/code-block nodes + `ListPlugin`/`CheckListPlugin`, a curated Markdown shortcut set (`- ` `1. ` `[] ` `> ` ``` ``` ``, inline marks, links — deliberately no headings), typed-URL autolink, Enter still sends while Shift+Enter starts the next list item (Slack model), bullet/numbered/to-do toggles on the selection toolbar, checklist face + read-only rendering (`renderEditorState` now renders `check` lists with their checked state). Inline `@`-mentions already worked (F-377). Plan rung: implementation-plan §Chats dogfood slice; real-shell verified via `tests/visual/specs/chat-rich-composer.spec.ts`.
 
 ### F-379 — I shrank a widget and it teleported off my screen; after a restart it was just gone
 - **session:** 375-widgets-dogfood   **kind:** bug   **app:** shell (dashboard widgets)   **status:** triaged

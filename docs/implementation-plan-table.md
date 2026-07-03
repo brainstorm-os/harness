@@ -18,7 +18,7 @@ Detail in [implementation-plan.md §Release plan & roadmap](implementation-plan.
 | ----------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **G0 De-risk**          | ✅     | —                                                                                                                                                                      |
 | **G1 Spine**            | ✅     | —                                                                                                                                                                      |
-| **G2 Sync**             | ✅     | 🟢 tails only: `10.10` wrap-bundling · `10.11` routing-token rotation                                                                                                  |
+| **G2 Sync**             | ✅     | 🟢 tail only: `10.11` routing-token rotation (in flight) — `10.10` wrap-bundling ✅ 2026-07-04 (shell #98 + sync #3)                                                                                                  |
 | **G3 Quality + freeze** | 🟡    | `12.4` a11y ladder ✅ COMPLETE 2026-06-15 (grid cell-nav+edit the last rung) · bug burn-down · feature freeze; budgets hold                                             |
 | **G4 Beta ship**        | 🟡    | RC cut + beta-exit checklist · beta on `2026-09-01` (`13.3` ✅ Linux CI · `13.10` ✅ packaged-upgrade path landed 2026-06-15 — the last beta-blocking 🔴 hardening rung) |
 
