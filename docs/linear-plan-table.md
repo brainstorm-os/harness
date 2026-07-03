@@ -12,6 +12,9 @@ So progress is visible — this list grows as the open table below shrinks. Comp
 
 | Done | ID | Task | Landed |
 | ---- | -- | ---- | ------ |
+| ✅ | `12.16` | **a11y accent-as-text WCAG AA** — dedicated `accent.onSurface` token (no brand-fill change) + 22 CSS repoints + a **base-theme contrast CI ratchet** over all 12 themes (which also surfaced + fixed a latent translucent-surface engine bug); the inverse `accent.onFill` concern tracked as `12.17` (shell PR #82) | 2026-07-03 |
+| ✅ | `11.3` (core) | **Local embedding model → semantic search ON** — `@brainstorm/native-embed` (fastembed/ONNX, `bge-small-en-v1.5` 384-d, first-run download), `FastembedEmbedder` behind the 11.2 seam, defensive degrade to lexical-only; real semantics verified (cos 0.75 vs 0.40). 🟡 pending the cross-platform packaging tail (shell PR #79; CI hotfix #81) | 2026-07-03 |
+| ✅ | `Asset-B4` (transport) | **Encrypted attachment byte-plane sync wired** — upload-on-bind + serve-on-miss + implicit `asset_refs` bind writer + manifest `mime`; adversarial pentest found no exploitable path. 🟡 pending the live 2-device dogfood + `Asset-B4b`/`B4c` (shell PR #73/#75) | 2026-07-03 |
 | ✅ | `012–028` | Dogfood app-sweep — fleet verified clean (0 page/console errors across 17 sessions · 20/20 apps clean on dark · 0 ICU plural leaks · cross-app clipboard + deeplink-open e2e); the two filed findings both verified non-product (F-293 smoke-harness pile-up, F-294 probe miss) | 2026-06-27 |
 | ✅ | `Asset-B2` / `Asset-B3` | Encrypted attachment sync — `WireKind.Asset` 4 MiB chunked transport (client) + durable-node content-addressed `AssetCas` (relay-blind, S3/R2/file backends) | 2026-06-27 |
 | ✅ | `Asset-B1` | Encrypted attachment sync rung 1 — per-asset DEK re-homes into the referencing entity's Y.Doc under the entity DEK (paired device can open a synced blob); migration OQ resolved | 2026-06-26 |
@@ -41,7 +44,7 @@ So progress is visible — this list grows as the open table below shrinks. Comp
 
 ## Open work (single-track order)
 
-Reconciled against `implementation-plan-table.md` ground truth, **last 2026-06-27** (Open: 64 — Beta-blocking 0 · GA 30 · v2/post-v2 34). **No open iteration gates the beta** — the only thing between here and `2026-09-01` is the RC-cut process work (row 6). Stage-10 sync (`10.12`/`10.13`/`10.14`) + the durable node (`SYNC-2..5`) are ✅ real-shell verified. **Encrypted attachment sync** is the live infra track: `Asset-B1`/`B2`/`B3` ✅ (DEK re-homing → chunked wire → durable CAS), `B4`/`B5`/`B6` next (GA). The DnD spine shipped (`DND-1`–`DND-5` ✅); only the a11y twins (`DND-6` ◑) remain. The AI/Stage-11 push (`11.4`/`11.5`/`11.6`/`11.8`/`11.9`) and import/export (`IE-1…IE-6` + `IE-8` core) have **landed but stay 🟡** behind documented residue tails (real vector recall via `11.3`, `extract intoType`/streaming, per-app budgets, IE-7 API source), so they remain below.
+Reconciled against `implementation-plan-table.md` ground truth, **last 2026-07-03** (Open: 70 — Beta-blocking 0 · GA 34 · v2/post-v2 36). **No open iteration gates the beta** — the only thing between here and `2026-09-01` is the RC-cut process work (row 6). Stage-10 sync (`10.12`/`10.13`/`10.14`) + the durable node (`SYNC-2..5`) are ✅ real-shell verified. **Encrypted attachment sync** is the live infra track: `Asset-B1`–`B4`-core ✅ (DEK re-homing → chunked wire → durable CAS → up/download transport wired), `B4b`/`B4c`/`B5`/`B6` next (GA). The DnD spine shipped (`DND-1`–`DND-5` ✅); only the a11y twins (`DND-6` ◑) remain. The AI/Stage-11 push (`11.4`/`11.5`/`11.6`/`11.8`/`11.9`) and import/export (`IE-1…IE-6` + `IE-8` core) have **landed but stay 🟡** behind documented residue tails (real vector recall via `11.3`, `extract intoType`/streaming, per-app budgets, IE-7 API source), so they remain below.
 
 | # | ID | Task | Run | Gate / dep | Status |
 | -: | -- | ---- | --- | ---------- | ------ |
@@ -53,10 +56,12 @@ Reconciled against `implementation-plan-table.md` ground truth, **last 2026-06-2
 | 6 | — | bug burn-down + feature freeze → RC cut | 🚩 BETA `2026-09-01` | all feature gates ✅ | ⚪ |
 | 7 | `12.15` | app-renderer locale propagation + per-app translation packs (the deferred 15d content fan-out) | GA polish | infra ✅; content fan-out | 🟡 |
 | 8 | `NAPI-P` | perf-bottleneck profiling sweep (gates NAPI-4 + any new native target) | GA / NAPI track | post-beta perf | ⚪ |
-| 9 | `11.0b` / `11.3` | Tantivy bench · bundled embedding model (`multilingual-e5-small`, enables real `11.4` recall) | R4 AI spine | `11.5` ✅ | ⚪ |
+| 9 | `11.3` (core ✅) | Local embedding model — **core landed** (`bge-small-en-v1.5` 384-d, fastembed/ONNX napi crate, first-run download; enables real `11.4` recall). Residue: cross-platform prebuilds + ONNX-Runtime packaging · incremental vector maintenance on write · real-Electron ANN bench | R4 AI spine | `11.5` ✅ | 🟡 |
+| 9b | `11.0b` | Tantivy `BenchEngine` comparison vs the FTS5 baseline (measurement only) | R4 AI spine | Tantivy NAPI binding | ⚪ |
 | 10 | `11.5` residue | AI broker host service (keystone) — verb set complete; residue: `extract intoType` + token streaming | R4 AI spine | in flight | 🟡 |
 | 11 | `11.6 / 11.8 / 11.9` | BYO keys · provenance · Settings → AI panel — **landed**; residue: real-key round-trip · budget enforcement (`14.8`) · per-app budgets / routing UI | R4 AI spine | `11.5` ✅ | 🟡 |
-| 12 | `Asset-B4 → -B5 → -B6` | Encrypted attachment sync — lazy fetch + thumbnail tier · cold-restore re-materialise (`10.14`) · cross-device offline-peer GC (`B1`/`B2`/`B3` ✅) | R4 Infra | `Asset-B3` ✅ | 🟡 |
+| 12 | `Asset-B4 → -B4b/c → -B5 → -B6` | Encrypted attachment sync — **transport wired** (upload-on-bind + serve-on-miss, `B1`/`B2`/`B3`/`B4`-core ✅). Residue: live 2-device dogfood · `B4b` eager thumbnail tier · `B4c` cold-first-fetch metadata reconstruction · `B5` cold-restore re-materialise (`10.14`) · `B6` offline-peer GC | R4 Infra | `Asset-B3` ✅ | 🟡 |
+| 12b | `12.17` | a11y `accent.onFill` — white-text-on-accent-fill AA (inverse of `12.16`; per-theme fill token + ~12 site repoints; ratchet already tracks the known-failing set) | GA polish | none | ⚪ |
 | 13 | `Net-3` | live-DOM feeder (`web.capture`) | R5 Net + Files-host | Net-2 + Browser-1 | ⚪ |
 | 14 | `11b.8` / `11b.8b` | `Webhook` trigger + per-origin egress allowlist (HTTP step ✅ PR #148; egress fail-closed pending) | R6 Automations | network ingress | 🟡 |
 | 15 | `11b.10` | `FileWatch` / `Startup` triggers | R6 Automations | **actionable** (`9.10` ✅) | ⚪ |
