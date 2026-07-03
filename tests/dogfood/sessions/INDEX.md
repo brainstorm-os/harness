@@ -27,7 +27,7 @@ slugs to tell which is which.
 
 ## Manifest
 
-- **Total spec files:** 400
+- **Total spec files:** 401
 - **Distinct session numbers:** 309
 - **Highest number:** 902 → **next session = 903**
 - **Numbers shared by >1 spec (`×N`):** 54
@@ -339,7 +339,7 @@ slugs to tell which is which.
 | 372 ×2 | `372-agent-dynamic-context-qwen.spec.ts`<br>`372-drag-grip-gutter-verify.spec.ts` |
 | 373 | `373-focus-frame-audit.spec.ts` |
 | 374 ×5 | `374-a11y-name-audit.spec.ts`<br>`374-bin-purge-repro.spec.ts`<br>`374b-bin-empty-persistence.spec.ts`<br>`374c-bin-keyboard-multiselect.spec.ts`<br>`374d-bin-reactivity-repro.spec.ts` |
-| 375 ×3 | `375-a11y-contrast-audit.spec.ts`<br>`375-widgets-dogfood.spec.ts`<br>`375b-widgets-probe.spec.ts` |
+| 375 ×4 | `375-a11y-contrast-audit.spec.ts`<br>`375-widgets-dogfood.spec.ts`<br>`375b-widgets-probe.spec.ts`<br>`375c-widgets-fixes-verify.spec.ts` |
 | 377 | `377-inline-mentions.spec.ts` |
 | 901 | `901-notes-select-placeholder.spec.ts` |
 | 902 | `902-notes-all-blocks.spec.ts` |
