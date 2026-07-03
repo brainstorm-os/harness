@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-387 — the Journal widget clips the first letters of my entries ("Pipeline ready" shows as "peline ready")
+- **session:** 375c-widgets-fixes-verify   **kind:** bug   **app:** journal (widget)   **status:** wontfix (vault data — F-299 residue)
+- **what I was trying to do:** glance at my journal tile on the dashboard.
+- **what happened:** every snippet row drops its leading characters — "Pipeline ready…" renders as "peline ready", the 30 Jun row as "ipeline ready". Different rows lose different amounts, so it reads like the preview starts at a random offset into the body.
+- **what I expected:** snippets start at the first character of the entry body.
+- **evidence:** tests/dogfood/.sessions/375c-widgets-fixes-verify/03-all-new-widgets-grid.png (Journal card, all three rows).
+- **triage / resolution (2026-07-03):** not a widget bug — the widget renders faithfully. The same 375c capture shows the 29 Jun row intact ("Pipeline ready") while older rows clip by *varying* amounts; CSS clipping would be uniform. These entries are stored clipped in the Northbound vault — the F-299-era "first characters eaten at creation" residue already documented in F-320's triage (the graph node literally named "ote"). `previewBodyText` and the widget CSS both check out clean. Status: the vault data is the artifact; no code change. Wontfix (data), kept on record so the next reader doesn't re-chase it. *(Filed as F-385 in session 375c; renumbered — main's F-385/F-386 landed first.)*
+
 ### F-385 — selecting text in the chat composer pops a broken shard of a toolbar — two stacked letters in a clipped box
 - **session:** user report (2026-07-03)   **kind:** bug   **app:** Chat   **status:** ✅ done (2026-07-03)
 - **what I was trying to do:** select "hello" in the chat composer to bold it.
@@ -52,44 +60,45 @@ Newest sessions on top.
 - **triage:** `migrateWidgetRecord` (`packages/shell/src/renderer/dashboard/grid.ts:187`) classifies a record as pre-7.3b legacy when `w ≤ 6 OR h ≤ 6` cells and scales it ×10 — but `WIDGET_MIN_H` **is 6**, so a current-format widget resized to minimum height re-enters the migration and teleports; subsequent writes bake the ×10 x/y in. The "self-terminating" comment only holds for width (min 8 > 6). Fix: discriminate on width alone (`w > LEGACY_WIDGET_MAX_CELL` → current format), + regression test at the h=6 boundary. **Fixed in shell PR #92** (`fix/widget-min-resize-migration`).
 
 ### F-380 — after the shell reinstalled an app, its widget became a husk: slug title, initials icon, blank body
-- **session:** 375-widgets-dogfood   **kind:** bug   **app:** shell (dashboard widgets)   **status:** open
+- **session:** 375-widgets-dogfood   **kind:** bug   **app:** shell (dashboard widgets)   **status:** ✅ done (2026-07-03)
 - **what I was trying to do:** just look at my dashboard.
 - **what happened:** the Recent Notes widget titled itself the raw slug "recent-notes", the Notes glyph fell back to "NO" initials (in the add-widget catalog AND the desktop icon), and after a restart the widget body was a permanent placeholder — while five seconds later the add-widget catalog showed the same widget with its proper name and everything in the registry was healthy.
 - **what I expected:** the widget shows its name, its app's icon, and its content — or heals itself once the app is back.
 - **evidence:** tests/dogfood/.sessions/375-widgets-dogfood/04-arranged-grid-light.png (slug title), 02-add-widget-catalog.png ("NO" initials in catalog), 375-widgets-dogfood-reboot/01-after-reboot.png (placeholder body, 4 iframes for 6 cards); console: `http404: brainstorm://app-icon/io.brainstorm.notes` during boot; 375b probe: post-seed registry healthy (`hasIcon:true`, name "Recent Notes").
 - **triage:** three one-shot reads race any app (re)install and never refresh: (1) widget titles — `widgets-layer.tsx:320` fetches `registeredWidgets()` once on mount (`[]` deps); (2) iframe entry — `widgets-layer.tsx:571` resolves once, `!entry → return` leaves a dead placeholder with no retry; (3) app icon — `app-icon-cache.ts` persists `hasIcon:false` to localStorage when `listInstalled()` lands mid-reinstall, and `AppIcon`'s `onError` latches. The dogfood harness reseeds every boot (Notes first, right in the dashboard-mount window) so Mira hits it every session — but any real app update/reinstall while the dashboard is open does the same. Fix shape: broadcast an `apps:changed` event from the installer (install/uninstall/refreshRegistrations) → preload subscription → widgets-layer re-fetches titles + un-resolved entries, icon cache re-lists. Needs its own iteration (main + preload + renderer + tests).
+- **triage / resolution (2026-07-03, shell PR #94 `fix/widgets-lifecycle-ux`):** the installer now broadcasts a payload-free `apps:changed` to the dashboard from every chokepoint (install / update / uninstall / refreshRegistrations); the widgets layer re-fetches titles and re-resolves iframe entries on that edge (an update's new bundle sha live-reloads the iframe), and the icon cache re-lists. Regression tests: installer broadcast integration, jsdom layer test that mounts mid-reinstall and watches the slug title heal. Verified real-Electron in session 375c — the per-boot reseed no longer husks the Notes widget (title "Recent Notes", iframe mounts, real glyph in the catalog).
 
 ### F-381 — every widget's empty state is a dead end
-- **session:** 375-widgets-dogfood   **kind:** design   **app:** contacts / calendar (widget surfaces)   **status:** open
+- **session:** 375-widgets-dogfood   **kind:** design   **app:** contacts / calendar (widget surfaces)   **status:** ✅ done (2026-07-03)
 - **what I was trying to do:** glance at my dashboard: Contacts said "No contacts yet.", Today's Agenda and Week Ahead said "Nothing scheduled".
 - **what happened:** true statements (the probe confirms the vault has zero `Person/v1` entities), but the tile just sits there — no "add a contact", no "schedule something", not even a hint that clicking ↗ opens the app. An empty glance tile is the one moment a widget should invite action.
 - **what I expected:** a one-tap affordance in widget empty states (open-intent to the owning app's create flow — the bridge already allows the `open` verb).
 - **evidence:** tests/dogfood/.sessions/375-widgets-dogfood/08-widget-today-agenda.png, 10-widget-list-contacts.png; 375b probe notes (entity-type histogram: no Person/v1 in 163 entities).
-- **triage:** _(open — pair with the F-283 ruling that widgets deliberately skip the big `<EmptyState>` glyph; this asks for a small inline action link, not the glyph chip.)_
+- **triage / resolution (2026-07-03, shell PR #96 `feat/widgets-round-2`):** shared `WidgetEmpty` in `@brainstorm/sdk/widget` (dim message + link-styled CTA dispatching an entityType-only `open` intent that routes to the app's registered opener). Retrofitted into all five existing widgets (both calendar tiles, both tasks tiles) and built into the six new ones. Verified in 375c: the empty Contacts tile shows "Add people" and clicking it launches the Contacts app.
 
 ### F-382 — the widget ⋯ menu has exactly one item
-- **session:** 375-widgets-dogfood   **kind:** design   **app:** shell (dashboard widgets)   **status:** open
+- **session:** 375-widgets-dogfood   **kind:** design   **app:** shell (dashboard widgets)   **status:** ✅ done (2026-07-03)
 - **what I was trying to do:** make Task Stats small without pixel-dragging the corner grip.
 - **what happened:** ⋯ offers only "Remove widget". No size presets (small / medium / large exist in the manifest schema and the add-menu footprints), no "open app" (it's a separate hover-only glyph), nothing else. Meanwhile precise resizing means dragging an 8px corner grip.
 - **what I expected:** at least Size → Small / Medium / Large, and Open <app>.
 - **evidence:** tests/dogfood/.sessions/375-widgets-dogfood/15-widget-options-menu.png; notes.md `widget ⋯ menu items: ["Remove widget"]`.
-- **triage:** _(open — the 7.3a widget menu had size presets; they were dropped in the 7.3b rewrite. Restore Size presets via `widgetFootprint(WidgetSize.*)` + keep Remove last.)_
+- **triage / resolution (2026-07-03, shell PR #94):** ⋯ menu now carries Size → Small / Medium / Large (via `widgetFootprint`, current footprint checked) + Open app, Remove last. Verified in 375c (menu rows + Small snapping the card to 160×160).
 
 ### F-383 — I can't move or resize a widget without a mouse
-- **session:** 375-widgets-dogfood   **kind:** gap   **app:** shell (dashboard widgets)   **status:** open
+- **session:** 375-widgets-dogfood   **kind:** gap   **app:** shell (dashboard widgets)   **status:** ✅ done (2026-07-03)
 - **what I was trying to do:** arrange widgets by keyboard (60 Tab presses, all reachable controls logged).
 - **what happened:** Tab reaches open ↗ / collapse / ⋯ / the iframe — but the drag grip and resize grip are pointer-only. There is no keyboard path to move or resize a widget at all.
 - **what I expected:** focusable grips with arrow-key move/resize (8px steps, Shift for coarse), like the icon grid's keyboard story.
 - **evidence:** tests/dogfood/.sessions/375-widgets-dogfood/notes.md keyboard-reachability line.
-- **triage:** _(open — violates the workflow standard "keyboard path" for a user-facing surface; needs shortcut-registry ids, not raw key handlers.)_
+- **triage / resolution (2026-07-03, shell PR #94):** both grips are focusable (`role=button`, accent focus ring; the hover-revealed resize grip reveals on focus) and nudge on the 8px grid with arrow keys, Shift = 4 cells, through the same optimistic-pending path as pointer gestures. Verified in 375c: grip focus + ArrowRight moved exactly 8px; resize grip + ArrowDown grew exactly 8px.
 
 ### F-384 — every widget downloads my whole vault to show 8 rows
-- **session:** 375b-widgets-probe   **kind:** design   **app:** shell (widget bridge)   **status:** open
+- **session:** 375b-widgets-probe   **kind:** design   **app:** shell (widget bridge)   **status:** ✅ done (2026-07-03)
 - **what I was trying to do:** (developer-side observation while probing F-381.)
 - **what happened:** `widget-bridge:list-entities` returns the full entity list the app can read — for apps holding `entities.read:*` that's the entire vault (163 entities today) — and each widget filters client-side to its handful of rows. Seven widgets × every `vault-entities-changed` signal re-pulls the whole list into each sandboxed iframe.
 - **what I expected:** a typed/limited query (type filter + limit + sort) on the bridge, or at least fan-out coalescing; this is also the natural place the future parameterised `bind` lands.
 - **evidence:** tests/dogfood/.sessions/375b-widgets-probe/notes.md (identical 163-entity histograms via the contacts and database app grants).
-- **triage:** _(open — perf-budget adjacent; fold into the parameterised-widgets iteration rather than a bespoke fix.)_
+- **triage / resolution (2026-07-03, shell PRs #94 + #96):** `vaultEntities.list()` accepts `{types, limit}` threaded shim → parent proxy → preload → handler; validation/filtering is pure (`ipc/widget-list-query.ts`). Every widget now passes its typed query (module-level const) so no widget ships the whole vault. Bonus: a scoped-read app (Books) is admitted through a typed query covering its grants — the old handler flatly demanded `entities.read:*`. Verified in 375c (Books widget renders, not capability-denied).
 
 ### F-378 — apps remember my right panel across windows — every new window opens with the inspector already on
 - **session:** user report (razor, 2026-07-03)   **kind:** design   **app:** notes, journal, tasks, books, preview, code-editor   **status:** ✅ done (2026-07-03)
@@ -1409,7 +1418,7 @@ the 9.15.23 catalog-driven CALENDARS sidebar). Screenshot-verified.
 - **session:** 228-deep-tasks   **kind:** bug   **app:** Tasks   **status:** open
 - **what happened:** a single renderer `pageerror`: `Failed to execute 'replaceChildren' on 'Element': The node to be removed is no longer a child of this node. Perhaps it was moved in a 'blur' event handler?` — a transient DOM mutation race when a re-render `replaceChildren`s a node that a blur handler moved. Non-fatal (the app keeps working).
 - **evidence:** `tests/dogfood/.sessions/228-deep-tasks/console.log` (line 31)
-- **triage:** _(open — pre-existing fragility in the imperative-DOM Tasks `app.ts`; no stack captured to pin the exact `replaceChildren` site of ~10. Best resolved with a focused repro that captures the stack, or folded into the Tasks React migration; not introduced by recent work.)_
+- **triage / resolution (2026-07-03, shell PRs #94 + #96):** `vaultEntities.list()` accepts `{types, limit}` threaded shim → parent proxy → preload → handler; validation/filtering is pure (`ipc/widget-list-query.ts`). Every widget now passes its typed query (module-level const) so no widget ships the whole vault. Bonus: a scoped-read app (Books) is admitted through a typed query covering its grants — the old handler flatly demanded `entities.read:*` (which would have blocked the Books widget outright). Verified in 375c (Books widget renders, not capability-denied).
 
 ## Session 239 — fresh design + functionality sweep, real Electron (2026-06-15)
 
