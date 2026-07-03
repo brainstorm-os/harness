@@ -112,6 +112,7 @@ Rules:
 | Module | Import | Flavour | What it is |
 |---|---|---|---|
 | Resizable | `/resizable` | D | `attachResizable` + `applyPersistedPanelWidth` — drag-handle panel resize with localStorage persistence + animated collapse. |
+| Panel state | `/panel-state` | P | `readPanelOpen(key, fallback)` / `writePanelOpen(key, open)` — right-panel (inspector/properties/refs) open state, **window-scoped** via `sessionStorage`: survives reloads + object switches inside one window, but a fresh app window always starts at the app default (F-378 — `localStorage` leaked one window's open inspector into every future window). Left nav sidebars are a durable device pref and correctly stay in `localStorage`. Used by notes, journal, tasks, books, preview, code-editor. |
 | Layout resolver | `/layout-resolver` | P | `resolveLayout(target, candidates)` — layered scope precedence (entity > collection > type > user > org > app-default > shell). |
 | Block frame | `/block-frame`, `/block-frame/inner` | D | iframe sandbox constants + `createBlockFrame` + postMessage transport for Block Protocol embeds. |
 | Block registry | `/block-registry` | P/R | `createBlockRendererRegistry` — BP block id → React renderer, cached, with fallback. |
