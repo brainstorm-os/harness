@@ -73,7 +73,7 @@ Releases are the sequencing layer; stages + iteration ids stay the work units an
 
 | Version | Type | Theme | Scope | State |
 |---|---|---|---|---|
-| `0.1.9` | patch | Quality: reminders you can rely on | `9.14.9b` shell-side item alerts ✅ (2026-07-07) · `Asset-B6b` client ref-report sender ⚪ · embedder-degrade log noise (one-liner, rides along) | in progress |
+| `0.1.9` | patch | Quality: reminders you can rely on | `9.14.9b` shell-side item alerts ✅ (2026-07-07) · `Asset-B6b` client ref-report sender ✅ (2026-07-07, shell PR #109) · embedder-degrade log noise ✅ (rode along) | ready to cut |
 | `0.2.0` | minor | Live collaboration in the app UIs | `F-274` Share UX (emit half closed by `10.12`) + presence surfaces — scope to be planned when 0.1.9 ships | queued |
 
 **Unassigned backlog** (pull into a queue row when chosen): Windows EV signing (`DQ-13.1-B` — procurement + CI wiring; Azure Trusted Signing ~$10/mo, no company registration needed; any patch once procured), `F-241` Agent↔Notes insertion (blocked on the `11c` seam design), IE residue (`IE-7` Notion-API → Connector, `IE-8` export-intent), `DND-6` keyboard twins completion, a11y/perf budget tails (`12.4`/`12.7`), missed-alert catch-up pass (9.14.9b follow-up).
