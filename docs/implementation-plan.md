@@ -59,6 +59,19 @@ OQ-AINC-1..4 in [reference/11-open-questions.md](reference/11-open-questions.md)
 
 **✅ PUBLIC BETA SHIPPED 2026-06-29 as `v0.1.5`** — ~9 weeks ahead of the `2026-09-01` target: a usable, encrypted, multi-device core, signed + notarized on macOS (Apple silicon + Intel) and built for Windows + Linux, published on GitHub Releases with in-app auto-update. v1 scope is unchanged — all 19 apps + sync + AI + hardening — and the beta was a milestone *within* v1, not GA. **GA continues on the same single-v1 track with no committed date** (remaining: a11y/perf tails, Windows EV signing, vector/embedding search, then the v2 commercial stack).
 
+### Next release — `v0.1.9` scope (agreed 2026-07-07)
+
+Sized for a reduced agent-compute budget (the $20 plan): one contained headline + the open-bug burn-down, nothing speculative. Ship when the four rows are ✓, not on a date.
+
+| # | Item | Why / scope guard |
+|---|---|---|
+| 1 | **F-236 — Journal entry lost on reopen** | The only open data-loss bug; fix FIRST. Suspected save/rebind gap on date switch (Notes on the same editor stack is fine — diff the two paths). Repro spec exists: `tests/dogfood/sessions/242-journal-persistence.spec.ts` (`test.fixme`). |
+| 2 | **Headline: `14.9` Reminders & notifications** | Due/scheduled tasks + calendar events fire real OS notifications through the shell's existing notification infra. Contained: wiring + per-vault settings + tests; no new infra. |
+| 3 | **Consistency sweep** — F-227 F-228 F-229 F-231 F-232 F-233 F-234 | Seven small open friction items batched into one pass (dead empty-state ⋯ menus ×2 · native date pickers → shared date cell · header face/height/composition drifts ×3 · Files double selected-state). Mostly shared root causes. |
+| 4 | **`Asset-B6b` — client ref-report sender** | Completes the encrypted-attachment GC loop (node side `Asset-B6` already shipped). Small plumbing + tests. |
+
+**Deliberately deferred:** F-274 live-collab presence UI (the 0.1.10 headline candidate — biggest open capability, deserves a dedicated release), F-241 Agent↔Notes insertion (blocked on the `11c` seam design), F-230 Graph label collisions (fiddly draw-loop), F-005 (product-shape question, not a bug), Windows EV signing (`DQ-13.1-B` — pure procurement + CI wiring; cheapest route is Azure Trusted Signing ~$10/mo, no company registration needed; start whenever launch-push timing justifies it).
+
 > **The unit is verification cycles, not calendar weeks.** Authoring is effectively free (AI agents, fanned out). What remains scarce — and what `2026-09-01` actually has to clear — is **(1) decision latency**, **(2) the irreducible verification floor**, **(3) serial-unknown depth**. A "week" in the old roadmap was human typing time; that's gone. The schedule is now paced by how fast the decision queue drains and how many soak/build/review cycles fit before the date — both generous *if decisions stay fast*, both fatal if they don't. Faster authoring raises the rate of confident-but-wrong output, so the binding constraint is **review/verification throughput, not author throughput** (the "Graph icons regressed 6×" failure mode is the canonical AI-speed risk — the gates *are* the product now).
 
 ### The three clocks that actually bind
