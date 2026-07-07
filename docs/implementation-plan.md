@@ -66,7 +66,7 @@ Sized for a reduced agent-compute budget (the $20 plan): one contained headline 
 | # | Item | Why / scope guard |
 |---|---|---|
 | 1 | **F-236 — Journal entry lost on reopen** | The only open data-loss bug; fix FIRST. Suspected save/rebind gap on date switch (Notes on the same editor stack is fine — diff the two paths). Repro spec exists: `tests/dogfood/sessions/242-journal-persistence.spec.ts` (`test.fixme`). |
-| 2 | **Headline: `14.9` Reminders & notifications** | Due/scheduled tasks + calendar events fire real OS notifications through the shell's existing notification infra. Contained: wiring + per-vault settings + tests; no new infra. |
+| 2 | **Headline: shell-side reminder scheduler (`9.14.9b`) — reminders fire with the app closed** | `9.14.9` shipped reminders **in-window only** (a 30s tick inside the Tasks/Calendar renderer — nothing fires once the window closes; its text reserves "a future shell-side scheduler"). Host the existing `@brainstorm/sdk/reminder-schedule` engine in the main process over the persisted due/scheduled dates, posting through the shell notification surface, deduped against the in-app tick (shell owns firing when no app window is open). No new scheduling logic — it's extraction + hosting + dedupe + tests. |
 | 3 | **Consistency sweep** — F-227 F-228 F-229 F-231 F-232 F-233 F-234 | Seven small open friction items batched into one pass (dead empty-state ⋯ menus ×2 · native date pickers → shared date cell · header face/height/composition drifts ×3 · Files double selected-state). Mostly shared root causes. |
 | 4 | **`Asset-B6b` — client ref-report sender** | Completes the encrypted-attachment GC loop (node side `Asset-B6` already shipped). Small plumbing + tests. |
 
