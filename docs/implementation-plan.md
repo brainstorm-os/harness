@@ -59,16 +59,24 @@ OQ-AINC-1..4 in [reference/11-open-questions.md](reference/11-open-questions.md)
 
 **✅ PUBLIC BETA SHIPPED 2026-06-29 as `v0.1.5`** — ~9 weeks ahead of the `2026-09-01` target: a usable, encrypted, multi-device core, signed + notarized on macOS (Apple silicon + Intel) and built for Windows + Linux, published on GitHub Releases with in-app auto-update. v1 scope is unchanged — all 19 apps + sync + AI + hardening — and the beta was a milestone *within* v1, not GA. **GA continues on the same single-v1 track with no committed date** (remaining: a11y/perf tails, Windows EV signing, vector/embedding search, then the v2 commercial stack).
 
-### Next release — `v0.1.9` scope (agreed 2026-07-07)
+### Release planning — semver tracks (adopted 2026-07-07)
 
-**A pure quality release** (agreed — no headline feature), sized for a reduced agent-compute budget (the $20 plan). Scope re-verified 2026-07-07 against friction-log **status** lines (the originally drafted F-236 + 7-item consistency sweep were already ✅ done — verified sessions 239/306 — and shipped in 0.1.8; triage lines had gone stale). Ship when both rows are ✓, not on a date.
+Releases are the sequencing layer; stages + iteration ids stay the work units and the backlog. Every release is user-facing the moment it publishes (in-app auto-update), so the version number is a promise about blast radius:
 
-| # | Item | Why / scope guard |
-|---|---|---|
-| 1 ✅ | **Shell-side reminder scheduler (`9.14.9b`) — reminders fire with the app closed** (landed 2026-07-07) | Reliability completion of `9.14.9`, which shipped reminders **in-window only** (a 30s tick inside the Tasks/Calendar renderer — nothing fires once the window closes; its text reserves "a future shell-side scheduler"). Host the existing `@brainstorm/sdk/reminder-schedule` engine in the main process over the persisted due/scheduled dates, posting through the shell notification surface, deduped against the in-app tick (shell owns firing when no app window is open). No new scheduling logic — extraction + hosting + dedupe + tests. |
-| 2 | **`Asset-B6b` — client ref-report sender** | Completes the encrypted-attachment GC loop (node side `Asset-B6` already shipped). Small plumbing + tests. |
+- **PATCH `0.x.Y+1`** — fixes, reliability completions, polish, dep/security bumps. No new user-facing surface a user must learn. Ship whenever the queue rows are green — no date, no minimum size.
+- **MINOR `0.X+1.0`** — a feature release with a headline: a new capability the product can now do. Gets a hero What's-New entry, a site refresh, and (when public-worthy) an announce post. Pre-1.0, minor releases may also carry breaking-ish churn, flagged in notes.
+- **MAJOR `1.0.0`** — GA, defined by §GA definition of done below (single v1, no committed date). Post-1.0, major = compatibility breaks only.
 
-**Deliberately deferred:** F-274 live-collab Share UX (the 0.1.10 centerpiece candidate — emit half closed by `10.12`), F-241 Agent↔Notes insertion (blocked on the `11c` seam design), Windows EV signing (`DQ-13.1-B` — pure procurement + CI wiring; cheapest route is Azure Trusted Signing ~$10/mo, no company registration needed; start whenever launch-push timing justifies it).
+**Rules.** (1) The queue below is the source of the next version number — `bun run release prepare <version>` takes it from here, never ad hoc. (2) An iteration landing updates its release row the same turn (the existing plan-update rule, applied per release). (3) A patch queue may be re-scoped freely; a minor's headline changing means re-planning, not silent drift. (4) Scope candidates are validated against friction-log **status** lines, not triage lines.
+
+**The queue** (top = next to ship):
+
+| Version | Type | Theme | Scope | State |
+|---|---|---|---|---|
+| `0.1.9` | patch | Quality: reminders you can rely on | `9.14.9b` shell-side item alerts ✅ (2026-07-07) · `Asset-B6b` client ref-report sender ⚪ · embedder-degrade log noise (one-liner, rides along) | in progress |
+| `0.2.0` | minor | Live collaboration in the app UIs | `F-274` Share UX (emit half closed by `10.12`) + presence surfaces — scope to be planned when 0.1.9 ships | queued |
+
+**Unassigned backlog** (pull into a queue row when chosen): Windows EV signing (`DQ-13.1-B` — procurement + CI wiring; Azure Trusted Signing ~$10/mo, no company registration needed; any patch once procured), `F-241` Agent↔Notes insertion (blocked on the `11c` seam design), IE residue (`IE-7` Notion-API → Connector, `IE-8` export-intent), `DND-6` keyboard twins completion, a11y/perf budget tails (`12.4`/`12.7`), missed-alert catch-up pass (9.14.9b follow-up).
 
 > **The unit is verification cycles, not calendar weeks.** Authoring is effectively free (AI agents, fanned out). What remains scarce — and what `2026-09-01` actually has to clear — is **(1) decision latency**, **(2) the irreducible verification floor**, **(3) serial-unknown depth**. A "week" in the old roadmap was human typing time; that's gone. The schedule is now paced by how fast the decision queue drains and how many soak/build/review cycles fit before the date — both generous *if decisions stay fast*, both fatal if they don't. Faster authoring raises the rate of confident-but-wrong output, so the binding constraint is **review/verification throughput, not author throughput** (the "Graph icons regressed 6×" failure mode is the canonical AI-speed risk — the gates *are* the product now).
 
