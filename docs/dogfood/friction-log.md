@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-388 — Contacts still isn't a page like everything else, and its left panel is rough
+- **session:** user report (2026-07-08)   **kind:** design   **app:** Contacts   **status:** ✅ done (2026-07-08)
+- **what I was trying to do:** use Contacts like I use Tasks — open a person, see their properties at the top, write notes about them below.
+- **what happened:** (a) the left panel had no inline padding — rows and group headers sat flush against the edges; (b) the search field had its own outline and overflowed past the panel border when focused; (c) the app opened with the right properties panel already covering the content, every launch; (d) the name field rendered as a boxed form input with an outline; (e) the detail was a static card — no editor surface, despite repeated asks that a contact be a *page* (properties at top like a task, editable rich-text body below).
+- **what I expected:** the standard entity page every other app has: hero + inline shared property cells + the shared editor body; a sidebar that reads like Notes/Tasks; the inspector closed until I ask for it.
+- **evidence:** user screenshots (2026-07-08); tests/dogfood/.sessions/228-deep-contacts/06-06-properties-open.png + .sessions/229-contacts-page-probe/* (after).
+- **triage / resolution (2026-07-08, plan `9.23.6`):** shipped in one pass — detail rebuilt as the Tasks-style page (inline `personPropertyRows` block over the shared cells + `PersonBodyEditor` on the person's UniversalBody Y.Doc, legacy `bio` seeds the body and is cleared on first real edit); sidebar search replaced with the shared `<Searchbar>` (fixes outline + overflow) and the list scroller got its inline inset; right panel now rides `@brainstorm/sdk/panel-state` with a closed default; the hero name keeps the `.bs-input` face class for the control ratchet but is styled as an editor page title (no resting box). `plainTextToSerializedState`/`hasLegacyText`/`shouldClearLegacyText` extracted to `@brainstorm/editor` (Tasks' seed-body now delegates). The 228 deep spec's stale selectors are superseded by the new 229 probe.
+
 ### F-387 — the Journal widget clips the first letters of my entries ("Pipeline ready" shows as "peline ready")
 - **session:** 375c-widgets-fixes-verify   **kind:** bug   **app:** journal (widget)   **status:** wontfix (vault data — F-299 residue)
 - **what I was trying to do:** glance at my journal tile on the dashboard.
