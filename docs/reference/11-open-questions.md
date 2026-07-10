@@ -3349,7 +3349,7 @@ Source: [foundations/67-ai-native-company.md](../foundations/67-ai-native-compan
 
 ---
 
-## Agent teams and orchestration — `OQ-AT-1` … `OQ-AT-4`
+## Agent teams and orchestration — `OQ-AT-1` … `OQ-AT-5`
 
 Source: [platform/69-agent-teams-and-orchestration.md](../platform/69-agent-teams-and-orchestration.md). **Post-beta, deliberately iterative — none gate any current stage.** This doc resolves [OQ-AINC-1](#oq-ainc-1--agent-as-roster-member-type-resolved-in-platform69-agent-teams-and-orchestrationmd) and takes a position on [OQ-AINC-2](#oq-ainc-2--capability-grantrevoke-ui-for-agents-in-v1-position-taken-in-platform69-agent-teams-and-orchestrationmd).
 
@@ -3372,6 +3372,11 @@ Source: [platform/69-agent-teams-and-orchestration.md](../platform/69-agent-team
 - **Question:** Max delegation depth, cycle detection (A→B→A), and whether the routing cost ceiling ([OQ-AINC-3](#oq-ainc-3--localcloud-routing-granularity)) is shared across a delegated tree or per-agent.
 - **Tentative leaning:** undecided; single-hop manager→worker is safe today via recursive capability intersection, but multi-hop autonomy needs depth/cycle/budget bounds set first.
 - **Blocking?:** **Blocks** multi-hop autonomous delegation; non-blocking for single-hop.
+
+#### OQ-AT-5 — Agent/team template content-kind mechanics
+- **Question:** Marketplace distribution of agent + team templates ([69 §Marketplace distribution](../platform/69-agent-teams-and-orchestration.md)) needs three calls in the [47](../apps/47-marketplace.md) content-kind registry: (a) does persona prose — third-party *prompt text* prepended to a capability-holding system prompt — get a new `active-prompt` threat profile, or is it reviewed as active-code-equivalent? (b) what does prompt-level review concretely check ([32-store-verification](../apps/32-store-verification.md) lane)? (c) is a team template one bundle or a composition of `AgentTemplate` items via the descriptor's `references` mechanism?
+- **Tentative leaning:** review as active-code-equivalent (behavioral review model, mandatory signature) rather than minting a new profile until a second prompt-carrying kind exists; team template as one bundle referencing `WorkflowPack` deps, since its delegation edges are meaningless split across separately-installable items.
+- **Blocking?:** Blocks marketplace *distribution* of templates only; non-blocking for agent-teams v1 (seeded starters use the same `AgentTemplate` format from a bundled source).
 
 ---
 

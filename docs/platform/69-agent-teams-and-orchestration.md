@@ -103,6 +103,41 @@ The "what this agent did" view is **free**: every agent action is already a brok
 
 > **Open:** [OQ-AT-3](../reference/11-open-questions.md) — exact starter roster + whether seeding is opt-in at OOBE or always-on (and whether starter personas carry the dogfood names/themes or neutral role names). See [11-open-questions.md](../reference/11-open-questions.md).
 
+## Marketplace distribution — agent & team templates
+
+The [phasing table](#phasing) defers marketplace distribution to post-v1; this section fixes the *model* now so the v1 starter-seed format is forward-compatible with it. Distribution composes with the [47-marketplace.md](../apps/47-marketplace.md) content-kind registry — the signed catalog, install pipeline, consent sheet, and library surface are reused as-is. Agent distribution adds **kinds, not infrastructure**.
+
+> **Decision:** the marketplace unit is a **template, not an agent.** Of the four things that make an agent (§The agent), two are non-portable *by design*: the keypair is generated locally at creation (§Identity) and grants only ever come from the user's consent gesture, never as data (§Management). Everything else ships:
+
+```ts
+type AgentTemplate = {
+  // persona shell — third-party PROMPT TEXT, see threat note below
+  displayName: string;
+  avatarRef: string | null;
+  theme?: ThemeName;
+  persona: string;
+
+  // specialty — may bundle Workflow/v1 definitions (composes with WorkflowPack via `references`)
+  skills: SkillRef[];
+
+  // trait DEFAULTS — user-editable at instantiation
+  traits: { routing: RoutingPolicy; autonomy: AutonomyLevel; memoryScope: MemoryScope };
+
+  // a REQUEST manifest, exactly like an app manifest — never a grant
+  requestedCapabilities: Capability[];
+};
+```
+
+**Installing is instantiating**: local key-gen → roster registration → the standard consent sheet rendered over `requestedCapabilities` — the same flow an app install already runs, pointed at an agent principal. The resulting `Agent/v1` is an ordinary editable entity; the template is provenance, not a live link (no auto-update of persona prose under a user's feet — template updates surface as an update offer with a diff, like a cap-adding app update).
+
+> **Decision:** **starter agents ARE templates.** The OOBE seed (§Seeded starter agents) uses the same `AgentTemplate` format and the same instantiation path, just from a bundled source instead of the catalog. The seed is the format's first consumer, which is what keeps the marketplace rung cheap later.
+
+> **Decision:** the **team template** is the second kind — a bundle of agent templates plus their coordination wiring: delegation edges (`agents.delegate` requests scoped to sibling template ids), `Trigger/v1` definitions, and optionally a shared Chat thread scaffold. "Install a content studio: researcher + writer + reviewer, writer leads." One consent sheet shows the **union** of what the team requests, per-member itemised — the [47 §Cross-kind composition](../apps/47-marketplace.md) transitive-dependency prompt, reused. Safety is inherited, not new: delegation edges are subject to the same recursive capability intersection, so an installed team can never exceed what the user granted at the sheet, regardless of its internal org-chart.
+
+**Threat delta — persona prose is a new review surface.** A marketplace app ships sandboxed *code*; an agent template ships third-party *text that is prepended to a system prompt* holding capabilities. The frozen ceiling caps the blast radius (a template cannot request its way past the consent sheet), but a malicious persona can still *misuse* what was granted — bias what it writes, quietly exfiltrate through a granted network tool. The 47 registry's threat profiles (`active-code` / `passive-data` / `metadata-only`) don't have a slot for this: prompt text is not active code, but it is nowhere near passive data. Leaning: review agent templates as **active-code-equivalent** (behavioral review model, mandatory signature), with the review being prompt-level — whether the registry grows a distinct `active-prompt` profile is [OQ-AT-5](../reference/11-open-questions.md).
+
+> **Open:** [OQ-AT-5](../reference/11-open-questions.md) — content-kind mechanics for templates: a new `active-prompt` threat profile vs. reusing `active-code`; what prompt-level review concretely checks; team templates as one bundle vs. composition via `references`. Blocks marketplace *distribution* only, not agent-teams v1. See [11-open-questions.md](../reference/11-open-questions.md).
+
 ## Capabilities & security
 
 No new trust primitive — agent teams are the existing identity + capability + audit machinery with a second principal kind. The deltas:
@@ -147,7 +182,8 @@ Prompt-injection posture is inherited unchanged from [62](62-agent-harness.md)/[
 | Single-hop delegation (`delegate` tool, cap intersection) | ✓ | multi-hop trees (OQ-AT-4) |
 | Assignment-driven runs (`assignee` agent + Trigger) | ✓ | soft-claim (OQ-AT-1) |
 | Chat as the agent channel (@-mention an agent) | ✓ | autonomous agent↔agent (OQ-AT-2) |
-| Seeded starter agents | ✓ | richer marketplace of agent templates |
+| Seeded starter agents (in the `AgentTemplate` format) | ✓ | — |
+| Agent + team templates in the marketplace (§Marketplace distribution) | — | ✓ (OQ-AT-5) |
 | Cross-device agent identity | — | ✓ (rides Collab-C5) |
 
 ## Cross-doc reconciliation needed
@@ -158,6 +194,7 @@ Tracked as follow-ups, not edited here (same pattern as [62 §Cross-doc reconcil
 - **[16-identity-orgs-encryption.md](../security/16-identity-orgs-encryption.md)** — note the roster widens from human-only `Profile/v1` to include `Agent/v1` members; the roster service resolves both kinds.
 - **[55-agent-app.md](../apps/55-agent-app.md)** — the Agent app's single conversation is *one agent's* surface; the Team surface and `delegate` tool introduced here are the multi-agent layer above it.
 - **[39-automations-and-workflows.md](../apps/39-automations-and-workflows.md)** — note the `assignee → run agent` trigger pattern and that a saved `Workflow/v1` is an agent skill ([62 §Layer C](62-agent-harness.md)).
+- **[47-marketplace.md](../apps/47-marketplace.md)** — reserve `ContentKind.AgentTemplate` / `ContentKind.TeamTemplate` slots in the content-kind registry + per-kind table rows (threat profile pending OQ-AT-5); templates compose with `WorkflowPack` via `references`; store-verification ([32](../apps/32-store-verification.md)) gains the prompt-level review lane.
 - **impl-plan** — file the rungs as a **post-beta** group (Agent-Teams-1..N): `Agent/v1` + identity, Team surface + grants, `delegate`, assignment triggers, seeds.
 
 ## Open questions surfaced by this doc
@@ -168,6 +205,7 @@ To be added to [11-open-questions.md](../reference/11-open-questions.md):
 - **OQ-AT-2** — Agent→agent Chat actuation: auto-run on mention vs. human-in-the-loop with an opt-in collaborate grant. Lean: human-in-the-loop default.
 - **OQ-AT-3** — Starter roster: which lenses, opt-in vs. always-on, dogfood names vs. neutral roles.
 - **OQ-AT-4** — Delegation-tree governance: max depth, cycle detection, shared vs. per-agent cost budget. **Blocks** multi-hop autonomy.
+- **OQ-AT-5** — Template content-kind mechanics: `active-prompt` threat profile vs. active-code-equivalent review, what prompt-level review checks, team-template packaging (one bundle vs. `references` composition). Blocks marketplace distribution only.
 
 It also **resolves [OQ-AINC-1](../reference/11-open-questions.md)** (agent principal = `Agent/v1` with its own Ed25519 key) and **takes a position on [OQ-AINC-2](../reference/11-open-questions.md)** (grant/revoke + audit ships *with* the Team surface).
 
@@ -179,4 +217,5 @@ It also **resolves [OQ-AINC-1](../reference/11-open-questions.md)** (agent princ
 - **Each agent is a real principal** — own Ed25519 key from day one (cheap), attributable and independently revocable; only multi-device sync is deferred (hard).
 - **Orchestration is assembly**: delegation (one `delegate` tool, made safe by *recursive capability intersection*), assignment (`assignee` agent + Trigger, no lease ledger because CRDTs merge), and Chat (agents as @-mentionable members).
 - **Governed by construction**: every agent hop is broker → capability check → audit row, so "what this agent did" is a query, and a manager can never escalate a worker.
+- **Distribution ships templates, not agents** — identity and grants never leave the vault; installing a template instantiates locally through the standard consent sheet. Team templates ("install a content studio") ride the same rails, safe via the same recursive intersection; the one new review surface is persona prose as third-party prompt text (OQ-AT-5).
 - **No new trust primitive** — agent teams are the shipped identity + capability + audit machinery pointed at a second kind of member. Post-beta, deliberately iterative.
