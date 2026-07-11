@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-389 — the light/dark button switches my apps but the shell doesn't change until a beat later
+- **session:** user report (2026-07-11)   **kind:** bug   **app:** Shell (dashboard)   **status:** ✅ done (2026-07-11)
+- **what I was trying to do:** flip between light and dark with the sun/moon button in the dashboard header.
+- **what happened:** the open apps re-themed instantly and the choice was saved, but the shell itself (dashboard background + chrome) didn't change immediately — it lagged behind the apps.
+- **what I expected:** the shell flips at the same instant the apps do; light/dark is one action.
+- **evidence:** user report; new live `ThemeProvider` mount test (`theme-provider.live.test.tsx`) reproduces the shell-lag path.
+- **triage / resolution (2026-07-11, shell PR #137):** the dashboard resolved its theme only from the entity-pin-**enriched** `dashboard:snapshot`, which `await`s a registry/entities DB read on a pinned dashboard — while app windows get a **synchronous** `app:theme-changed` push, so the shell trailed the apps by that enrichment latency. Fixed by pushing the resolved theme name to the dashboard renderer on the same synchronous signal (`broadcastThemeToWindows` → new preload `dashboard.onTheme`); `ThemeProvider` applies it the instant it arrives (gated on an open vault so it never overrides the welcome Rose pin), and the snapshot re-applies idempotently. Closes the previously-untested click→repaint chain that let this silently regress. Rides the next patch bucket (0.3.2), cut **after** presence + the remaining small tasks.
+
 ### F-388 — Contacts still isn't a page like everything else, and its left panel is rough
 - **session:** user report (2026-07-08)   **kind:** design   **app:** Contacts   **status:** ✅ done (2026-07-08)
 - **what I was trying to do:** use Contacts like I use Tasks — open a person, see their properties at the top, write notes about them below.
