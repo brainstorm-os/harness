@@ -111,6 +111,14 @@ type CollabDevApi = {
 	access: (entityId: string) => Promise<CollabAccessView[]>;
 	stateVector: (entityId: string) => Promise<Uint8Array>;
 	readText: (entityId: string) => Promise<string>;
+	publishPresence: (
+		entityId: string,
+		appId: string,
+		state: Record<string, unknown> | null,
+	) => Promise<{ ok: boolean }>;
+	presenceRemotePeers: (
+		entityId: string,
+	) => Promise<{ clientId: number; state: Record<string, unknown> }[]>;
 };
 
 type CollabWindow = {
@@ -163,6 +171,14 @@ export type CollabShell = {
 	revoke: (entityId: string, memberB64: string) => Promise<boolean>;
 	access: (entityId: string) => Promise<CollabAccessView[]>;
 	readText: (entityId: string) => Promise<string>;
+	publishPresence: (
+		entityId: string,
+		appId: string,
+		state: Record<string, unknown> | null,
+	) => Promise<void>;
+	presenceRemotePeers: (
+		entityId: string,
+	) => Promise<{ clientId: number; state: Record<string, unknown> }[]>;
 	stateVectorHex: (entityId: string) => Promise<string>;
 	shot: (label: string) => Promise<string>;
 	note: (line: string) => void;
@@ -316,6 +332,10 @@ export async function launchCollabShell(
 		revoke: async (entityId, memberB64) => (await collab("revoke", entityId, memberB64)).revoked,
 		access: (entityId) => collab("access", entityId),
 		readText: (entityId) => collab("readText", entityId),
+		publishPresence: async (entityId, appId, state) => {
+			await collab("publishPresence", entityId, appId, state);
+		},
+		presenceRemotePeers: (entityId) => collab("presenceRemotePeers", entityId),
 		// State vectors cross the evaluate boundary as a hex string (a raw
 		// Uint8Array would be JSON-serialized into a lossy {0:..,1:..} object).
 		stateVectorHex: (entityId) =>

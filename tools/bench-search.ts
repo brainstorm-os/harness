@@ -16,15 +16,18 @@
  */
 
 import { existsSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
 	type BenchEngine,
 	formatBenchReport,
 	makeFts5Engine,
+	makeSqliteVecEngine,
 	makeVectorEngine,
 	runBench,
 } from "../packages/shell/src/main/search/bench";
 
-type Engine = "fts5" | "vector";
+type Engine = "fts5" | "vector" | "vector-vec";
 
 type Args = {
 	size: number;
@@ -51,8 +54,8 @@ function parseArgs(argv: readonly string[]): Args {
 		switch (a) {
 			case "--engine": {
 				const e = argv[++i];
-				if (e !== "fts5" && e !== "vector") {
-					console.error("bench-search: --engine must be 'fts5' or 'vector'");
+				if (e !== "fts5" && e !== "vector" && e !== "vector-vec") {
+					console.error("bench-search: --engine must be 'fts5', 'vector', or 'vector-vec'");
 					process.exit(2);
 				}
 				out.engine = e;
@@ -89,15 +92,15 @@ function parseArgs(argv: readonly string[]): Args {
 	return out;
 }
 
-const USAGE = `bench-search — FTS5 search bench (11.0)
+const USAGE = `bench-search — FTS5 / vector search bench (11.0 / 11.3)
 
 Usage:
-  bun tools/bench-search.ts [--engine fts5|vector] [--size N] [--seed N]
+  bun tools/bench-search.ts [--engine fts5|vector|vector-vec] [--size N] [--seed N]
                             [--runs N] [--warmup N] [--path FILE] [--json]
 
 Options:
-  --engine E    fts5 (lexical, default) or vector (in-memory cosine
-                baseline; the real sqlite-vec ANN bench runs in Electron)
+  --engine E    fts5 (lexical, default), vector (in-memory cosine baseline),
+                or vector-vec (sqlite-vec ANN on disk via better-sqlite3)
   --size N      number of entities to index (default 10000)
   --seed N      PRNG seed; same seed = byte-identical corpus (default 42)
   --runs N      query runs per kind for stats (default 20)
@@ -112,11 +115,21 @@ async function main(): Promise<void> {
 	const cleanupPath = args.path !== ":memory:";
 	if (cleanupPath && existsSync(args.path)) unlinkSync(args.path);
 
-	// The vector engine runs the in-memory cosine baseline (sqlite-vec can't
-	// load under the CLI's bun:sqlite either); it ignores --path. The real
-	// sqlite-vec ANN bench is a real-Electron run.
-	const makeEngine = (): BenchEngine | Promise<BenchEngine> =>
-		args.engine === "vector" ? makeVectorEngine() : makeFts5Engine(args.path);
+	const makeEngine = async (): Promise<BenchEngine> => {
+		if (args.engine === "vector") return makeVectorEngine();
+		if (args.engine === "vector-vec") {
+			const vecPath = args.path === ":memory:" ? join(tmpdir(), `bench-vec-${Date.now()}.db`) : args.path;
+			const engine = await makeSqliteVecEngine(vecPath);
+			if (!engine) {
+				console.error(
+					"bench-search: vector-vec unavailable (better-sqlite3 or sqlite-vec failed to load)",
+				);
+				process.exit(2);
+			}
+			return engine;
+		}
+		return makeFts5Engine(args.path);
+	};
 
 	const t0 = Date.now();
 	const report = await runBench(makeEngine, {
