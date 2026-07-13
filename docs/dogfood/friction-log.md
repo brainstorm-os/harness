@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-390 — Database list view paints the status/date chips on top of the row titles
+- **session:** user report (2026-07-13)   **kind:** bug   **app:** Database   **status:** ✅ done (2026-07-13, shell PR #156)
+- **what I was trying to do:** read the curated Tasks list's "Upcoming" (List-kind) view.
+- **what happened:** on rows whose entities have no icon, the long titles ran the full row width and the status/priority/date chips painted ON TOP of the title text at what looked like random fixed columns; even empty date cells occupied a wide invisible band.
+- **what I expected:** title left (ellipsized), chips packed right — never overlapping.
+- **evidence:** user screenshot (2026-07-13); reproduced + verified by `tests/dogfood/sessions/900-dbv-list-probe.spec.ts` (computed-grid dump: before `133px 660px 0px`, after `0px 672px 122px`).
+- **triage / resolution (2026-07-13, shell PR #156):** `.dbv-list__glyph:empty { display:none }` removed the iconless glyph from the row's **grid flow**, shifting every child one auto-placed track left — title into `auto` (can't shrink below the nowrap string), props strip into `1fr` (collapsed to ~0), so the right-packed chips overflowed leftward over the title. Fixed by pinning each child to its explicit `grid-column` (1/2/3); plus two amplifiers: the SDK date/link cells' panel-oriented `width:100%` inflated each strip cell to the full 28ch cap (now content-sized inside the strip), and the read-only strip painted the `title`/`name` column again as the first chip (now skipped, matching the editable strip).
+
 ### F-389 — the light/dark button switches my apps but the shell doesn't change until a beat later
 - **session:** user report (2026-07-11)   **kind:** bug   **app:** Shell (dashboard)   **status:** ✅ done (2026-07-11)
 - **what I was trying to do:** flip between light and dark with the sun/moon button in the dashboard header.
