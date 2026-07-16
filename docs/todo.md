@@ -1,3 +1,10 @@
 - Notes have all editor styles duplicated
 - Harness has duplicated shell files
 - We should move code shared between apps to organisation packages and each app to its own repo, so apps can have separate releases but use the same core functionality and components. This way we can easily add new apps as github repos + manifest and check their updates with new releases basically. This will also allow third party providers to be added as app manifest providers.
+- change dnd in form editor to dnd kit with animation, verify other places
+- add custom CSS per app and per object to tasks
+- check all editor blocks, i see problems in Callout, template and others
+- clicking in notifications should open the object
+- Fix grids in Files app, everything is overlapping and there is an ugly outline for icons
+- When app launches apps are being reinstalled and their icons blink with default lettered ones with colored backgrounds, they should be removed.
+- Show slight grid with color difference when dragging in dashboard
