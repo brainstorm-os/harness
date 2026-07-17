@@ -2900,7 +2900,8 @@ different between apps** — which is exactly the inconsistency a shared compone
 is supposed to eliminate. Filed as F-070.
 
 ### F-070 — the "shared" editor shows a different block menu in each app
-- **session:** 153-marcus-editor-consistency   **kind:** design   **app:** Notes / Journal / Tasks (shared editor)   **status:** open
+- **session:** 153-marcus-editor-consistency   **kind:** design   **app:** Notes / Journal / Tasks (shared editor)   **status:** ✅ done (2026-07-17)
+- **resolution (completion, 2026-07-17, shell PR #178):** the remainder closed — embed + transclusion blocks now available in the Journal and Tasks editors (insert via palette, render, navigate), wired through the shared editor layer rather than per-app forks; rode on #177's editor-theme de-duplication (Notes now consumes the shared editor-theme.css — the 0.4.6 'separate task' note discharged).
 - **what I was trying to do:** confirm the unified editor feels identical everywhere — same blocks, same menu.
 - **what happened:** the `/` block menu diverges between apps that supposedly share one editor:
   1. **Palette size/contents differ.** Notes offers ~30 block types (Text, headings, lists, quote, code, callout, **image, video, audio, file, property, toggle headings, table of contents, sub-page, embed, equation, checkbox, date, number, bookmark**, divider, toggle, table, columns). Journal offers **15** — a strict subset: Text, H1–H3, bulleted/numbered/to-do lists, quote, code, callout, divider, toggle list, table, 2/3 columns. So Journal is missing image/video/audio/file/property/toggle-headings/ToC/sub-page/embed/equation/bookmark — yet it *keeps* table + 2- and 3-column layouts, which feels backwards for a daily log (I'd want an image or an embed in a journal entry far sooner than a 3-column layout). The subset reads arbitrary, not curated.
