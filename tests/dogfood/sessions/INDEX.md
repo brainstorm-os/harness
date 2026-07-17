@@ -19,7 +19,7 @@ slugs to tell which is which.
 
 ## Go-forward rule (the fix for the divergence)
 
-1. **A new dogfood session takes the next integer: `903`.** Never reuse an
+1. **A new dogfood session takes the next integer: `904`.** Never reuse an
    existing number for an unrelated session.
 2. **A single themed sweep may group multiple specs under one reserved number** using
    `NNN-<topic>-<facet>.spec.ts` naming (the `228` pattern). Reserve the number once.
@@ -27,10 +27,10 @@ slugs to tell which is which.
 
 ## Manifest
 
-- **Total spec files:** 401
-- **Distinct session numbers:** 309
-- **Highest number:** 902 → **next session = 903**
-- **Numbers shared by >1 spec (`×N`):** 54
+- **Total spec files:** 404
+- **Distinct session numbers:** 311
+- **Highest number:** 903 → **next session = 904**
+- **Numbers shared by >1 spec (`×N`):** 55
 
 | Session | Spec file(s) |
 | ------- | ------------ |
@@ -247,7 +247,7 @@ slugs to tell which is which.
 | 223 | `223-notes-functional.spec.ts` |
 | 227 | `227-functional-sweep.spec.ts` |
 | 228 ×20 | `228-deep-agent.spec.ts`<br>`228-deep-automations.spec.ts`<br>`228-deep-bookmarks.spec.ts`<br>`228-deep-books.spec.ts`<br>`228-deep-browser.spec.ts`<br>`228-deep-calendar.spec.ts`<br>`228-deep-code-editor.spec.ts`<br>`228-deep-contacts.spec.ts`<br>`228-deep-database.spec.ts`<br>`228-deep-files.spec.ts`<br>`228-deep-form-designer.spec.ts`<br>`228-deep-graph.spec.ts`<br>`228-deep-journal.spec.ts`<br>`228-deep-mailbox.spec.ts`<br>`228-deep-notes.spec.ts`<br>`228-deep-preview.spec.ts`<br>`228-deep-tasks.spec.ts`<br>`228-deep-theme-editor.spec.ts`<br>`228-deep-whiteboard.spec.ts`<br>`228-rightpanel-rollout.spec.ts` |
-| 229 | `229-verify-fixes.spec.ts` |
+| 229 ×2 | `229-contacts-page-probe.spec.ts`<br>`229-verify-fixes.spec.ts` |
 | 230 | `230-probe-bookmark-url.spec.ts` |
 | 231 | `231-verify-fleet.spec.ts` |
 | 232 | `232-verify-fleet-b.spec.ts` |
@@ -341,8 +341,10 @@ slugs to tell which is which.
 | 374 ×5 | `374-a11y-name-audit.spec.ts`<br>`374-bin-purge-repro.spec.ts`<br>`374b-bin-empty-persistence.spec.ts`<br>`374c-bin-keyboard-multiselect.spec.ts`<br>`374d-bin-reactivity-repro.spec.ts` |
 | 375 ×4 | `375-a11y-contrast-audit.spec.ts`<br>`375-widgets-dogfood.spec.ts`<br>`375b-widgets-probe.spec.ts`<br>`375c-widgets-fixes-verify.spec.ts` |
 | 377 | `377-inline-mentions.spec.ts` |
+| 900 | `900-dbv-list-probe.spec.ts` |
 | 901 | `901-notes-select-placeholder.spec.ts` |
 | 902 | `902-notes-all-blocks.spec.ts` |
+| 903 | `903-recent-ship-sweep.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 
