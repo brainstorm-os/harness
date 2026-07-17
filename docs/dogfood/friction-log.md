@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-391 — my pinned tiles still say "Form Designer" and "Web Browser" after the rename
+- **session:** 903-recent-ship-sweep   **kind:** bug   **app:** shell/dashboard   **status:** ✅ done (2026-07-17)
+- **what I was trying to do:** walk the v0.4.6 release notes — the update said four apps got shorter names.
+- **what happened:** the launcher grid shows the new names, but the icons I pinned weeks ago still carry the old labels ("Form Designer", "Theme Editor", "Web Browser", "Code Editor"). So the rename half-happened on my desktop.
+- **what I expected:** a rename to reach every place the app's name shows, including pins I made before it.
+- **evidence:** tests/dogfood/.sessions/903-recent-ship-sweep/01-dashboard-labels.png
+- **triage (developer, 2026-07-17):** confirmed — app-kind dashboard icons persist a label snapshot at pin time and the pin resolver only live-resolved **entity** pins (its own doc claimed otherwise); the renderer fell back to the stored snapshot. Fix (shell PR #170): `resolvePins` now resolves `kind:"app"` icons through the registry's current manifest name on every read (an app the registry no longer knows keeps its stored label, same tombstone stance as entity pins), and the snapshot handler's entity-only gate includes app pins. 3 new resolver tests; 106 dashboard tests green. Session 903's other probes were clean: snap grid visible mid-drag, Journal inline toolbar horizontal (0.4.6 theme sync verified live), notification center opens. One harness note: the sweep's What's-New selector found no affordance — verify the real trigger's testid before reading that as a product gap.
+
 ### F-390 — Database list view paints the status/date chips on top of the row titles
 - **session:** user report (2026-07-13)   **kind:** bug   **app:** Database   **status:** ✅ done (2026-07-13, shell PR #156)
 - **what I was trying to do:** read the curated Tasks list's "Upcoming" (List-kind) view.
