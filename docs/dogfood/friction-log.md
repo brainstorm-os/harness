@@ -27,6 +27,11 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-392 — gallery tiles still wear the card frame we already removed from the grid
+- **session:** owner report (2026-07-17)   **kind:** bug   **app:** Files   **status:** ✅ done (2026-07-17)
+- **what happened:** the always-on tile border/background that f9e55cb removed from Grid view survived in **Gallery** view (`body[data-view-mode="gallery"] .content-row` — elevated background + solid border on every tile at rest). Third recurrence of the rest-state frame class (after f9e55cb tiles and F-374 focus-ring container framing).
+- **triage / resolution (developer, 2026-07-17, shell PR #171):** gallery tiles now match the grid stance — transparent background + transparent border track at rest, hover keeps the lift, selection tints the track; no layout shift. Audited the rest of Files (grid tiles, corner chips, overlays, badges, dividers — clean) and the shared `app-theme.css` ring rule (post-F-374 exclusions intact; no shared fix needed). **Durable guard:** `apps/files/src/styles-rest-frames.test.ts` parses every Files CSS file and fails when a rest-state rule on tile/row/container classes declares a non-transparent border/outline/box-shadow (reasoned allowlist for intentional frames; vacuousness check so selector renames can't disarm it; verified red/green). 325 files-app tests green.
+
 ### F-391 — my pinned tiles still say "Form Designer" and "Web Browser" after the rename
 - **session:** 903-recent-ship-sweep   **kind:** bug   **app:** shell/dashboard   **status:** ✅ done (2026-07-17)
 - **what I was trying to do:** walk the v0.4.6 release notes — the update said four apps got shorter names.
