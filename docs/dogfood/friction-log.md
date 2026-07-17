@@ -27,6 +27,54 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-402 — every imported note opens with a blank title over the body
+- **session:** 905-anytype-files-deep-verify / 905b   **kind:** bug   **app:** shell/import + Notes   **status:** open
+- **what I was trying to do:** open "Stunde 8" and see it as I left it in Anytype — title on top, lesson underneath.
+- **what happened:** the window header, the sidebar row, and the Database row all say "Stunde 8" — but the note itself opens with an EMPTY title line and the body starting straight at "Seite 29". Every imported note is like this (`h1.notes__title` is empty on all 4 copies probed across both import sources): the title lives only in the entity properties, the importer never plants a Title node into the body doc. If I type into that blank title, which name wins?
+- **what I expected:** the note's title in the note.
+- **evidence:** tests/dogfood/.sessions/905b-anytype-fresh-copy-probe/notes.md (`editor-title=""` on every row); tests/dogfood/.sessions/905-anytype-files-deep-verify/06-stunde-8-blocks.png (body starts at "Seite 29", header says "Stunde 8").
+- **triage:** _(open)_
+
+### F-401 — my chapter tag finally has a row in Properties… and the row says "Empty"
+- **session:** 905b-anytype-fresh-copy-probe   **kind:** bug   **app:** shell/import + Notes   **status:** open
+- **what I was trying to do:** confirm the F-394 fix — "Stunde 8" wearing its "Kapitel 9" tag in the Properties panel on a fresh import (the fix ships values in `properties.values`, re-import refreshes).
+- **what happened:** halfway there. The freshly imported copy DOES show a "tags" property row now (the old copy still says "No properties on this note yet", as F-394's no-migration note predicted) — but the row's value renders **"Empty"**. The value is either not landing in the shape the panel's value-store expects (imported as a bare `["Kapitel 9"]` array vs the labeled envelope?) or landing and not rendering. Either way I still can't see my chapter anywhere.
+- **what I expected:** `tags: Kapitel 9`.
+- **evidence:** tests/dogfood/.sessions/905b-anytype-fresh-copy-probe/notes.md (row#16 panel: "tags Empty"); 02-stunde-8-row16.png.
+- **triage:** _(open — F-394 follow-up: def + values-bag mirror landed, the VALUE doesn't render. Check `coerceValue` on the imported raw-string array vs the multi-value envelope `property-ui` expects.)_
+
+### F-400 — I re-exported my space (as Anytype tells you to) and Brainstorm doubled it
+- **session:** 905-anytype-files-deep-verify   **kind:** bug   **app:** shell/import   **status:** open
+- **what I was trying to do:** the exact flow the wizard implies is safe: my first export was JSON-only (904), so after the F-396 fix I re-exported WITH files and imported again, expecting my existing lessons to be refreshed with their media.
+- **what happened:** Anytype names every export by timestamp ("Anytype.20260717.130907.7" vs "Anytype.20260717.145135.3.zip"), and the import dedupe key includes that archive name — so the second import didn't update my 49 lessons, it minted 49 MORE. Database now shows TWO "Stunden" Lists (41 members each) and every lesson exists twice with identical titles and dates. Worse, the Notes list windows its rows, so search looked like there was only one copy until I scrolled — I genuinely couldn't tell what had happened.
+- **what I expected:** the same space to update in place — Anytype object ids are stable content ids (`bafy…`); the export's *filename* is the one thing guaranteed to change every time.
+- **evidence:** tests/dogfood/.sessions/905-anytype-files-deep-verify/11-database-stunden.png (two "Stunden" 41-member Lists); 905b notes.md (2 rows per title).
+- **triage:** _(open — key the dedupe on the Anytype object id (already the `externalId`), not `anytype:<archiveName>:<id>`; or at minimum offer a "this looks like the same space" merge on import.)_
+
+### F-399 — an update run that created nothing cost me another 412MB of disk
+- **session:** 905-anytype-files-deep-verify   **kind:** bug   **app:** shell/import   **status:** open
+- **what I was trying to do:** re-run the same 460MB zip (the card promises "updates rather than duplicates") and move on.
+- **what happened:** the report said "0 created, 49 updated" — clean. But the vault on disk went 208MB → 625MB (run 1) → **1037MB (run 2)**. The second run re-sealed all ~370 referenced binaries into the AssetStore again and repointed the File entities at the new copies, leaving the first run's ~412MB as bound-but-orphaned assets nothing references.
+- **what I expected:** an update run to cost roughly nothing; my vault not to grow by the export's size every time I re-import it.
+- **evidence:** tests/dogfood/.sessions/905-anytype-files-deep-verify/notes.md ([run1]/[run2] vault-size lines).
+- **triage:** _(open — `importAnytypeExport` calls `assetStore.writeAsset` per referenced binary BEFORE checking `existingByKey` (anytype-import.ts:1018-1021); an existing File entity should keep its asset (or content-hash dedupe should make the second seal a no-op), and replaced assets need unbinding.)_
+
+### F-398 — re-importing pastes a second copy of every note under the first
+- **session:** 905-anytype-files-deep-verify / 905b   **kind:** bug   **app:** shell/import   **status:** open
+- **what I was trying to do:** trust "re-importing the same export updates rather than duplicating".
+- **what happened:** the entity ROWS update, but the note BODIES accumulate: the freshly imported "Stunde 8" has every heading exactly twice after two runs (h2 9→18, the whole lesson repeated top to bottom), and the copy that's been through more imports is at SIX copies (h2=54, 168 images for a 28-image page, the same PDF link four times). Each run's `plantImportSerializedBody` builds a brand-new Y.Doc and applies its update onto the existing body doc — Yjs merges the two versions, so every plant APPENDS the full body again.
+- **what I expected:** re-import to leave the body as-is (or replace it), never to duplicate it.
+- **evidence:** tests/dogfood/.sessions/905b-anytype-fresh-copy-probe/notes.md (h2=18 fresh / h2=54 old vs 9 in the export; imgs 56 / 168 vs 28); 905/08-stunde-27-checkboxes.png (120 checkboxes vs 20 exported).
+- **triage:** _(open — plant-import-body.ts `plantImportSerializedBody`: a fresh `Doc()`'s `encodeStateAsUpdate` merged into a non-empty existing doc duplicates content; the re-plant needs to clear/replace the existing root (or plant only into an empty doc).)_
+
+### F-397 — 416 "created", and not one screenshot actually shows in my notes
+- **session:** 905-anytype-files-deep-verify / 905b   **kind:** bug   **app:** shell/import   **status:** open
+- **what I was trying to do:** the whole point of re-exporting with files: open "Stunde 6 | Natasha" (28 screenshots in Anytype) and see the screenshots. The owner's bar for this import: "documents should have proper blocks, file blocks and properties and titles".
+- **what happened:** the report was glowing — 416 created, missing media down from 406 to 38, my 370 binaries sealed (the vault grew 417MB to prove it), the Files app lists every screenshot and PDF. But in the NOTES: zero. Every `<img>` still has the Anytype display name as its src ("Screenshot 2026-03-06 at 09.38.18.png" → broken placeholder), not one `brainstorm://asset/` URL in any copy of any note (905b probed all four). The PDF file block in "Stunde 8" is a link whose href is the bare filename — clicking it goes nowhere, even though its File entity exists. So the media made it into the vault but never into the documents, and the report can't tell the difference. (Also: the File entities take the export's slugged, truncated filenames — "screenshot-2026-03-20-at-09-21-27.png", "15649-18_15-a1-2-mo-mi-2025-09-10-07_00-pm-175.pdf" — not the names I gave them.)
+- **what I expected:** image blocks rendering my sealed screenshots inline; the PDF block linking to its File entity.
+- **evidence:** tests/dogfood/.sessions/905-anytype-files-deep-verify/07-stunde-6-images.png (broken placeholders), 09-files-pdf-search.png + 10-files-screenshot-search.png (the same files, fine in Files); 905b notes.md (asset=0 loaded=0 on every copy).
+- **triage:** _(open — root causes are legible in `anytype-import.ts`: (1) the post-seal re-plant's `srcByName` is keyed by the File entity `name` = the SLUGGED on-disk binary name, while body image srcs carry the Anytype DISPLAY name — the F-396 slug matcher never got applied here, so `rewriteImageSrcs` matches nothing and the re-plant is dead code on real exports; (2) non-image file blocks are never rewritten at all — `rewriteImageSrcs` only walks `type:"image"` nodes and the converter's `fileSrcOf` hook is unwired, so PDF links can never become asset URLs. **This is the blocker for the owner's file-blocks bar.**)_
+
 ### F-396 — I re-exported WITH files (460MB) and the import still says every file is missing
 - **session:** owner report (2026-07-18)   **kind:** bug   **app:** shell/import   **status:** ✅ done (2026-07-18)
 - **what happened:** the wizard imported the objects fine but reported "406 file(s) referenced but binaries were not in the export" — with 457 binaries sitting right there in `files/`.
