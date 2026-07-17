@@ -19,7 +19,7 @@ slugs to tell which is which.
 
 ## Go-forward rule (the fix for the divergence)
 
-1. **A new dogfood session takes the next integer: `904`.** Never reuse an
+1. **A new dogfood session takes the next integer: `905`.** Never reuse an
    existing number for an unrelated session.
 2. **A single themed sweep may group multiple specs under one reserved number** using
    `NNN-<topic>-<facet>.spec.ts` naming (the `228` pattern). Reserve the number once.
@@ -27,9 +27,9 @@ slugs to tell which is which.
 
 ## Manifest
 
-- **Total spec files:** 404
-- **Distinct session numbers:** 311
-- **Highest number:** 903 → **next session = 904**
+- **Total spec files:** 405
+- **Distinct session numbers:** 312
+- **Highest number:** 904 → **next session = 905**
 - **Numbers shared by >1 spec (`×N`):** 55
 
 | Session | Spec file(s) |
@@ -345,6 +345,7 @@ slugs to tell which is which.
 | 901 | `901-notes-select-placeholder.spec.ts` |
 | 902 | `902-notes-all-blocks.spec.ts` |
 | 903 | `903-recent-ship-sweep.spec.ts` |
+| 904 | `904-anytype-import-wizard.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 

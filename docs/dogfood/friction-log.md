@@ -27,6 +27,30 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-395 — the Anytype import card's finish line is a dead end, and "1 failed" won't tell me what failed
+- **session:** 904-anytype-import-wizard   **kind:** design   **app:** shell/settings (Backup & Migration)   **status:** open
+- **what I was trying to do:** run the same export a second time — the card itself promises "re-importing the same export updates rather than duplicating" — and understand the "1 failed" in my run report.
+- **what happened:** after a run the card shows only the summary line; the "Choose an export…" button is gone until I leave Backup & Migration and come back (the generic Import-data card has an "Import another file" affordance — this card doesn't). And the report says "1 failed" with no way to see *what* failed or *why*, so I sat there wondering which of my lessons didn't make it.
+- **what I expected:** an "import another export" affordance right on the done state, and a failed count that expands into the actual reasons.
+- **evidence:** tests/dogfood/.sessions/904-anytype-import-wizard/04-anytype-run2-report.png + notes.md ([run2] lines)
+- **triage:** _(developer fills this in: repro / plan iteration / OQ / wontfix)_
+
+### F-394 — my chapter tags survived the import but nothing will show them to me
+- **session:** 904-anytype-import-wizard   **kind:** bug   **app:** Notes   **status:** open
+- **what I was trying to do:** confirm "Stunde 8" still wears the Kapitel chapter tag I gave it in Anytype.
+- **what happened:** the note itself came across beautifully — full bilingual body, headings, bold speaker names, even the original Aug/Sept 2025 created/updated dates. But no tag anywhere: not on the page, and the Properties panel says "No properties on this note yet." The import card told me relations come along, so where did my tags go?
+- **what I expected:** the lesson's chapter tag visible on the imported note — on the page or at least as a row in its properties.
+- **evidence:** tests/dogfood/.sessions/904-anytype-import-wizard/08-notes-stunde-8-panel.png (panel open, "No properties on this note yet")
+- **triage:** _(developer fills this in — note: the importer's unit tests assert `properties.tags` lands with resolved option labels, and the Notes panel only renders keys with a registered PropertyDef, so this smells like stored-but-unsurfaced rather than lost-in-import)_
+
+### F-393 — my imported Anytype collection shows in the Database sidebar but clicking it never opens it
+- **session:** 904-anytype-import-wizard   **kind:** bug   **app:** Database   **status:** open
+- **what I was trying to do:** open "Stunden" — my old Anytype collection, now a List with a 41-member badge in the Database sidebar.
+- **what happened:** the row highlights when I click it, but the main pane stays on Tasks; five seconds later, still Tasks. The console logged `pageerror: presence.publish: unknown entity` at the same moment, so *something* registered my click — the view just never came.
+- **what I expected:** click a List → see its members, exactly like clicking Notes or Tasks does.
+- **evidence:** tests/dogfood/.sessions/904-anytype-import-wizard/10-database-stunden-list.png + console.log ("presence.publish: unknown entity")
+- **triage:** _(developer fills this in: repro / plan iteration / OQ / wontfix)_
+
 ### F-392 — gallery tiles still wear the card frame we already removed from the grid
 - **session:** owner report (2026-07-17)   **kind:** bug   **app:** Files   **status:** ✅ done (2026-07-17)
 - **what happened:** the always-on tile border/background that f9e55cb removed from Grid view survived in **Gallery** view (`body[data-view-mode="gallery"] .content-row` — elevated background + solid border on every tile at rest). Third recurrence of the rest-state frame class (after f9e55cb tiles and F-374 focus-ring container framing).
