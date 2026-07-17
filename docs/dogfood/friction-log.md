@@ -27,6 +27,12 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-396 — I re-exported WITH files (460MB) and the import still says every file is missing
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** shell/import   **status:** ✅ done (2026-07-18)
+- **what happened:** the wizard imported the objects fine but reported "406 file(s) referenced but binaries were not in the export" — with 457 binaries sitting right there in `files/`.
+- **what I expected:** my screenshots and PDFs to land in my notes.
+- **triage / resolution (developer, 2026-07-18, shell PR #181):** the export writes binaries under SLUGIFIED names (lowercase, non-[a-z0-9_] runs → dash) and truncates long stems at ~46 chars; the importer matched display names verbatim → zero hits. Slug rule derived empirically against all 457 binaries; the attachment index now keys slugged stem+ext with a unique-truncation-prefix fallback (never guesses on ambiguity), used by both the file-object and inline-block-name paths. Real-zip verify: 420/457 bound, 370 page file-links land, missing 406 → 38 (all name-less file objects). Ships in v0.5.1.
+
 ### F-395 — the Anytype import card's finish line is a dead end, and "1 failed" won't tell me what failed
 - **session:** 904-anytype-import-wizard   **kind:** design   **app:** shell/settings (Backup & Migration)   **status:** ✅ done (2026-07-17)
 - **what I was trying to do:** run the same export a second time — the card itself promises "re-importing the same export updates rather than duplicating" — and understand the "1 failed" in my run report.
