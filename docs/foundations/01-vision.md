@@ -77,7 +77,7 @@ Beyond v1, Brainstorm aims to be the **operating system for an AI-native company
 ## Non-goals (initial)
 
 - A marketplace, billing, or developer accounts **in v1**. Apps install from local packages or URLs; distribution comes later. (The full commercial design — consumer subscriptions, org subscriptions, catalog fee, payments architecture — lands as **v2 Stage 14** per [43-monetisation-strategy.md](../platform/43-monetisation-strategy.md) / [44-pricing.md](../platform/44-pricing.md) / [45-payments-architecture.md](../platform/45-payments-architecture.md). The free local product remains free forever; commerce never gates the v1 experience.)
-- Mobile parity. The first target is desktop (macOS/Windows/Linux via Electron).
+- Mobile parity. The first target is desktop (macOS/Windows/Linux via Electron). A mobile **companion** (capture / triage / reference / reminders — not parity, not the app platform) is designed in [76-mobile-companion.md](../platform/76-mobile-companion.md) as a post-beta parallel track; this non-goal stands.
 - ~~An AI-first interface.~~ **AI is foundational** (see Principle 8 and [22-ai-foundations.md](../platform/22-ai-foundations.md)) — the shell brokers AI from day one. What's deferred is *the chat / agent app*, not the architecture.
 - Multi-tenant / org features. Brainstorm is a single-user product first; multi-device sync is the only collaboration surface in v1.
 
