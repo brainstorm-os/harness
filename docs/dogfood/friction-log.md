@@ -27,6 +27,22 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-441 — Code-editor's "New file" has the same unsized-button drift; stop fixing it one app at a time
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** SDK empty-state   **status:** ✅ done (2026-07-18, shell PR #209)
+- **what happened:** the hero empty-state CTA shipped with no size class again (md face, `--radius-sm`) — Code-editor this time, right after Mailbox's F-437. The owner: "would be great to fix it everywhere and stop drifting from design system."
+- **triage / resolution (developer, 2026-07-18, shell PR #209):** system enforcement, not another call-site patch — `.bs-empty-state--hero .bs-empty-state__action .bs-btn` now carries the lg face (height/padding/`--radius-md`) in the shared SDK CSS, so every app's hero CTA inherits it and cannot drift back.
+
+### F-440 — my inbox synced "35 new" and that's all I'll ever get — no pages, no way to load older mail
+- **session:** owner report (2026-07-18)   **kind:** gap   **app:** Mailbox   **status:** 🟡 partial (2026-07-18, shell PR #210)
+- **what happened:** the first sync pulled a handful of messages and stopped; no pagination, no "load older", no hint that a 30-day window was chosen for me.
+- **what I expected:** my mailbox — or at least a visible choice of how much history syncs and a way to extend it later.
+- **triage / resolution (developer, 2026-07-18):** `connectImap` silently defaulted `SyncWindow.Days30`; the engine already supports 30d/90d/1y/all + a 500/folder page budget. (a) ✅ shell PR #210 — the IMAP form exposes a "Sync mail from" picker (shared `SelectMenu`, default 90d). (b) open — **Mailbox-12**: progressive backfill ("load older" per folder without remove+reconnect) + list paging/virtualization for large mailboxes.
+
+### F-439 — "Show remote content" does nothing — the images never appear
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #208)
+- **what happened:** clicking the banner's "Show remote content" changed nothing; remote images stayed missing with zero feedback.
+- **triage / resolution (developer, 2026-07-18, shell PR #208):** probe-reproduced, real root cause: **`about:srcdoc` iframes inherit the app page's CSP** — the page allowed `img-src 'self' data: blob: brainstorm:` only, so the frame's relaxed opt-in CSP could never win; the click was structurally a no-op. App-page img/font/media now include `https:` (invariant documented next to the meta); the frame's own blocked-mode CSP stays the default-deny enforcement. Proof: local-https test image naturalWidth 0 → 1 across the fix. Deeper follow-up noted: dedicated `brainstorm://` mail-body documents with per-message CSP headers would let the app page stay fully strict.
+
 ### F-438 — my first real inbox: every mail takes two clicks, folders are called INBOX/Social, and blocked images are broken-glyph soup
 - **session:** owner report (2026-07-18, first successful mail.ru sync — 35 messages)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #207)
 - **what happened:** (a) every single message rendered as a one-item "conversation" — expander chevron, count badge, a literal "1 message" line — so opening ANY mail took a click to expand the tree (showing a duplicate row) and a second click to open; (b) the rail showed raw server paths (`INBOX/Social`, `INBOX/Receipts`); (c) the "Sync finished — 35 new" banner parked permanently; (d) with remote content blocked, every remote `<img>` painted a broken-image glyph.
