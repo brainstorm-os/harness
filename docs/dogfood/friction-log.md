@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-426 — X.com won't let me post, and nothing tells me the browser's privacy shield is why
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** open
+- **what happened:** posting on X fails with a wall of console noise — our tracker blocklist cancels X's device-risk beacons (`ERR_BLOCKED_BY_CLIENT` on doubleclick/castle), X's anti-bot then 403s every `flow/viewer.json`, and the page's own nonce-CSP logs an inline-script violation. The DESIGNED fix exists — ⋯ → "Trust this site" (Browser-8) lifts the blocklist + 3p-cookie strip for the first party — but nothing at the point of breakage says so; the owner's first theory was CORS.
+- **what I expected:** when a site misbehaves under strict privacy, the browser should offer the trust escape hatch where I'm looking — e.g. the blocked-tracker chip expands into "This site may not work with tracking protection — Trust this site", instead of leaving the count as trivia.
+- **evidence:** owner console dump (flow/viewer.json 403s + castle errors + CSP violation), 2026-07-18
+- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_
+
+
 ### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
 - **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Agent   **status:** open
 - **what happened:** an answer with `1. Documents:` followed by four `- link` sub-bullets renders the dashes inline — "- link - link - link" wrapped as prose — instead of a nested list.
