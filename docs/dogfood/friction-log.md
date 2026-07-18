@@ -47,11 +47,11 @@ Newest sessions on top.
 - **triage:** _(open — the transport is ready: `mail.send` → MIME builder already accepts `bodyHtml` and both drivers submit it; only the composer never produces HTML. Plan rung Mailbox-11: editor-surface compose producing sanitized HTML + a plain-text alternative part, HTML-aware reply/forward quoting.)_
 
 ### F-434 — an IMAP socket timeout crashes the whole mailbox worker
-- **session:** owner report follow-up (2026-07-18)   **kind:** bug   **app:** Mailbox (worker)   **status:** open
+- **session:** owner report follow-up (2026-07-18)   **kind:** bug   **app:** Mailbox (worker)   **status:** ✅ done (2026-07-18, shell PR #206)
 - **what happened:** during a sync attempt against the owner's misconfigured/unreachable IMAP host, `imapflow` threw `Socket timeout` as an **uncaughtException** in the mailbox worker — the worker died (`exited with code 1; respawning`, then code 2) instead of the attempt failing like an auth rejection does.
 - **what I expected:** a connect/socket failure surfaces as a sync error in the app (like "authentication failed" does), never a worker crash.
 - **evidence:** `~/.brainstorm/logs/errors.log` 2026-07-18T18:24:15Z (`imapflow/lib/imap-flow.js:949` TLSSocket timeout, uncaught).
-- **triage:** _(open — the IMAP driver must attach socket/error handlers for the connection's whole lifetime (imapflow emits post-`connect` socket errors outside the command promise chain) and map them to `DriverErrorKind` sync failures; add a driver test with a timing-out socket.)_
+- **triage / resolution (developer, 2026-07-18, shell PR #206):** exactly the hypothesis — imapflow reports post-connect socket failures as unlistened `'error'` events → uncaughtException → worker death. `ensureImap` now attaches a lifetime error listener (log + drop the cached connection, guarded against clobbering a replacement client) so the next call redials; regression test emits the event through the injected client seam. Owner kept hitting it live (a respawn per failed sync).
 
 ### F-433 — even logged into X, every follow/login API call 403s — our browser announces itself as Electron
 - **session:** owner report (2026-07-18)   **kind:** bug   **app:** Browser (shell web session)   **status:** ✅ done (2026-07-18, shell PR #201)
