@@ -3,12 +3,16 @@
  *
  * Boots the production-built shell against a FRESH, throwaway user-data dir,
  * seeds a believable REAL-WORLD studio workspace (clients, projects, people,
- * notes, tasks, events), sets the Rose theme + the pitch-deck wallpaper, then
- * captures clean shots of the desktop and key apps for getbrainstorm.online.
+ * notes, tasks, events), applies the pass's theme + wallpaper, then captures
+ * clean shots of the desktop and key apps for getbrainstorm.online.
  *
- * Output: PNGs into ../brainstorm-site/public/screenshots/raw/ at CSS scale.
+ * Two passes, selected via SITE_SHOT_PASS:
+ *   light (default) — Default Light theme + green-valley wallpaper → raw/
+ *   dark            — Midnight theme + stormy-sea wallpaper → raw/midnight/
  *
- * Run:  BRAINSTORM_DOGFOOD_SKIP_BUILD=1 bun run dogfood tests/dogfood/sessions/site-screenshots.spec.ts
+ * Output: PNGs into <harness>/site/public/screenshots/raw[/midnight]/ at CSS scale.
+ *
+ * Run:  BRAINSTORM_DOGFOOD_SKIP_BUILD=1 SITE_SHOT_PASS=light bun run dogfood tests/dogfood/sessions/site-screenshots.spec.ts
  */
 
 import { copyFileSync, mkdirSync, rmSync } from "node:fs";
@@ -25,8 +29,25 @@ const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 
 const DATA_DIR = join(REPO_ROOT, "tests", "dogfood", ".screenshots-data");
 const VAULT_DIR = join(DATA_DIR, "vault");
-const WALLPAPER_SRC = join(REPO_ROOT, "docs", "art", "wallpaper", "stormy-sea.png");
-const OUT_DIR = join(REPO_ROOT, "site", "public", "screenshots", "raw");
+
+const PASS =
+	process.env.SITE_SHOT_PASS === "dark"
+		? {
+				name: "dark",
+				mode: "dark",
+				theme: "midnight",
+				wallpaper: "stormy-sea.png",
+				sub: "midnight",
+			}
+		: {
+				name: "light",
+				mode: "light",
+				theme: "default-light",
+				wallpaper: "green-valley.png",
+				sub: "",
+			};
+const WALLPAPER_SRC = join(REPO_ROOT, "docs", "art", "wallpaper", PASS.wallpaper);
+const OUT_DIR = join(REPO_ROOT, "site", "public", "screenshots", "raw", PASS.sub);
 
 const APP = {
 	Notes: "io.brainstorm.notes",
@@ -140,16 +161,19 @@ test("capture marketing screenshots", async () => {
 		await bs.dev.seedMarketingEntities();
 	}, DATA_DIR);
 
-	// Drop the stormy-sea wallpaper into the vault's wallpaper store, then apply
-	// the Midnight (dark) theme + stormy-sea wallpaper (dark slot).
+	// Drop the pass's wallpaper into the vault's wallpaper store, then apply
+	// the pass's theme + wallpaper to its appearance slot.
 	mkdirSync(join(VAULT_DIR, "dashboard", "wallpapers"), { recursive: true });
-	copyFileSync(WALLPAPER_SRC, join(VAULT_DIR, "dashboard", "wallpapers", "stormy-sea.png"));
-	await dashboard.evaluate(async () => {
-		const bs = (window as unknown as BW).brainstorm;
-		await bs.dashboard.setAppearanceMode("dark");
-		await bs.dashboard.setTheme("midnight");
-		await bs.dashboard.setWallpaper({ kind: "image", value: "stormy-sea.png" }, "dark");
-	});
+	copyFileSync(WALLPAPER_SRC, join(VAULT_DIR, "dashboard", "wallpapers", PASS.wallpaper));
+	await dashboard.evaluate(
+		async ({ mode, theme, wallpaper }) => {
+			const bs = (window as unknown as BW).brainstorm;
+			await bs.dashboard.setAppearanceMode(mode);
+			await bs.dashboard.setTheme(theme);
+			await bs.dashboard.setWallpaper({ kind: "image", value: wallpaper }, mode);
+		},
+		{ mode: PASS.mode, theme: PASS.theme, wallpaper: PASS.wallpaper },
+	);
 
 	await dashboard.waitForTimeout(6000);
 	// Dismiss the first-launch "What's new" modal for a clean desktop shot.

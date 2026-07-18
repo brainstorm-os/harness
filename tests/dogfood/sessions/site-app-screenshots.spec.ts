@@ -3,7 +3,7 @@
  *
  * Boots the production-built shell against a FRESH, throwaway user-data dir,
  * seeds the real-world studio workspace (seedMarketingEntities), then runs TWO
- * passes — Rose theme in light mode, Midnight in dark mode — capturing several
+ * passes — Default Light theme in light mode, Midnight in dark mode — capturing several
  * good-looking views of EVERY first-party app for the site's /apps page.
  *
  * Output: PNGs into ../site/public/screenshots/apps-raw/<app>/<label>.png
@@ -803,7 +803,7 @@ test("capture per-app marketing screenshots", async () => {
 	mkdirSync(OUT_DIR, { recursive: true });
 
 	const passes: Pass[] = [
-		{ name: "light", theme: "rose", mode: "light", sub: "", create: true },
+		{ name: "light", theme: "default-light", mode: "light", sub: "", create: true },
 		{ name: "dark", theme: "midnight", mode: "dark", sub: "midnight", create: false },
 	];
 
