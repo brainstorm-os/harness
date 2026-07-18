@@ -27,6 +27,12 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-429 — disabled glossy buttons flatten into a single-colour slab
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** shell/ui (Button)   **status:** ✅ fixed, in review (shell PR #200)
+- **what happened:** glass/primary buttons lose the glossy treatment entirely in disabled/loading states — flat background, no shine.
+- **triage / resolution:** the F-410 readable-disabled-labels fix zeroed all three shine layers on `:disabled`; the face gradient survived but reads flat without its speculars under the desaturate. Shine layers now dim to 0.45 instead of vanishing — material identity kept, inert read kept (desaturate + no outer shadow). Tuning knob is the single 0.45 if it reads too shiny live.
+
+
 ### F-428 — my "Stunden" collection imported as a note (again, next to its List)
 - **session:** owner report (2026-07-18)   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ fixed, in review (shell PR #199)
 - **what happened:** the Anytype Collection object minted BOTH its Database List and a Note twin — a junk "Stunden" note in the notes list per import source.
