@@ -378,6 +378,25 @@ Resolution that points at the fix / plan iteration / OQ it became.
 ## What is gitignored
 
 - `tests/dogfood/.data/` — Mira's persistent (encrypted) vault. Her real desk.
+- `tests/dogfood/.data-backups/` — tarball snapshots of that vault.
 - `tests/dogfood/.sessions/` — per-session captures (screenshots, console).
 
 The **friction log stays in git** — it is the durable, reviewable record.
+
+## The vault is permanent (owner rule, 2026-07-18)
+
+Mira's vault (`tests/dogfood/.data`) was wiped around 2026-06-26 (to produce
+website screenshots) and the whole Northbound operating layer went with it —
+the Clients CRM, Candidates, HQ, 23 People. It took a dedicated rebuild arc
+(sessions 907–907y) to restore the core. Standing rules so it never happens
+again:
+
+1. **Never delete or re-create `tests/dogfood/.data`.** No session, capture
+   run, or cleanup may point a fresh vault at it or `rm` it.
+2. **Marketing / site captures use their own data dirs** —
+   `site-screenshots.spec.ts` and `site-app-screenshots.spec.ts` already do
+   (`.screenshots-data/`, `.app-screenshots-data/`); any new capture spec must
+   follow that pattern, never `NORTHBOUND_DATA_DIR`.
+3. **Back up before risky work:** `bun run dogfood:backup` tars the vault into
+   `tests/dogfood/.data-backups/northbound-<date>.tar.gz` (caches excluded).
+   A baseline from 2026-07-18 (post-rebuild) exists.

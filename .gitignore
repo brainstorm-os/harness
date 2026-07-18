@@ -18,6 +18,7 @@ dist/
 # dogfood runtime
 test-results/
 tests/dogfood/.data/
+tests/dogfood/.data-backups/
 tests/dogfood/.data-collab/
 tests/dogfood/.screenshots/
 tests/dogfood/.screenshots-data/

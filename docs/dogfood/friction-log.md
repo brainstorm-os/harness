@@ -107,6 +107,30 @@ Newest sessions on top.
 - **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/04-notifications.png (scrambled) → after/04-notifications.png (alphabetical, stable across passes)
 - **triage / resolution (developer, 2026-07-18, shell PR #189):** partition after the checks settle, preserving the repo's `ORDER BY id`; verified stable across two full sweep passes.
 
+### F-417 — I edited "Acme's deal value" and the number landed on Vertex
+- **session:** 907i / 907l (rebuild arc)   **kind:** bug   **app:** Database   **status:** open
+- **what I was trying to do:** give each of my four clients its deal value: select a row, type the number in the details panel.
+- **what happened:** the panel silently kept editing a **different row**. Clicking another row's name or cells does not retarget the open details panel (and doesn't even move the selection); cell clicks **accumulate** into a multi-selection ("4 selected") whose panel edits the anchor object. Net effect: I typed 25000, 18000, 32000 for three different clients and all three overwrote **Vertex Labs**, one after the other — the last one stuck and my real Vertex number (48000) was gone. Nothing warned me; every edit felt targeted and succeeded.
+- **what I expected:** the panel to edit the record I clicked, or refuse. Editing a record other than the one I believe is selected is data corruption with extra steps.
+- **evidence:** tests/dogfood/.sessions/907i-crm-deal-inspector/02-grid-final.png (panel says "Vertex Labs · Deal value 32,000" after edits aimed at 3 other rows); 907l …/01-grid-final.png ("4 selected" + SUM 32,000).
+- **triage:** _(open — two halves: (1) the right panel must follow the active row (or show WHOSE record it edits loudly); (2) plain click on any cell should move selection to that row, not accumulate. This burned a real founder workflow four sessions in a row.)_
+
+### F-418 — a number cell that won't open: I clicked, double-clicked, pressed Enter — nothing
+- **session:** 907h / 907o (rebuild arc)   **kind:** bug   **app:** Database   **status:** open
+- **what I was trying to do:** type deal values straight into the grid's Number column, row after row.
+- **what happened:** the **first** number cell I clicked after opening the window edits fine (inline input, Enter commits, the SUM footer updates). Every other row's number cell after that is dead — click, click+Enter, double-click, select-the-row-first: no editor, no error, no console line (4 attempts × 3 rows × several sessions). The only workaround that filled all four rows was **restarting the app between each value** — one edit per boot.
+- **what I expected:** click a cell, type a number — for every row, not just the first one I touch.
+- **evidence:** tests/dogfood/.sessions/907h-crm-deal-final/notes.md (click/click+Enter/dblclick/select-first all "never got an inline input"); 907o notes.md (one value per fresh boot, four boots to fill four cells).
+- **triage:** _(open — likely the same selection/anchor model as F-417: the inline editor only arms on the anchor row, and clicks on other rows don't re-anchor. Select-cells are fine (their menu opens per-row) — Number/Text cells are the broken kind.)_
+
+### F-419 — the app let me create a second "Deal value" and then quietly split my data across the twins
+- **session:** 907d / 907e / 907k (rebuild arc)   **kind:** design   **app:** Database / property system   **status:** open
+- **what I was trying to do:** add a "Deal value" (Number) collection property — the create dialog is genuinely good (name, kind tiles, options textarea).
+- **what happened:** a retry created a **second identical "Deal value"** — no warning, no merge offer, nothing distinguishes the twins anywhere (the add-column picker listed "Deal value" once, the inspector showed two identical rows, values landed sometimes on one and sometimes on the other, and which def the grid column bound to was undiscoverable). I only untangled it by finding Settings → Data and deleting one def — which worked well (usage-count in the confirm is nice), but nothing in the Database app points there.
+- **what I expected:** creating a property with a name that already exists on this collection should warn or reuse; twin properties should at least be visually distinguishable.
+- **evidence:** tests/dogfood/.sessions/907f-crm-fill-values/03-grid-filled.png (inspector: "Deal value" twice); 907k notes.md (Settings → Data shows 2 rows, delete → 1).
+- **triage:** _(open — uniqueness check (per collection) in the create dialog; and the duplicates dialog pattern from Contacts (F-158) would suit the property catalog too.)_
+
 ### F-403 — my dashboard shows a database id where the company name should be
 - **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts (widget)   **status:** open
 - **what I was trying to do:** glance at the Contacts widget after cleaning up my duplicate Vertex contact.

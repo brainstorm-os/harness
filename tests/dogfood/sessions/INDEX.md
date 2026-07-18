@@ -19,7 +19,7 @@ slugs to tell which is which.
 
 ## Go-forward rule (the fix for the divergence)
 
-1. **A new dogfood session takes the next integer: `906`.** Never reuse an
+1. **A new dogfood session takes the next integer: `908`.** Never reuse an
    existing number for an unrelated session.
 2. **A single themed sweep may group multiple specs under one reserved number** using
    `NNN-<topic>-<facet>.spec.ts` naming (the `228` pattern). Reserve the number once.
@@ -27,10 +27,10 @@ slugs to tell which is which.
 
 ## Manifest
 
-- **Total spec files:** 407
-- **Distinct session numbers:** 313
-- **Highest number:** 905 → **next session = 906**
-- **Numbers shared by >1 spec (`×N`):** 56
+- **Total spec files:** 437
+- **Distinct session numbers:** 315
+- **Highest number:** 907 → **next session = 908**
+- **Numbers shared by >1 spec (`×N`):** 58
 
 | Session | Spec file(s) |
 | ------- | ------------ |
@@ -347,6 +347,8 @@ slugs to tell which is which.
 | 903 | `903-recent-ship-sweep.spec.ts` |
 | 904 | `904-anytype-import-wizard.spec.ts` |
 | 905 ×2 | `905-anytype-files-deep-verify.spec.ts`<br>`905b-anytype-fresh-copy-probe.spec.ts` |
+| 906 ×5 | `906-northbound-v050-team-tour.spec.ts`<br>`906b-v050-tour-followups.spec.ts`<br>`906c-journal-tasks-embed-probe.spec.ts`<br>`906d-slash-parity-probe.spec.ts`<br>`906e-journal-cleanup.spec.ts` |
+| 907 ×25 | `907-rebuild-people-cadence.spec.ts`<br>`907b-rebuild-crm.spec.ts`<br>`907c-crm-columns.spec.ts`<br>`907d-crm-columns-add.spec.ts`<br>`907e-crm-columns-insert.spec.ts`<br>`907f-crm-fill-values.spec.ts`<br>`907g-crm-deal-values.spec.ts`<br>`907h-crm-deal-final.spec.ts`<br>`907i-crm-deal-inspector.spec.ts`<br>`907j-crm-deal-verified.spec.ts`<br>`907k-dedupe-property-refill.spec.ts`<br>`907l-deal-per-row.spec.ts`<br>`907m-deal-object-window.spec.ts`<br>`907n-crm-repair.spec.ts`<br>`907o-deal-fresh-boot.spec.ts`<br>`907p-rebuild-hq.spec.ts`<br>`907q-hq-embeds.spec.ts`<br>`907r-hq-fixup.spec.ts`<br>`907s-hq-inspect.spec.ts`<br>`907t-hq-title-embeds.spec.ts`<br>`907u-hq-rebuild-final.spec.ts`<br>`907v-hq-embeds-scoped.spec.ts`<br>`907w-hq-minimal.spec.ts`<br>`907x-hq-verify.spec.ts`<br>`907y-hq-fill.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 

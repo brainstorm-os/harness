@@ -10,7 +10,8 @@
     "dogfood:collab": "(cd ../shell && bun run --filter @brainstorm/shell build) && playwright test --config=playwright.collab.config.ts",
     "dogfood:catalog": "(cd ../shell && bun run --filter @brainstorm/shell build && bun run build:apps) && playwright test --config=playwright.catalog.config.ts",
     "dogfood:open": "node tools/dogfood-open.mjs",
-    "dogfood:chat": "bun tools/dogfood-chat.ts"
+    "dogfood:chat": "bun tools/dogfood-chat.ts",
+    "dogfood:backup": "mkdir -p tests/dogfood/.data-backups && tar --exclude=Cache --exclude='Code Cache' --exclude=GPUCache --exclude=DawnGraphiteCache --exclude=DawnWebGPUCache --exclude=Crashpad --exclude=blob_storage -czf tests/dogfood/.data-backups/northbound-$(date +%Y-%m-%d).tar.gz -C tests/dogfood .data && ls -lh tests/dogfood/.data-backups/"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
