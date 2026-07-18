@@ -66,6 +66,9 @@ function vaultSizeMb(): number {
 
 /** Everything Mira can see about the currently open note, from the DOM. */
 type DocProbe = {
+	/** The nav row (`data-composite-index`) this probe came from — stable
+	 *  across the windowed list's virtualization; used to re-show a copy. */
+	navIndex: number;
 	title: string;
 	h1Body: number; // h1 headings EXCLUDING the title node
 	h2: number;
@@ -83,7 +86,7 @@ type DocProbe = {
 	panelText: string; // Properties panel content (empty when closed)
 };
 
-async function probeDoc(page: Page): Promise<DocProbe | null> {
+async function probeDoc(page: Page): Promise<Omit<DocProbe, "navIndex"> | null> {
 	return await page
 		.evaluate(() => {
 			const editor = document.querySelector('[contenteditable="true"]') as HTMLElement | null;
@@ -255,45 +258,103 @@ test("Anytype with-files import — blocks, file blocks, properties, titles (905
 		await notes.waitForTimeout(3000);
 
 		/** Search for `title` in the nav and probe every exact-match copy the
-		 *  vault holds (904's JSON-only import + today's zip import both live in
-		 *  this vault — dedupe is keyed on the archive name, so the same lesson
-		 *  can exist twice). Returns the copies' probes in nav order; leaves the
-		 *  hits locator live so a caller can re-click a chosen copy. */
-		const searchHits = (title: string) =>
-			notes.locator(".notes__nav").getByText(title, { exact: true });
+		 *  vault holds (the 904 JSON-only import, the 905 archive-keyed import,
+		 *  and today's stable-space-id import can ALL be here). The results list
+		 *  is windowed (@tanstack/react-virtual) — only the visible slice is in
+		 *  the DOM — so this scrolls the list top→bottom probing every
+		 *  exact-title row it passes (the 905b hunt; without it the probe only
+		 *  ever saw the first viewport's copies and judged stale ones). */
 		const probeCopies = async (title: string): Promise<DocProbe[]> => {
 			const search = notes.locator('input[placeholder*="Search" i]').first();
 			await search.click().catch(() => undefined);
 			await search.fill("").catch(() => undefined);
 			await search.fill(title).catch(() => undefined);
 			await notes.waitForTimeout(1500);
-			const hits = searchHits(title);
-			const n = await hits.count().catch(() => 0);
-			const probes: DocProbe[] = [];
-			for (let i = 0; i < Math.min(n, 3); i++) {
-				await hits.nth(i).click().catch(() => undefined);
-				await notes.waitForTimeout(2500);
-				// Give brainstorm://asset/ images time to resolve before judging.
-				let p = await probeDoc(notes);
-				for (let tick = 0; tick < 15; tick++) {
-					if (!p || p.assetImgs === 0 || p.assetLoaded === p.assetImgs) break;
-					await notes.waitForTimeout(1000);
-					p = await probeDoc(notes);
+			// Mark the scrollable results container (clear stale marks first).
+			await notes.evaluate(() => {
+				for (const el of document.querySelectorAll("[data-bs-probe-scroll]")) {
+					delete (el as HTMLElement).dataset.bsProbeScroll;
 				}
-				if (p) probes.push(p);
+				const nav = document.querySelector(".notes__nav");
+				if (!nav) return;
+				const els = [nav, ...nav.querySelectorAll("*")] as HTMLElement[];
+				const sc = els.find((e) => e.scrollHeight > e.clientHeight + 40);
+				if (!sc) return;
+				sc.dataset.bsProbeScroll = "1";
+				sc.scrollTop = 0;
+			});
+			const probes: DocProbe[] = [];
+			const seen = new Set<number>();
+			for (let step = 0; step < 40 && probes.length < 6; step++) {
+				const rows = notes
+					.locator(".notes__nav [data-composite-index]")
+					.filter({ has: notes.getByText(title, { exact: true }) });
+				const n = await rows.count().catch(() => 0);
+				const indices: number[] = [];
+				for (let i = 0; i < n; i++) {
+					const raw = await rows.nth(i).getAttribute("data-composite-index").catch(() => null);
+					const idx = raw === null ? Number.NaN : Number.parseInt(raw, 10);
+					if (Number.isFinite(idx)) indices.push(idx);
+				}
+				for (const idx of indices) {
+					if (seen.has(idx)) continue;
+					seen.add(idx);
+					await notes
+						.locator(`.notes__nav [data-composite-index="${idx}"]`)
+						.first()
+						.click()
+						.catch(() => undefined);
+					await notes.waitForTimeout(2500);
+					// Give brainstorm://asset/ images time to resolve before judging.
+					let p = await probeDoc(notes);
+					for (let tick = 0; tick < 15; tick++) {
+						if (!p || p.assetImgs === 0 || p.assetLoaded === p.assetImgs) break;
+						await notes.waitForTimeout(1000);
+						p = await probeDoc(notes);
+					}
+					if (p) probes.push({ navIndex: idx, ...p });
+				}
+				const done = await notes.evaluate(() => {
+					const sc = document.querySelector('[data-bs-probe-scroll="1"]') as HTMLElement | null;
+					if (!sc) return true;
+					sc.scrollTop += Math.max(200, sc.clientHeight * 0.7);
+					return sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 8;
+				});
+				await notes.waitForTimeout(600);
+				if (done) break;
 			}
+			const n = probes.length;
 			s.note(
-				`[notes] "${title}": ${n} cop${n === 1 ? "y" : "ies"} in the sidebar${n > 1 ? " — my 904 JSON-only import and today's zip import are BOTH here; same lessons, twice" : ""}`,
+				`[notes] "${title}": ${n} cop${n === 1 ? "y" : "ies"} across the whole (windowed) list${n > 1 ? " — one per import source; earlier imports keyed on the archive name are still here" : ""}`,
 			);
 			return probes;
 		};
-		/** Re-click copy `index` of `title` so the screen shows the copy the
-		 *  notes talk about (probing leaves the LAST copy open, not the best). */
-		const showCopy = async (title: string, probes: DocProbe[], chosen: DocProbe | null) => {
-			const index = chosen ? probes.indexOf(chosen) : -1;
-			if (index < 0 || index === probes.length - 1) return;
-			await searchHits(title).nth(index).click().catch(() => undefined);
-			await notes.waitForTimeout(2500);
+		/** Re-click the chosen copy so the screen shows the copy the notes talk
+		 *  about (probing leaves the LAST copy open, not the best). Steps the
+		 *  windowed list until the chosen row is rendered again. */
+		const showCopy = async (_title: string, probes: DocProbe[], chosen: DocProbe | null) => {
+			if (!chosen || chosen === probes[probes.length - 1]) return;
+			await notes.evaluate(() => {
+				const sc = document.querySelector('[data-bs-probe-scroll="1"]') as HTMLElement | null;
+				if (sc) sc.scrollTop = 0;
+			});
+			await notes.waitForTimeout(400);
+			for (let step = 0; step < 40; step++) {
+				const row = notes.locator(`.notes__nav [data-composite-index="${chosen.navIndex}"]`);
+				if ((await row.count().catch(() => 0)) > 0) {
+					await row.first().click().catch(() => undefined);
+					await notes.waitForTimeout(2500);
+					return;
+				}
+				const done = await notes.evaluate(() => {
+					const sc = document.querySelector('[data-bs-probe-scroll="1"]') as HTMLElement | null;
+					if (!sc) return true;
+					sc.scrollTop += Math.max(200, sc.clientHeight * 0.7);
+					return sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 8;
+				});
+				await notes.waitForTimeout(400);
+				if (done) return;
+			}
 		};
 		const best = (probes: DocProbe[]): DocProbe | null =>
 			probes.length === 0
