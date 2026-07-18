@@ -27,6 +27,12 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-438 — my first real inbox: every mail takes two clicks, folders are called INBOX/Social, and blocked images are broken-glyph soup
+- **session:** owner report (2026-07-18, first successful mail.ru sync — 35 messages)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #207)
+- **what happened:** (a) every single message rendered as a one-item "conversation" — expander chevron, count badge, a literal "1 message" line — so opening ANY mail took a click to expand the tree (showing a duplicate row) and a second click to open; (b) the rail showed raw server paths (`INBOX/Social`, `INBOX/Receipts`); (c) the "Sync finished — 35 new" banner parked permanently; (d) with remote content blocked, every remote `<img>` painted a broken-image glyph.
+- **what I expected:** singles open on first click with no conversation chrome; folder names, not transport paths; transient success notices; blocked images invisible, not broken.
+- **triage / resolution (developer, 2026-07-18, shell PR #207):** singles render as plain `MessageRow`s (threads with 2+ keep the expander; regression test clicks a single and asserts first-click open); `INBOX/` prefix stripped for display; info notes self-dismiss after 6s (errors persist); blocked mode hides remote-src images via frame style, inline `data:`/`cid:` untouched. Rode along: `bun run lint` was red on main (biome slips from #201/#202 — CI's verify job doesn't run the biome half; worth a CI follow-up) + web comments restamped F-429→F-433.
+
 ### F-437 — the connect CTA is an unsized button with small-radius corners, and the password field assumes I own an "App password"
 - **session:** owner report (2026-07-18, post-#202 retest)   **kind:** design   **app:** Mailbox / SDK button   **status:** ✅ done (2026-07-18, shell PR #205)
 - **what happened:** (a) the "Connect account" hero CTA has no `bs-btn--*` size class — md face, `--radius-sm` corner at hero prominence; (b) the IMAP form labels its secret field "App password", which dead-ends anyone who doesn't have one (the owner: "it still asks for App password which i do not have").
