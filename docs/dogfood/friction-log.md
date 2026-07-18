@@ -36,32 +36,32 @@ Newest sessions on top.
 
 
 ### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
-- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Agent   **status:** open
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Agent   **status:** ✅ done (2026-07-18)
 - **what happened:** an answer with `1. Documents:` followed by four `- link` sub-bullets renders the dashes inline — "- link - link - link" wrapped as prose — instead of a nested list.
 - **what I expected:** nested bullets under the numbered item.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/12-app-agent.png
-- **triage:** _(open — `@brainstorm/sdk/markdown` block parser doesn't recognize a list nested under an ordered item; extend the shared parser, both Agent + Preview inherit.)_
+- **triage / resolution (developer, 2026-07-18, shell PR #198):** the column-0-anchored list matchers slurped indented `- item` lines into the paragraph as inline dashes. Matchers now tolerate ≤8 spaces of indent (nesting flattens to one level, documented); paragraph break rules match. Agent + Preview inherit; 507 tests green.
 
 ### F-424 — the Files vault root greets me with three rows of "(untitled)"
-- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Files (universal browser)   **status:** open
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Files (universal browser)   **status:** 🟡 partial (2026-07-18)
 - **what happened:** the vault root gallery leads with ~13 "(untitled)" Note/CodeFile/Profile tiles (probe residue + import leftovers) — name-sorted, "(untitled)" wins the top of the view, so the first screen of my vault is anonymous cards.
 - **what I expected:** my named content first; untitled objects grouped last (or a cleanup affordance).
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/08-app-files.png
-- **triage:** _(open — two parts: (a) sort untitled-last in name sort, (b) the Northbound vault needs a probe-residue sweep (untitled notes/codefiles, "DeleteMe task 26658", "Page Probe E510658" contacts, "RevivedLiveness374" notes).)_
+- **triage / resolution:** (a) ✅ shipped (shell PR #198) — name sort sinks untitled entities below named ones in both directions. (b) residue sweep still open: probe 012g found the rows (DeleteMe task, 2 probe Persons, doubled DeleteMe note) but the renderer `vaultEntities` surface has no delete and ignores the probe's query shape (list returned the full readable set) — the sweep needs the bin/delete path per owning app, and the corrupted "Pipeline ready" calendar chips live in calendar's LEGACY KV storage (no entity anywhere carries those strings), so their repair goes through the calendar storage adapter, not entities.
 
 ### F-423 — an imported note opens with an empty Title even though everything else knows its name
-- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Notes / shell import   **status:** open
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Notes / shell import   **status:** ✅ done (2026-07-18)
 - **what happened:** "Stunde 27 | Natasha" — window header, sidebar row and Database all show the name, but the editor's title node is the gray "Title" placeholder.
 - **what I expected:** the title in the document, like every note I create by hand.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/01-app-notes.png
-- **triage:** _(open — hypothesis: body was planted before F-402 added `withTitleNode`, and F-398's unchanged-body-hash skip means re-imports never re-plant it, so pre-F-402 bodies keep the empty title forever. Fix: fold the title into the body hash (or version the plant format) so a re-import repairs it in place — same repair-on-reimport posture as F-420/F-421.)_
+- **triage / resolution (developer, 2026-07-18, shell PR #198):** verified real (012c probe: explicit navigation, hydrated, h1 empty) — but the hash hypothesis was wrong (the hash already covers the title; a clean-room plant+hydrate repro passes). Rather than chase which historical plant minted each copy, the fix is self-healing at the editor seam: `NormalizeEmptyDocPlugin`'s non-empty path now runs the full repair once hydration settles — enforce the title invariant (a title-less planted body has a heading first), then adopt the entity's stored title into the empty TitleNode (once, at open, history-merge). A deliberate user clear stays cleared (clearing empties storedTitle too). In-process repro over genuinely-planted docs, titled + title-less; 493 Notes tests green.
 
 ### F-422 — my calendar is full of events named "ipeline ready" and ".no won morf pu d…"
 - **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Calendar (event create input)   **status:** open
 - **what happened:** July is littered with chips reading "ipeline ready", "peline ready", "Pipeline readyPipe…", and one that is *literally reversed*: ".no won morf pu d…" = "…d up from now on." backwards. CSS can't reverse Latin text — these titles are STORED corrupted.
 - **what I expected:** events named what was typed.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/04-app-calendar.png
-- **triage:** _(open — the reversal is the classic controlled-input caret race: every keystroke re-render resets the caret to 0, so fast typing (Playwright `type`, paste-speed humans) lands characters in reverse / eats leading chars. Repro: fast-type into the event quick-create title. Same family as F-299 (journal first-char). Audit the calendar title input's value/caret handling — and sweep other quick-create inputs for the same pattern.)_
+- **triage / resolution (developer, 2026-07-18):** the INPUT bug is F-299, already fixed with a regression test (`entry-editor-seed-plant.test.tsx` plants "Pipeline ready" verbatim) — the calendar chips show HISTORICAL data typed while F-299 was live. The event-detail title is plain local state (no race at HEAD). Remaining work is data repair only, folded into F-424(b): the corrupted rows live in calendar's legacy KV storage (no entity in entities.db carries those strings — probes 012b/012e/012g), so the repair goes through the calendar storage adapter.
 
 ### F-421 — Files gallery is a field of gray strips floating over dead space
 - **session:** owner report (2026-07-18), reproduced in 905 re-run   **kind:** bug   **app:** Files   **status:** ✅ done (2026-07-18)
