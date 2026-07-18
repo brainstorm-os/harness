@@ -27,6 +27,34 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Agent   **status:** open
+- **what happened:** an answer with `1. Documents:` followed by four `- link` sub-bullets renders the dashes inline — "- link - link - link" wrapped as prose — instead of a nested list.
+- **what I expected:** nested bullets under the numbered item.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/12-app-agent.png
+- **triage:** _(open — `@brainstorm/sdk/markdown` block parser doesn't recognize a list nested under an ordered item; extend the shared parser, both Agent + Preview inherit.)_
+
+### F-424 — the Files vault root greets me with three rows of "(untitled)"
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Files (universal browser)   **status:** open
+- **what happened:** the vault root gallery leads with ~13 "(untitled)" Note/CodeFile/Profile tiles (probe residue + import leftovers) — name-sorted, "(untitled)" wins the top of the view, so the first screen of my vault is anonymous cards.
+- **what I expected:** my named content first; untitled objects grouped last (or a cleanup affordance).
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/08-app-files.png
+- **triage:** _(open — two parts: (a) sort untitled-last in name sort, (b) the Northbound vault needs a probe-residue sweep (untitled notes/codefiles, "DeleteMe task 26658", "Page Probe E510658" contacts, "RevivedLiveness374" notes).)_
+
+### F-423 — an imported note opens with an empty Title even though everything else knows its name
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Notes / shell import   **status:** open
+- **what happened:** "Stunde 27 | Natasha" — window header, sidebar row and Database all show the name, but the editor's title node is the gray "Title" placeholder.
+- **what I expected:** the title in the document, like every note I create by hand.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/01-app-notes.png
+- **triage:** _(open — hypothesis: body was planted before F-402 added `withTitleNode`, and F-398's unchanged-body-hash skip means re-imports never re-plant it, so pre-F-402 bodies keep the empty title forever. Fix: fold the title into the body hash (or version the plant format) so a re-import repairs it in place — same repair-on-reimport posture as F-420/F-421.)_
+
+### F-422 — my calendar is full of events named "ipeline ready" and ".no won morf pu d…"
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Calendar (event create input)   **status:** open
+- **what happened:** July is littered with chips reading "ipeline ready", "peline ready", "Pipeline readyPipe…", and one that is *literally reversed*: ".no won morf pu d…" = "…d up from now on." backwards. CSS can't reverse Latin text — these titles are STORED corrupted.
+- **what I expected:** events named what was typed.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/04-app-calendar.png
+- **triage:** _(open — the reversal is the classic controlled-input caret race: every keystroke re-render resets the caret to 0, so fast typing (Playwright `type`, paste-speed humans) lands characters in reverse / eats leading chars. Repro: fast-type into the event quick-create title. Same family as F-299 (journal first-char). Audit the calendar title input's value/caret handling — and sweep other quick-create inputs for the same pattern.)_
+
 ### F-421 — Files gallery is a field of gray strips floating over dead space
 - **session:** owner report (2026-07-18), reproduced in 905 re-run   **kind:** bug   **app:** Files   **status:** ✅ done (2026-07-18)
 - **what I was trying to do:** browse my imported screenshots in Files' Gallery view.
