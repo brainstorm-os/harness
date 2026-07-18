@@ -27,6 +27,28 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-429 — even logged into X, every follow/login API call 403s — our browser announces itself as Electron
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** Browser (shell web session)   **status:** ✅ done (2026-07-18, shell PR #201)
+- **what I was trying to do:** use x.com in the Browser after the F-426 report — logged in, tried to follow someone.
+- **what happened:** `POST /i/api/1.1/friendships/create.json` and every `flow/viewer.json` 403; castle (X's device-risk SDK) throws; the page works in Chrome with the same account.
+- **what I expected:** a logged-in interactive session to behave like Chrome — same engine, same user at the keyboard.
+- **triage / resolution (developer, 2026-07-18, shell PR #201):** the locked web session shipped Electron's default UA (`… Brainstorm/0.5.3 Chrome/… Electron/… Safari/…`) — anti-bot walls read the `Electron/…` token as automation and 403 write/login APIs regardless of trust-site state (trust only lifts OUR blocklist/cookie-strip; it can't fix what we tell the server we are). Fixed: `chromeEquivalentUserAgent` strips the Electron + app tokens once per session (`configureSessionPolicy`), unit-tested. **Owner retest needed** (trust x.com per F-426, restart shell, retry follow/login); if 403s persist, next suspect is `sec-ch-ua` client-hint branding, which `setUserAgent` does not change.
+
+### F-428 — my mail account failed to sync and then simply ceased to exist
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #202)
+- **what I was trying to do:** connect an IMAP account; the first sync rejected my credentials.
+- **what happened:** the error banner truncated mid-sentence ("…not your accou…") with no way to read the rest and no reconnect affordance despite telling me to reconnect; the account appeared NOWHERE (the rail only shows accounts that have synced folders); there was no way to remove or retry it; and the message list claimed "Mail for this folder will appear here once it syncs" as if everything were fine.
+- **what I expected:** see the failing account, read the whole error, and fix or remove the account where the error is shown.
+- **evidence:** owner screenshot 2026-07-18 19:51 (sync-failed banner + empty rail + "No messages" blurb)
+- **triage / resolution (developer, 2026-07-18, shell PR #202):** four fixes: (1) banner wraps instead of ellipsizing, gets error tone + `role=alert`, and auth failures carry an inline **Reconnect…** button; (2) the rail always renders every account ("Not synced yet" when folderless) with a per-account ⋯ → Sync this account / Remove account — first UI exposure of `mail.disconnect`; `accountsFromEntities` now hides `enabled:false` (disconnected) rows; (3) empty state stops promising mail while the last sync failed; (4) see F-427 for the connect-surface copy. **Known gap (open follow-up):** connect always *creates* an account — a credential-edit path (reconnect-in-place, `connectImap` accepting an existing accountRef) needs a service change; today the flow is remove + re-add.
+
+### F-427 — Mailbox pretends it's Google-only; IMAP/SMTP hides inside a "Connect Google account" dialog
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #202)
+- **what I was trying to do:** connect a custom IMAP/SMTP mailbox.
+- **what happened:** every entry point said Google — menu "Connect Google account…", CTA "Connect Gmail", dialog title "Connect Google account" — with the IMAP/SMTP form living as a tab *inside* the Google-titled dialog, reading like a Google sub-option.
+- **what I expected:** a provider-neutral "connect mail account" surface where Google and IMAP/SMTP are peers.
+- **triage / resolution (developer, 2026-07-18, shell PR #202):** copy predates the IMAP slice (Mailbox-2 landed into Mailbox-5's Gmail-era strings). All connect surfaces neutralized (en+es): "Connect mail account…" / "Connect account" / CTA blurb naming both families; dialog title "Connect mail account".
+
 ### F-430 — button corners differ around the app, and ButtonSize.Sm is a cramped face
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** shell/ui + Chat   **status:** ✅ fixed, in review (shell PR #203)
 - **what happened:** some buttons wear invented corner radii (hardcoded px, not the token scale) — Chat alone had nine (7px icon buttons, 10px send/composer, 5px pills); and the 24px `ButtonSize.Sm` face reads cramped everywhere it's used.
@@ -49,13 +71,12 @@ Newest sessions on top.
 - **what happened:** every imported image fills the editor at natural size; Anytype stored my chosen display width and the import dropped it.
 - **triage / resolution:** two halves. (1) the importer emitted the bare inline `image` node — the editor's resizable media block is `image-block` (alignment + `widthPercent`); it now emits that. (2) Anytype exports the width as `fields.width`, a FRACTION of editor width (verified: 0.195 → 20%) — carried into `widthPercent`, clamped 10–100. Seed stand-in added (decorator kind, v2 shape); asset-src rewrite covers the new node; re-import replants existing bodies (hash changes) so widths repair in place.
 
-
 ### F-426 — X.com won't let me post, and nothing tells me the browser's privacy shield is why
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** open
 - **what happened:** posting on X fails with a wall of console noise — our tracker blocklist cancels X's device-risk beacons (`ERR_BLOCKED_BY_CLIENT` on doubleclick/castle), X's anti-bot then 403s every `flow/viewer.json`, and the page's own nonce-CSP logs an inline-script violation. The DESIGNED fix exists — ⋯ → "Trust this site" (Browser-8) lifts the blocklist + 3p-cookie strip for the first party — but nothing at the point of breakage says so; the owner's first theory was CORS.
 - **what I expected:** when a site misbehaves under strict privacy, the browser should offer the trust escape hatch where I'm looking — e.g. the blocked-tracker chip expands into "This site may not work with tracking protection — Trust this site", instead of leaving the count as trivia.
 - **evidence:** owner console dump (flow/viewer.json 403s + castle errors + CSP violation), 2026-07-18
-- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_
+- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_ **Update 2026-07-18:** the 403 half turned out to be a real bug, not the shield — the session's Electron-branded UA trips X's anti-bot even on trusted sites; split out and fixed as F-429 (shell PR #201). This entry stays open for the trust-chip discoverability UX only.
 
 
 ### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
