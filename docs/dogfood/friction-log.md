@@ -27,6 +27,86 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-416 — the AI provider tile introduces me to "Anthropic (Clau…"
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (AI)   **status:** open
+- **what I was trying to do:** glance over the provider tiles on Settings → AI.
+- **what happened:** the first tile's label truncates mid-word inside its own parenthesis — "Anthropic (Clau…" — while every neighbour fits. The tile is fixed-width; the one label that matters most reads like a typo.
+- **what I expected:** the full name, or a truncation that doesn't cut inside a parenthesis ("Anthropic").
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/13-ai.png
+- **triage:** _(open — drop the parenthetical from the tile label (keep it in the dialog title), or let tile labels wrap to two lines.)_
+
+### F-415 — Backup & Migration shouts five identical red buttons at me
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Backup & Migration)   **status:** open
+- **what I was trying to do:** find the one action I actually wanted (export a backup) among the import cards.
+- **what happened:** all five cards — Export vault, Import data, Obsidian, Notion, Anytype — end in the same filled-accent primary. On Rose (red accent) the page reads like five alarm buttons; nothing says which action is the headline and which are occasional migrations.
+- **what I expected:** one primary (probably Export vault) and quieter secondary faces for the import entry points.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/07-backup-migration.png
+- **triage:** _(open — button-hierarchy call for the design pass; the shared Button already has ghost/neutral variants to use.)_
+
+### F-414 — Default apps asks me to pick an opener for "brainstorm/AutomationHostDesignation/v1"
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Default apps)   **status:** open
+- **what I was trying to do:** set which app opens my notes and bookmarks.
+- **what happened:** the OBJECT TYPES list greets me with raw internal ids — `brainstorm/AutomationHostDesignation/v1`, `brainstorm/TokenSet/v1`, `brainstorm/WhiteboardEdge/v1`, `brainstorm/BrowsingSession/v1` — dozens of rows for types I never open by hand, all labeled in wire-format. My actual types are buried in the middle.
+- **what I expected:** human names ("Note", "Bookmark"), and only types a user can actually open.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/10-default-apps.png
+- **triage:** _(open — needs the entity-type display-name lookup + an "openable" filter (openers registry knows which types have handlers); wire-format ids stay in a dev view if anywhere.)_
+
+### F-413 — my avatar is a pale circle with a speck of dust in it
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Identity)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** figure out what the little circle next to the display-name box is.
+- **what happened:** with no photo and no name yet, the avatar button renders the initials fallback of an empty string — a bare "•". It looks like a rendering glitch, and nothing hints that clicking it picks a photo.
+- **what I expected:** an affordance — a camera or person glyph.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/14-identity.png → after/14-identity.png
+- **triage / resolution (developer, 2026-07-18, shell PR #189):** the empty-name fallback now renders a camera glyph (the button opens the photo picker); initials return as soon as a name exists.
+
+### F-412 — the search stats leave a hole where a fourth tile should be
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Search index)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** read the index health tiles.
+- **what happened:** three tiles sit on the first row and INDEX SIZE sits alone on the second next to an empty slot — at the default window size, every time. The grid's 160px min fits exactly three columns at this panel width, so the fourth always wraps.
+- **what I expected:** a balanced 2×2 (or all four in a row when there's room).
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/09-search-index.png → after/search-index.png
+- **triage / resolution (developer, 2026-07-18, shell PR #189):** min track 160→220px; 2×2 at the default width, 4-up on wide panels.
+
+### F-411 — "Trust site" invites a click it can't honor; "Link account" greys out. Pick one.
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Network / Billing)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** understand whether the empty-input action buttons do anything.
+- **what happened:** Browser-privacy's "Trust site" renders full-strength next to an empty input (clicking just flags an error), while Billing's "Link account" in the identical layout renders disabled until something is pasted. Two conventions for the same pattern, three sections apart.
+- **what I expected:** the same rule everywhere.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/19-network-b.png · before/18-billing.png
+- **triage / resolution (developer, 2026-07-18, shell PR #189):** "Trust site" now gates on a non-empty draft like "Link account"; the invalid-origin error still shows for non-empty junk.
+
+### F-410 — the Save button is white text on almost-white; I thought it was missing
+- **session:** 908-settings-sweep   **kind:** bug   **app:** shell (shared Button)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** save my display name on Identity (and read Billing's "Upgrade via checkout").
+- **what happened:** every DISABLED filled button fades to 55% opacity, which on light themes (Rose especially) washes the accent face into the panel while the label stays white — Save / Upgrade via checkout / Link account were borderline invisible. Dark themes masked it, which is presumably how it shipped.
+- **what I expected:** a disabled button that still reads as a button.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/14-identity.png · before/18-billing.png → after/billing.png
+- **triage / resolution (developer, 2026-07-18, shell PR #189):** disabled filled faces (glass/primary/neutral/destructive) keep full opacity and desaturate instead (`filter: saturate(.25)`, gloss/shadows dropped); ghost variants keep the opacity fade. Same class as the 12.17 accent-contrast work — the disabled state had escaped that ratchet.
+
+### F-409 — Network says "System proxy" twice and stacks it under "Edit proxy"
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Network)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** check which proxy the vault uses.
+- **what happened:** the Active proxy block shows a "System proxy" pill on the left AND a right-aligned "System proxy" value directly under the right-aligned "Edit proxy" control — two right-stacked labels that read as a broken duplicated row. (Mode System resolves to kind Deferred, whose hint is the same string.)
+- **what I expected:** the mode once, and a resolved hint only when it adds information.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/19-network.png → after/19-network.png
+- **triage / resolution (developer, 2026-07-18, shell PR #189):** the resolved-kind hint renders only when it differs from the mode label.
+
+### F-408 — the Data page tells me the same paragraph twice on one screen
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Data)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** add my first property.
+- **what happened:** the section intro ("Properties and dictionaries are vault-level…") repeats verbatim inside the empty-state card two centimetres below — the same t-key (`shell.settings.data.summary`) wired into both slots.
+- **what I expected:** the empty state to tell me what to DO, not re-read the intro.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/06-data.png → after/06-data.png
+- **triage / resolution (developer, 2026-07-18, shell PR #189):** new `shell.settings.data.properties.emptyHint` copy for the empty state.
+
+### F-407 — my per-app notification list reshuffles itself every visit
+- **session:** 908-settings-sweep   **kind:** bug   **app:** shell (apps:list-installed)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** find Chat in Settings → Notifications → per-app toggles.
+- **what happened:** the list came up Books, Browser, Agent, Calendar, Automations… — and on the next visit, alphabetical. `apps:list-installed` partitions orphans by pushing inside a `Promise.all` of fs checks, so the order is whatever the filesystem answered first; every consumer (notification toggles, icon picker) inherits the shuffle.
+- **what I expected:** the same order every time.
+- **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/04-notifications.png (scrambled) → after/04-notifications.png (alphabetical, stable across passes)
+- **triage / resolution (developer, 2026-07-18, shell PR #189):** partition after the checks settle, preserving the repo's `ORDER BY id`; verified stable across two full sweep passes.
+
 ### F-403 — my dashboard shows a database id where the company name should be
 - **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts (widget)   **status:** open
 - **what I was trying to do:** glance at the Contacts widget after cleaning up my duplicate Vertex contact.
