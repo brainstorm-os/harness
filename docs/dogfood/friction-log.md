@@ -33,7 +33,7 @@ Newest sessions on top.
 - **triage / resolution (developer, 2026-07-18, shell PR #209):** system enforcement, not another call-site patch — `.bs-empty-state--hero .bs-empty-state__action .bs-btn` now carries the lg face (height/padding/`--radius-md`) in the shared SDK CSS, so every app's hero CTA inherits it and cannot drift back.
 
 ### F-440 — my inbox synced "35 new" and that's all I'll ever get — no pages, no way to load older mail
-- **session:** owner report (2026-07-18)   **kind:** gap   **app:** Mailbox   **status:** 🟡 partial (2026-07-18, shell PR #210)
+- **session:** owner report (2026-07-18)   **kind:** gap   **app:** Mailbox   **status:** ✅ done (2026-07-18 picker #210 · 2026-07-19 backfill+paging #214 = Mailbox-12)
 - **what happened:** the first sync pulled a handful of messages and stopped; no pagination, no "load older", no hint that a 30-day window was chosen for me.
 - **what I expected:** my mailbox — or at least a visible choice of how much history syncs and a way to extend it later.
 - **triage / resolution (developer, 2026-07-18):** `connectImap` silently defaulted `SyncWindow.Days30`; the engine already supports 30d/90d/1y/all + a 500/folder page budget. (a) ✅ shell PR #210 — the IMAP form exposes a "Sync mail from" picker (shared `SelectMenu`, default 90d). (b) open — **Mailbox-12**: progressive backfill ("load older" per folder without remove+reconnect) + list paging/virtualization for large mailboxes.
