@@ -27,6 +27,60 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-438 — my first real inbox: every mail takes two clicks, folders are called INBOX/Social, and blocked images are broken-glyph soup
+- **session:** owner report (2026-07-18, first successful mail.ru sync — 35 messages)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #207)
+- **what happened:** (a) every single message rendered as a one-item "conversation" — expander chevron, count badge, a literal "1 message" line — so opening ANY mail took a click to expand the tree (showing a duplicate row) and a second click to open; (b) the rail showed raw server paths (`INBOX/Social`, `INBOX/Receipts`); (c) the "Sync finished — 35 new" banner parked permanently; (d) with remote content blocked, every remote `<img>` painted a broken-image glyph.
+- **what I expected:** singles open on first click with no conversation chrome; folder names, not transport paths; transient success notices; blocked images invisible, not broken.
+- **triage / resolution (developer, 2026-07-18, shell PR #207):** singles render as plain `MessageRow`s (threads with 2+ keep the expander; regression test clicks a single and asserts first-click open); `INBOX/` prefix stripped for display; info notes self-dismiss after 6s (errors persist); blocked mode hides remote-src images via frame style, inline `data:`/`cid:` untouched. Rode along: `bun run lint` was red on main (biome slips from #201/#202 — CI's verify job doesn't run the biome half; worth a CI follow-up) + web comments restamped F-429→F-433.
+
+### F-437 — the connect CTA is an unsized button with small-radius corners, and the password field assumes I own an "App password"
+- **session:** owner report (2026-07-18, post-#202 retest)   **kind:** design   **app:** Mailbox / SDK button   **status:** ✅ done (2026-07-18, shell PR #205)
+- **what happened:** (a) the "Connect account" hero CTA has no `bs-btn--*` size class — md face, `--radius-sm` corner at hero prominence; (b) the IMAP form labels its secret field "App password", which dead-ends anyone who doesn't have one (the owner: "it still asks for App password which i do not have").
+- **triage / resolution (developer, 2026-07-18, shell PR #205):** system fix + copy fix: `bs-btn--lg` (unused by any caller until now) never adjusted radius — the SDK lg variant now carries `--radius-md`, and the CTA takes `bs-btn--lg`. Password field relabeled "Password"; the app-password requirement (and the providers that enforce it: Gmail/iCloud/Yahoo/Fastmail) moved into the dialog help text. en+es.
+
+### F-436 — `bun run dev` has been serving me two-day-old apps no matter how often I restart
+- **session:** owner report follow-up (2026-07-18, "I still don't have Reconnect")   **kind:** bug   **app:** shell dev seeder   **status:** open
+- **what happened:** every app bundle in the Personal vault is dated **16 Jul 15:02** while app fixes merged 17–18 Jul (incl. #198's Files/Agent fixes and #202's Mailbox UX) — the owner restarted repeatedly and legitimately concluded the fixes "didn't work". `~/.brainstorm/logs/errors.log` shows why: auto-seed per-app vite builds exiting 1 in bulk (11:51 + 11:59 boots — notes, database, tasks, calendar, journal, code-editor, whiteboard, bookmarks…), and `seedDemoApps` counts those as per-app *warnings* while still marking the vault seeded; a failed build leaves the old dist, the unchanged bundle hash makes the installer skip, and the stale copy survives forever. The logged esbuild error is truncated to a useless stack tail, so the root cause of the build failures is unknown.
+- **what I expected:** a dev restart deploys my current source, or screams visibly when it can't.
+- **evidence:** `~/.brainstorm/logs/errors.log` 2026-07-18T09:51/09:59Z warns; `<vault>/apps/*` mtimes 16 Jul vs shell main 17–18 Jul.
+- **triage:** _(open — (a) capture full stderr of the per-app build, (b) a failed build must surface as a boot-blocking banner/notification, not a console warn, (c) don't mark the app "seeded/skipped" when its build failed. Root-cause of the esbuild exits still to be found — same class as the DEPLOYFIX-59069a1 poisoned-vault trap, new vector.)_
+
+### F-435 — composing mail is plain-text; I want the real editor surface and HTML mail out
+- **session:** owner report (2026-07-18)   **kind:** gap   **app:** Mailbox   **status:** open → planned as Mailbox-11
+- **what I was trying to do:** write a mail with formatting.
+- **what happened:** the composer body is a bare textarea; sent mail is text-only.
+- **what I expected:** the shared rich-text editor surface (like Notes), sending proper HTML mail.
+- **triage:** _(open — the transport is ready: `mail.send` → MIME builder already accepts `bodyHtml` and both drivers submit it; only the composer never produces HTML. Plan rung Mailbox-11: editor-surface compose producing sanitized HTML + a plain-text alternative part, HTML-aware reply/forward quoting.)_
+
+### F-434 — an IMAP socket timeout crashes the whole mailbox worker
+- **session:** owner report follow-up (2026-07-18)   **kind:** bug   **app:** Mailbox (worker)   **status:** ✅ done (2026-07-18, shell PR #206)
+- **what happened:** during a sync attempt against the owner's misconfigured/unreachable IMAP host, `imapflow` threw `Socket timeout` as an **uncaughtException** in the mailbox worker — the worker died (`exited with code 1; respawning`, then code 2) instead of the attempt failing like an auth rejection does.
+- **what I expected:** a connect/socket failure surfaces as a sync error in the app (like "authentication failed" does), never a worker crash.
+- **evidence:** `~/.brainstorm/logs/errors.log` 2026-07-18T18:24:15Z (`imapflow/lib/imap-flow.js:949` TLSSocket timeout, uncaught).
+- **triage / resolution (developer, 2026-07-18, shell PR #206):** exactly the hypothesis — imapflow reports post-connect socket failures as unlistened `'error'` events → uncaughtException → worker death. `ensureImap` now attaches a lifetime error listener (log + drop the cached connection, guarded against clobbering a replacement client) so the next call redials; regression test emits the event through the injected client seam. Owner kept hitting it live (a respawn per failed sync).
+
+### F-433 — even logged into X, every follow/login API call 403s — our browser announces itself as Electron
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** Browser (shell web session)   **status:** ✅ done (2026-07-18, shell PR #201)
+- **what I was trying to do:** use x.com in the Browser after the F-426 report — logged in, tried to follow someone.
+- **what happened:** `POST /i/api/1.1/friendships/create.json` and every `flow/viewer.json` 403; castle (X's device-risk SDK) throws; the page works in Chrome with the same account.
+- **what I expected:** a logged-in interactive session to behave like Chrome — same engine, same user at the keyboard.
+- **triage / resolution (developer, 2026-07-18, shell PR #201):** the locked web session shipped Electron's default UA (`… Brainstorm/0.5.3 Chrome/… Electron/… Safari/…`) — anti-bot walls read the `Electron/…` token as automation and 403 write/login APIs regardless of trust-site state (trust only lifts OUR blocklist/cookie-strip; it can't fix what we tell the server we are). Fixed: `chromeEquivalentUserAgent` strips the Electron + app tokens once per session (`configureSessionPolicy`), unit-tested. **Owner retest needed** (trust x.com per F-426, restart shell, retry follow/login); if 403s persist, next suspect is `sec-ch-ua` client-hint branding, which `setUserAgent` does not change. *(Note: the merged shell code comment + PR #201 body say "F-429" — allocated before harness PR #67 claimed 427-430; the web-policy.ts comment correction rides the next browser PR.)*
+
+### F-432 — my mail account failed to sync and then simply ceased to exist
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #202)
+- **what I was trying to do:** connect an IMAP account; the first sync rejected my credentials.
+- **what happened:** the error banner truncated mid-sentence ("…not your accou…") with no way to read the rest and no reconnect affordance despite telling me to reconnect; the account appeared NOWHERE (the rail only shows accounts that have synced folders); there was no way to remove or retry it; and the message list claimed "Mail for this folder will appear here once it syncs" as if everything were fine.
+- **what I expected:** see the failing account, read the whole error, and fix or remove the account where the error is shown.
+- **evidence:** owner screenshot 2026-07-18 19:51 (sync-failed banner + empty rail + "No messages" blurb)
+- **triage / resolution (developer, 2026-07-18, shell PR #202):** four fixes: (1) banner wraps instead of ellipsizing, gets error tone + `role=alert`, and auth failures carry an inline **Reconnect…** button; (2) the rail always renders every account ("Not synced yet" when folderless) with a per-account ⋯ → Sync this account / Remove account — first UI exposure of `mail.disconnect`; `accountsFromEntities` now hides `enabled:false` (disconnected) rows; (3) empty state stops promising mail while the last sync failed; (4) see F-431 for the connect-surface copy. **Known gap (open follow-up):** connect always *creates* an account — a credential-edit path (reconnect-in-place, `connectImap` accepting an existing accountRef) needs a service change; today the flow is remove + re-add.
+
+### F-431 — Mailbox pretends it's Google-only; IMAP/SMTP hides inside a "Connect Google account" dialog
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell PR #202)
+- **what I was trying to do:** connect a custom IMAP/SMTP mailbox.
+- **what happened:** every entry point said Google — menu "Connect Google account…", CTA "Connect Gmail", dialog title "Connect Google account" — with the IMAP/SMTP form living as a tab *inside* the Google-titled dialog, reading like a Google sub-option.
+- **what I expected:** a provider-neutral "connect mail account" surface where Google and IMAP/SMTP are peers.
+- **triage / resolution (developer, 2026-07-18, shell PR #202):** copy predates the IMAP slice (Mailbox-2 landed into Mailbox-5's Gmail-era strings). All connect surfaces neutralized (en+es): "Connect mail account…" / "Connect account" / CTA blurb naming both families; dialog title "Connect mail account".
+
 ### F-430 — button corners differ around the app, and ButtonSize.Sm is a cramped face
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** shell/ui + Chat   **status:** ✅ fixed, in review (shell PR #203)
 - **what happened:** some buttons wear invented corner radii (hardcoded px, not the token scale) — Chat alone had nine (7px icon buttons, 10px send/composer, 5px pills); and the 24px `ButtonSize.Sm` face reads cramped everywhere it's used.
@@ -49,13 +103,12 @@ Newest sessions on top.
 - **what happened:** every imported image fills the editor at natural size; Anytype stored my chosen display width and the import dropped it.
 - **triage / resolution:** two halves. (1) the importer emitted the bare inline `image` node — the editor's resizable media block is `image-block` (alignment + `widthPercent`); it now emits that. (2) Anytype exports the width as `fields.width`, a FRACTION of editor width (verified: 0.195 → 20%) — carried into `widthPercent`, clamped 10–100. Seed stand-in added (decorator kind, v2 shape); asset-src rewrite covers the new node; re-import replants existing bodies (hash changes) so widths repair in place.
 
-
 ### F-426 — X.com won't let me post, and nothing tells me the browser's privacy shield is why
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** open
 - **what happened:** posting on X fails with a wall of console noise — our tracker blocklist cancels X's device-risk beacons (`ERR_BLOCKED_BY_CLIENT` on doubleclick/castle), X's anti-bot then 403s every `flow/viewer.json`, and the page's own nonce-CSP logs an inline-script violation. The DESIGNED fix exists — ⋯ → "Trust this site" (Browser-8) lifts the blocklist + 3p-cookie strip for the first party — but nothing at the point of breakage says so; the owner's first theory was CORS.
 - **what I expected:** when a site misbehaves under strict privacy, the browser should offer the trust escape hatch where I'm looking — e.g. the blocked-tracker chip expands into "This site may not work with tracking protection — Trust this site", instead of leaving the count as trivia.
 - **evidence:** owner console dump (flow/viewer.json 403s + castle errors + CSP violation), 2026-07-18
-- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_
+- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_ **Update 2026-07-18:** the 403 half turned out to be a real bug, not the shield — the session's Electron-branded UA trips X's anti-bot even on trusted sites; split out and fixed as F-433 (shell PR #201). This entry stays open for the trust-chip discoverability UX only.
 
 
 ### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
