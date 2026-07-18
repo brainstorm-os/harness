@@ -35,7 +35,7 @@ const PASS =
 		? {
 				name: "dark",
 				mode: "dark",
-				theme: "midnight",
+				theme: "default-dark",
 				wallpaper: "stormy-sea.png",
 				sub: "midnight",
 			}

@@ -809,7 +809,7 @@ test("capture per-app marketing screenshots", async () => {
 
 	const allPasses: Pass[] = [
 		{ name: "light", theme: "default-light", mode: "light", sub: "", create: true },
-		{ name: "dark", theme: "midnight", mode: "dark", sub: "midnight", create: false },
+		{ name: "dark", theme: "default-dark", mode: "dark", sub: "midnight", create: false },
 	];
 	const passes = process.env.SITE_SHOT_PASS
 		? allPasses.filter((p) => p.name === process.env.SITE_SHOT_PASS)
