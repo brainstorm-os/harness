@@ -27,7 +27,57 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
-### F-416 — the AI provider tile introduces me to "Anthropic (Clau…"
+### F-426 — X.com won't let me post, and nothing tells me the browser's privacy shield is why
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** open
+- **what happened:** posting on X fails with a wall of console noise — our tracker blocklist cancels X's device-risk beacons (`ERR_BLOCKED_BY_CLIENT` on doubleclick/castle), X's anti-bot then 403s every `flow/viewer.json`, and the page's own nonce-CSP logs an inline-script violation. The DESIGNED fix exists — ⋯ → "Trust this site" (Browser-8) lifts the blocklist + 3p-cookie strip for the first party — but nothing at the point of breakage says so; the owner's first theory was CORS.
+- **what I expected:** when a site misbehaves under strict privacy, the browser should offer the trust escape hatch where I'm looking — e.g. the blocked-tracker chip expands into "This site may not work with tracking protection — Trust this site", instead of leaving the count as trivia.
+- **evidence:** owner console dump (flow/viewer.json 403s + castle errors + CSP violation), 2026-07-18
+- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_
+
+
+### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Agent   **status:** open
+- **what happened:** an answer with `1. Documents:` followed by four `- link` sub-bullets renders the dashes inline — "- link - link - link" wrapped as prose — instead of a nested list.
+- **what I expected:** nested bullets under the numbered item.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/12-app-agent.png
+- **triage:** _(open — `@brainstorm/sdk/markdown` block parser doesn't recognize a list nested under an ordered item; extend the shared parser, both Agent + Preview inherit.)_
+
+### F-424 — the Files vault root greets me with three rows of "(untitled)"
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Files (universal browser)   **status:** open
+- **what happened:** the vault root gallery leads with ~13 "(untitled)" Note/CodeFile/Profile tiles (probe residue + import leftovers) — name-sorted, "(untitled)" wins the top of the view, so the first screen of my vault is anonymous cards.
+- **what I expected:** my named content first; untitled objects grouped last (or a cleanup affordance).
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/08-app-files.png
+- **triage:** _(open — two parts: (a) sort untitled-last in name sort, (b) the Northbound vault needs a probe-residue sweep (untitled notes/codefiles, "DeleteMe task 26658", "Page Probe E510658" contacts, "RevivedLiveness374" notes).)_
+
+### F-423 — an imported note opens with an empty Title even though everything else knows its name
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Notes / shell import   **status:** open
+- **what happened:** "Stunde 27 | Natasha" — window header, sidebar row and Database all show the name, but the editor's title node is the gray "Title" placeholder.
+- **what I expected:** the title in the document, like every note I create by hand.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/01-app-notes.png
+- **triage:** _(open — hypothesis: body was planted before F-402 added `withTitleNode`, and F-398's unchanged-body-hash skip means re-imports never re-plant it, so pre-F-402 bodies keep the empty title forever. Fix: fold the title into the body hash (or version the plant format) so a re-import repairs it in place — same repair-on-reimport posture as F-420/F-421.)_
+
+### F-422 — my calendar is full of events named "ipeline ready" and ".no won morf pu d…"
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Calendar (event create input)   **status:** open
+- **what happened:** July is littered with chips reading "ipeline ready", "peline ready", "Pipeline readyPipe…", and one that is *literally reversed*: ".no won morf pu d…" = "…d up from now on." backwards. CSS can't reverse Latin text — these titles are STORED corrupted.
+- **what I expected:** events named what was typed.
+- **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/04-app-calendar.png
+- **triage:** _(open — the reversal is the classic controlled-input caret race: every keystroke re-render resets the caret to 0, so fast typing (Playwright `type`, paste-speed humans) lands characters in reverse / eats leading chars. Repro: fast-type into the event quick-create title. Same family as F-299 (journal first-char). Audit the calendar title input's value/caret handling — and sweep other quick-create inputs for the same pattern.)_
+
+### F-421 — Files gallery is a field of gray strips floating over dead space
+- **session:** owner report (2026-07-18), reproduced in 905 re-run   **kind:** bug   **app:** Files   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** browse my imported screenshots in Files' Gallery view.
+- **what happened:** every tile is a thin gray strip with a "PNG" badge — no thumbnail, even for sealed image assets — and below each row there's a huge dead gap. The layout has been "fixed" several times (f9e55cb frames, F-374 rings, F-392 gallery frames) and still reads broken.
+- **what I expected:** image tiles showing the actual image, filling their cells.
+- **evidence:** tests/dogfood/.sessions/905-anytype-files-deep-verify/10-files-screenshot-search.png (17:10 run)
+- **triage / resolution (developer, 2026-07-18, same PR as F-420):** two independent root causes, neither touched by the earlier frame fixes. (1) **Lane fill:** `body[data-view-mode="gallery"|"grid"] .content-row` never declared `height: 100%` — the virtualizer's lane box is fixed-height and the host passes it through, but the card shrink-wrapped at the lane's top, collapsing the `flex:1` media band to a strip and leaving the lane remainder as the dead gap (the old always-on card chrome had *masked* this as a "small card"; the borderless-at-rest rework exposed it). Fixed with `height: 100%` on both tile modes + a **lane-fill contract test** (`styles-lane-fill.test.ts`, red/green-checked, all three fixed-lane modes) in the same guard style as `styles-rest-frames.test.ts` — the recurring-regression class now has a ratchet, per the "fix the system, not the instance" rule. (2) **Thumbnail gate:** the tile renders a thumb only off `properties.assetMime` (the upload path's contract) — the Anytype importer sealed File entities with `mime` only, so imported images could never preview. Importer now writes `assetMime`; re-running an import repairs existing entities in place. 333 Files tests + 397 shell tests green; real-shell re-verified (905 re-run: thumbnails paint, lanes filled).
+
+### F-420 — my Anytype screenshots imported broken — and some as the WRONG image
+- **session:** owner report (2026-07-18) after 905-anytype-files-deep-verify   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ done (2026-07-18)
+- **what I was trying to do:** trust that the 460MB with-files re-import actually brought my media across.
+- **what happened:** notes still showed broken images (raw `bafyrei…` srcs — 38 across the lesson notes), and a deep audit found worse: **41 more images silently bound to the wrong binary** — screenshots taken in the same second slug to the same filename stem, the export disambiguates on disk with `_a`/`_o` suffixes, and the F-396 slug matcher bound *both* objects to the suffix-less file. The "verified" 420/457 number hid both classes.
+- **what I expected:** every image the export contains, showing the image it actually is.
+- **evidence:** tests/dogfood/.sessions/905-anytype-files-deep-verify/notes.md ([file-blocks] lines, 09:44 run: 26/28 loaded, 2 raw CIDs)
+- **triage / resolution (developer, 2026-07-18, shell PR):** the export **states the binary mapping outright** — every file object's `details.source` is the export-relative binary path (`files/<name>`), 457/457 exact on the real export including all 37 name-less pasted screenshots, zero collisions. The hash route is a dead end (`fileId`/`fileSourceChecksum` hash the *encrypted* DAG — unreproducible from the exported plaintext), and the slug matcher was reverse-engineering a mapping it never needed to guess. Importer now binds `source`-first (slug chain kept as fallback for source-less exports); name-less objects synthesize a display name (binary basename + mime-derived extension) so sealed assets serve `image/png`, not octet-stream. **Verified against ground truth, not aggregates:** plan audit binds 457/457 with a bijective object↔binary map, 397/397 body images resolve; in-app re-run created the 37 missing File entities (+26MB), second run idempotent (0 created, +0MB), "Stunde 6 | Natasha" loads 28/28 images (was 26). **Process lesson (the real F-396 failure):** the fix was accepted on aggregate counts ("420/457 bound, missing dropped to 38") without asserting *which* binary each object got or auditing the residue — deep verifies must check the full mapping against the export, which is exactly what caught the 41 wrong-content bindings.
 - **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (AI)   **status:** open
 - **what I was trying to do:** glance over the provider tiles on Settings → AI.
 - **what happened:** the first tile's label truncates mid-word inside its own parenthesis — "Anthropic (Clau…" — while every neighbour fits. The tile is fixed-width; the one label that matters most reads like a typo.
