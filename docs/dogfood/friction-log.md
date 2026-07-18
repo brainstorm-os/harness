@@ -27,6 +27,11 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-437 — the connect CTA is an unsized button with small-radius corners, and the password field assumes I own an "App password"
+- **session:** owner report (2026-07-18, post-#202 retest)   **kind:** design   **app:** Mailbox / SDK button   **status:** ✅ done (2026-07-18, shell PR #205)
+- **what happened:** (a) the "Connect account" hero CTA has no `bs-btn--*` size class — md face, `--radius-sm` corner at hero prominence; (b) the IMAP form labels its secret field "App password", which dead-ends anyone who doesn't have one (the owner: "it still asks for App password which i do not have").
+- **triage / resolution (developer, 2026-07-18, shell PR #205):** system fix + copy fix: `bs-btn--lg` (unused by any caller until now) never adjusted radius — the SDK lg variant now carries `--radius-md`, and the CTA takes `bs-btn--lg`. Password field relabeled "Password"; the app-password requirement (and the providers that enforce it: Gmail/iCloud/Yahoo/Fastmail) moved into the dialog help text. en+es.
+
 ### F-436 — `bun run dev` has been serving me two-day-old apps no matter how often I restart
 - **session:** owner report follow-up (2026-07-18, "I still don't have Reconnect")   **kind:** bug   **app:** shell dev seeder   **status:** open
 - **what happened:** every app bundle in the Personal vault is dated **16 Jul 15:02** while app fixes merged 17–18 Jul (incl. #198's Files/Agent fixes and #202's Mailbox UX) — the owner restarted repeatedly and legitimately concluded the fixes "didn't work". `~/.brainstorm/logs/errors.log` shows why: auto-seed per-app vite builds exiting 1 in bulk (11:51 + 11:59 boots — notes, database, tasks, calendar, journal, code-editor, whiteboard, bookmarks…), and `seedDemoApps` counts those as per-app *warnings* while still marking the vault seeded; a failed build leaves the old dist, the unchanged bundle hash makes the installer skip, and the stale copy survives forever. The logged esbuild error is truncated to a useless stack tail, so the root cause of the build failures is unknown.
