@@ -3381,6 +3381,55 @@ Source: [platform/69-agent-teams-and-orchestration.md](../platform/69-agent-team
 
 ---
 
+## Mobile companion — `OQ-MOB-1` … `OQ-MOB-7`
+
+Source: [platform/76-mobile-companion.md](../platform/76-mobile-companion.md). **Design-only track — no development scheduled; none gate any current stage.** The plan rungs are `MOB-0`–`MOB-8`.
+
+#### OQ-MOB-1 — Client framework
+- **Where:** [76 §The load-bearing fact](../platform/76-mobile-companion.md).
+- **Question:** React Native + Expo (Hermes) vs fully native Swift/Kotlin vs web-wrapper (Capacitor/PWA) for the companion app.
+- **Options & trade-offs:** RN/Expo reuses the portable TS vault core (Yjs + `@noble` crypto + wire + codecs) verbatim — the decisive argument; native means reimplementing or embedding that core per platform; web-wrapper can't do share extensions / keystore / background sync properly and is rejected outright.
+- **Tentative leaning:** RN + Expo, **confirmed empirically by the `MOB-0` spike** (pair a bare RN scaffold with a real desktop shell over the dev relay; measure crypto + CRDT load on Hermes) — a paper decision here repeats the OQ-128 mistake.
+- **Blocking?:** **Blocks all mobile work** (`MOB-1`+). Resolve via `MOB-0`, nothing else starts first.
+
+#### OQ-MOB-2 — Editor strategy
+- **Where:** [76 §Editor](../platform/76-mobile-companion.md).
+- **Question:** How mobile renders/edits universal-body Lexical documents: (a) WebView hosting the real `@brainstorm/editor` on the same Y.Doc, (b) native read-only block renderer + append-only capture composer, (c) a native rich editor.
+- **Options & trade-offs:** (a) full fidelity, one editor codebase, but WebView keyboard/IME/scroll seams; (b) fast and robust, no editing parity; (c) forks document semantics forever — rejected.
+- **Tentative leaning:** (b) ships first, (a) follows for full editing (`MOB-7`); CRDT merge makes the append/edit split safe.
+- **Blocking?:** Blocks `MOB-4` (read surfaces) and `MOB-7` (editing); the (b)-first leaning unblocks `MOB-4` on its own.
+
+#### OQ-MOB-3 — Selective-sync defaults
+- **Where:** [76 §Sync](../platform/76-mobile-companion.md); [20 §selective sync](../data/20-database-growth-and-sync.md).
+- **Question:** What the companion syncs eagerly (leaning: all entity metadata + properties), what it pins for offline (recent/starred working set — how bounded?), and the body/asset eviction policy.
+- **Blocking?:** Blocks `MOB-3` (sync + local store) tuning, not its architecture.
+
+#### OQ-MOB-4 — Push-notification plane
+- **Where:** [76 §Notifications](../platform/76-mobile-companion.md).
+- **Question:** Local-only notifications ship in v1. If/when that proves insufficient, does the durable node emit a **content-free sync tickle** through APNs/FCM ("something changed for account X — wake and sync")?
+- **Options & trade-offs:** even a content-free push leaks activity timing/frequency to Apple/Google and is the first mobile-specific server surface; the alternative (background-fetch polling) is OS-throttled and unreliable.
+- **Tentative leaning:** defer until local-only demonstrably fails; if built, tickle-only, never content.
+- **Blocking?:** No (post-`MOB-6`).
+
+#### OQ-MOB-5 — Repo home + core extraction mechanics
+- **Where:** [76 §Repo & team shape](../platform/76-mobile-companion.md).
+- **Question:** Where the mobile app and the portable `vault-core` live, and how the app consumes the core across the boundary.
+- **Tentative leaning:** core in the product monorepo (`packages/vault-core` — lockstep with the shell that writes the data); app in a sibling repo (`brainstorm-mobile`, the `../brainstorm-sync` pattern) so Metro/Xcode/Gradle never enter the shell workspace; consumption pinned by commit/version with the `MOB-0` pairing test as the skew gate in mobile CI.
+- **Blocking?:** Blocks `MOB-1`/`MOB-2` scaffolding.
+
+#### OQ-MOB-6 — Store & compliance constraints
+- **Where:** [76 §Distribution](../platform/76-mobile-companion.md).
+- **Question:** App Store / Play review constraints that could bite: crypto-export self-classification, Expo OTA-update policy boundaries, background-execution entitlements for sync, share-extension memory limits (iOS extensions get ~120 MB — does the sealed-outbox write path fit?).
+- **Blocking?:** Blocks `MOB-8` (store beta); investigate during `MOB-2`.
+
+#### OQ-MOB-7 — Capture-outbox sealing
+- **Where:** [76 §Capture outbox](../platform/76-mobile-companion.md).
+- **Question:** Exact mechanics of write-without-unlock capture: derivation/storage of the vault-scoped X25519 public key available to extensions, outbox storage location + quota, drain-into-entities semantics (dedupe, ordering, failure), and whether the outbox format is the HPKE seal used for member wraps or a dedicated envelope.
+- **Tentative leaning:** reuse the existing HPKE primitives ([16](../security/16-identity-orgs-encryption.md)); extension holds public key only, write-only queue, drained on next unlocked launch.
+- **Blocking?:** Blocks `MOB-5` (capture).
+
+---
+
 ### How to use this list
 
 - Each open question must be either **answered** (move the resolution into the source doc, drop the entry here) or **kept as known unknown** until implementation forces it.
