@@ -27,6 +27,29 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-430 — button corners differ around the app, and ButtonSize.Sm is a cramped face
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** shell/ui + Chat   **status:** ✅ fixed, in review (shell PR #203)
+- **what happened:** some buttons wear invented corner radii (hardcoded px, not the token scale) — Chat alone had nine (7px icon buttons, 10px send/composer, 5px pills); and the 24px `ButtonSize.Sm` face reads cramped everywhere it's used.
+- **triage / resolution:** all radii tokenized onto the 2/4/8/12 scale (Chat ×9, SDK menus 0.25rem, two stray 8px) + a **zero-baseline CI guard** (`tools/check-hardcoded-radius.mjs` in `bun run lint`) so a px radius outside the scale fails the build — the systemic fix the control-face complaints keep asking for. `ButtonSize.Sm` removed outright: 79 call sites → Md (compiler-enforced), `.button--sm` CSS deleted; IconButton's own scale untouched.
+
+
+### F-429 — disabled glossy buttons flatten into a single-colour slab
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** shell/ui (Button)   **status:** ✅ fixed, in review (shell PR #200)
+- **what happened:** glass/primary buttons lose the glossy treatment entirely in disabled/loading states — flat background, no shine.
+- **triage / resolution:** the F-410 readable-disabled-labels fix zeroed all three shine layers on `:disabled`; the face gradient survived but reads flat without its speculars under the desaturate. Shine layers now dim to 0.45 instead of vanishing — material identity kept, inert read kept (desaturate + no outer shadow). Tuning knob is the single 0.45 if it reads too shiny live.
+
+
+### F-428 — my "Stunden" collection imported as a note (again, next to its List)
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ fixed, in review (shell PR #199)
+- **what happened:** the Anytype Collection object minted BOTH its Database List and a Note twin — a junk "Stunden" note in the notes list per import source.
+- **triage / resolution:** Anytype's `details.layout` is the object-KIND discriminator (owner supplied the ObjectLayout enum; verified against the export — Stunden = 14 Collection). The importer now routes on it: Collection mints its List only; chrome layouts (Dashboard/Space/Date/SpaceView/Participant) never mint entities. Existing Note twins are residue for the sweep (import never deletes). Full kind-routing (Task(2)/Bookmark(11) → native types) filed as IE-10e residue.
+
+### F-427 — imported screenshots render page-width huge in the editor
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** shell/import + editor   **status:** ✅ fixed, in review (shell PR #199)
+- **what happened:** every imported image fills the editor at natural size; Anytype stored my chosen display width and the import dropped it.
+- **triage / resolution:** two halves. (1) the importer emitted the bare inline `image` node — the editor's resizable media block is `image-block` (alignment + `widthPercent`); it now emits that. (2) Anytype exports the width as `fields.width`, a FRACTION of editor width (verified: 0.195 → 20%) — carried into `widthPercent`, clamped 10–100. Seed stand-in added (decorator kind, v2 shape); asset-src rewrite covers the new node; re-import replants existing bodies (hash changes) so widths repair in place.
+
+
 ### F-426 — X.com won't let me post, and nothing tells me the browser's privacy shield is why
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** open
 - **what happened:** posting on X fails with a wall of console noise — our tracker blocklist cancels X's device-risk beacons (`ERR_BLOCKED_BY_CLIENT` on doubleclick/castle), X's anti-bot then 403s every `flow/viewer.json`, and the page's own nonce-CSP logs an inline-script violation. The DESIGNED fix exists — ⋯ → "Trust this site" (Browser-8) lifts the blocklist + 3p-cookie strip for the first party — but nothing at the point of breakage says so; the owner's first theory was CORS.
@@ -36,32 +59,32 @@ Newest sessions on top.
 
 
 ### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
-- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Agent   **status:** open
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Agent   **status:** ✅ done (2026-07-18)
 - **what happened:** an answer with `1. Documents:` followed by four `- link` sub-bullets renders the dashes inline — "- link - link - link" wrapped as prose — instead of a nested list.
 - **what I expected:** nested bullets under the numbered item.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/12-app-agent.png
-- **triage:** _(open — `@brainstorm/sdk/markdown` block parser doesn't recognize a list nested under an ordered item; extend the shared parser, both Agent + Preview inherit.)_
+- **triage / resolution (developer, 2026-07-18, shell PR #198):** the column-0-anchored list matchers slurped indented `- item` lines into the paragraph as inline dashes. Matchers now tolerate ≤8 spaces of indent (nesting flattens to one level, documented); paragraph break rules match. Agent + Preview inherit; 507 tests green.
 
 ### F-424 — the Files vault root greets me with three rows of "(untitled)"
-- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Files (universal browser)   **status:** open
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** design   **app:** Files (universal browser)   **status:** 🟡 partial (2026-07-18)
 - **what happened:** the vault root gallery leads with ~13 "(untitled)" Note/CodeFile/Profile tiles (probe residue + import leftovers) — name-sorted, "(untitled)" wins the top of the view, so the first screen of my vault is anonymous cards.
 - **what I expected:** my named content first; untitled objects grouped last (or a cleanup affordance).
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/08-app-files.png
-- **triage:** _(open — two parts: (a) sort untitled-last in name sort, (b) the Northbound vault needs a probe-residue sweep (untitled notes/codefiles, "DeleteMe task 26658", "Page Probe E510658" contacts, "RevivedLiveness374" notes).)_
+- **triage / resolution:** (a) ✅ shipped (shell PR #198) — name sort sinks untitled entities below named ones in both directions. (b) residue sweep still open: probe 012g found the rows (DeleteMe task, 2 probe Persons, doubled DeleteMe note) but the renderer `vaultEntities` surface has no delete and ignores the probe's query shape (list returned the full readable set) — the sweep needs the bin/delete path per owning app, and the corrupted "Pipeline ready" calendar chips live in calendar's LEGACY KV storage (no entity anywhere carries those strings), so their repair goes through the calendar storage adapter, not entities.
 
 ### F-423 — an imported note opens with an empty Title even though everything else knows its name
-- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Notes / shell import   **status:** open
+- **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Notes / shell import   **status:** ✅ done (2026-07-18)
 - **what happened:** "Stunde 27 | Natasha" — window header, sidebar row and Database all show the name, but the editor's title node is the gray "Title" placeholder.
 - **what I expected:** the title in the document, like every note I create by hand.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/01-app-notes.png
-- **triage:** _(open — hypothesis: body was planted before F-402 added `withTitleNode`, and F-398's unchanged-body-hash skip means re-imports never re-plant it, so pre-F-402 bodies keep the empty title forever. Fix: fold the title into the body hash (or version the plant format) so a re-import repairs it in place — same repair-on-reimport posture as F-420/F-421.)_
+- **triage / resolution (developer, 2026-07-18, shell PR #198):** verified real (012c probe: explicit navigation, hydrated, h1 empty) — but the hash hypothesis was wrong (the hash already covers the title; a clean-room plant+hydrate repro passes). Rather than chase which historical plant minted each copy, the fix is self-healing at the editor seam: `NormalizeEmptyDocPlugin`'s non-empty path now runs the full repair once hydration settles — enforce the title invariant (a title-less planted body has a heading first), then adopt the entity's stored title into the empty TitleNode (once, at open, history-merge). A deliberate user clear stays cleared (clearing empties storedTitle too). In-process repro over genuinely-planted docs, titled + title-less; 493 Notes tests green.
 
 ### F-422 — my calendar is full of events named "ipeline ready" and ".no won morf pu d…"
 - **session:** 012-all-apps-smoke (polish sweep 2026-07-18)   **kind:** bug   **app:** Calendar (event create input)   **status:** open
 - **what happened:** July is littered with chips reading "ipeline ready", "peline ready", "Pipeline readyPipe…", and one that is *literally reversed*: ".no won morf pu d…" = "…d up from now on." backwards. CSS can't reverse Latin text — these titles are STORED corrupted.
 - **what I expected:** events named what was typed.
 - **evidence:** tests/dogfood/.sessions/012-all-apps-smoke/04-app-calendar.png
-- **triage:** _(open — the reversal is the classic controlled-input caret race: every keystroke re-render resets the caret to 0, so fast typing (Playwright `type`, paste-speed humans) lands characters in reverse / eats leading chars. Repro: fast-type into the event quick-create title. Same family as F-299 (journal first-char). Audit the calendar title input's value/caret handling — and sweep other quick-create inputs for the same pattern.)_
+- **triage / resolution (developer, 2026-07-18):** the INPUT bug is F-299, already fixed with a regression test (`entry-editor-seed-plant.test.tsx` plants "Pipeline ready" verbatim) — the calendar chips show HISTORICAL data typed while F-299 was live. The event-detail title is plain local state (no race at HEAD). Remaining work is data repair only, folded into F-424(b): the corrupted rows live in calendar's legacy KV storage (no entity in entities.db carries those strings — probes 012b/012e/012g), so the repair goes through the calendar storage adapter.
 
 ### F-421 — Files gallery is a field of gray strips floating over dead space
 - **session:** owner report (2026-07-18), reproduced in 905 re-run   **kind:** bug   **app:** Files   **status:** ✅ done (2026-07-18)
