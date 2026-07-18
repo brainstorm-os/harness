@@ -27,6 +27,38 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-403 — my dashboard shows a database id where the company name should be
+- **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts (widget)   **status:** open
+- **what I was trying to do:** glance at the Contacts widget after cleaning up my duplicate Vertex contact.
+- **what happened:** Jonas Wehner's second line reads `ent_mrq2jeakonfzl4aj`. In the app his company shows fine (a "Vertex Labs" chip), but the widget prints the raw entity id. It's not the merge — the 903 capture shows the same leak on an older contact (`ent_mrbyrapeyce60oel`), so ANY contact whose company is a linked Company entity wears an id on my desktop.
+- **what I expected:** the company name (or nothing) — never an internal id.
+- **evidence:** tests/dogfood/.sessions/906-northbound-v050-team-tour/13-dashboard-no-whats-new.png; tests/dogfood/.sessions/903-recent-ship-sweep/01-dashboard-labels.png (same leak, pre-0.5.0)
+- **triage:** _(open — `apps/contacts/src/widget-data.ts` `personSubtitle` guards against *object* companies but the app stores a linked company as a raw id **string**, so the `typeof company === "string"` branch returns the id. Detect `ent_`-shaped ids (or resolve them like the app does) and fall back to empty.)_
+
+### F-404 — I merged two contacts and the app never told me it worked (it errored instead)
+- **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts   **status:** open
+- **what I was trying to do:** finish the duplicate review — "Merge 2 contacts".
+- **what happened:** the merge itself worked (one row left, fields unioned — genuinely good), but there was no confirmation of any kind, and the console logged `pageerror: io.brainstorm.contacts lacks capability for ui.notify` at that moment. So the app *tried* to tell me and the shell dropped it: the toast the flow ships is dead on arrival because the capability isn't in the manifest.
+- **what I expected:** "Merged 2 contacts — the duplicate is in the Bin" (the dialog promises Bin recovery; the confirmation is where I'd learn that held).
+- **evidence:** tests/dogfood/.sessions/906-northbound-v050-team-tour/console.log (pageerror line); 07-contacts-after-merge.png
+- **triage:** _(open — either grant `ui.notify` in the Contacts manifest or drop the notify call; also worth a sweep for other apps calling capabilities they don't hold, since the failure is silent-to-the-user but a real pageerror.)_
+
+### F-405 — Journal (and Tasks) advertise "Type '/' for commands" but the menu can't embed anything
+- **session:** 906 / 906c / 906d   **kind:** bug   **app:** editor (Journal + Tasks hosts)   **status:** open
+- **what I was trying to do:** the F-070 headline — put the live pipeline into my weekly log: type `/` in today's entry and reference a page, exactly like I do in Notes every day.
+- **what happened:** three walls. (1) In Notes, `/Stunde` lists my pages to embed right in the menu; in Journal the same query **dismisses the menu** and leaves `/Stunde` as literal text in my entry. (2) The Journal/Tasks slash menu is block-types only — no Embed, no Reference, no page results (`/emb` matches nothing and also dies to plain text). (3) Mid-line `/` after a space doesn't open the menu at all (Notes pops it anywhere). So the embed *nodes* shipped, but no path a user can type reaches them outside Notes.
+- **what I expected:** parity means the same `/` experience: pages listed, an Embed/Reference command, mid-line trigger.
+- **evidence:** tests/dogfood/.sessions/906d-slash-parity-probe/notes.md (Notes lists pages, Journal `/emb` → literal text) + 01/02 shots; 906c/01-journal-slash-fresh-block.png (block-commands-only menu); 906/08-journal-slash-menu.png (mid-line `/` inert)
+- **triage:** _(open — F-070 follow-up: the shared block-embed/mention nodes are in the Journal/Tasks builds (`apps/journal/src/ui/entry-editor.tsx` promotes `block-embed`), but the hosts' slash typeahead isn't wired to the entity-search/embed commands the Notes menu has. Wire the shared embed picker into both hosts' `/` menus.)_
+
+### F-406 — the Files view menu shows me "Ic…", "G…", "G…" and expects me to pick one
+- **session:** 906-northbound-v050-team-tour   **kind:** design   **app:** Files   **status:** open
+- **what I was trying to do:** switch the Vault view to Gallery from the header's view select.
+- **what happened:** the dropdown renders so narrow every option label truncates to two letters — "Ic…", "G…", "G…" — and the *current* option renders as a bare checkmark with **no label at all**. Two of the four options both read "G…" (Gallery? Grid?), so the menu is literally undecidable without trial and error. This is the shared select-menu primitive wearing its check-column wrong, not a Files-only style.
+- **what I expected:** a menu wide enough for its own labels: List / Icons / Gallery / Grid, check on the current one.
+- **evidence:** tests/dogfood/.sessions/906-northbound-v050-team-tour/11-files-view-menu.png
+- **triage:** _(open — the trigger-anchored select menu appears to inherit the trigger's width as a max; option rows need intrinsic min-width (label + check column). Check `@brainstorm/sdk/select-menu` sizing against a short trigger like "List ⌄".)_
+
 ### F-402 — every imported note opens with a blank title over the body
 - **session:** 905-anytype-files-deep-verify / 905b   **kind:** bug   **app:** shell/import + Notes   **status:** ✅ done (2026-07-18)
 - **what I was trying to do:** open "Stunde 8" and see it as I left it in Anytype — title on top, lesson underneath.
