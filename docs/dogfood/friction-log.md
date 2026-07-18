@@ -27,6 +27,12 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-430 — button corners differ around the app, and ButtonSize.Sm is a cramped face
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** shell/ui + Chat   **status:** ✅ fixed, in review (shell PR #203)
+- **what happened:** some buttons wear invented corner radii (hardcoded px, not the token scale) — Chat alone had nine (7px icon buttons, 10px send/composer, 5px pills); and the 24px `ButtonSize.Sm` face reads cramped everywhere it's used.
+- **triage / resolution:** all radii tokenized onto the 2/4/8/12 scale (Chat ×9, SDK menus 0.25rem, two stray 8px) + a **zero-baseline CI guard** (`tools/check-hardcoded-radius.mjs` in `bun run lint`) so a px radius outside the scale fails the build — the systemic fix the control-face complaints keep asking for. `ButtonSize.Sm` removed outright: 79 call sites → Md (compiler-enforced), `.button--sm` CSS deleted; IconButton's own scale untouched.
+
+
 ### F-429 — disabled glossy buttons flatten into a single-colour slab
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** shell/ui (Button)   **status:** ✅ fixed, in review (shell PR #200)
 - **what happened:** glass/primary buttons lose the glossy treatment entirely in disabled/loading states — flat background, no shine.
