@@ -495,14 +495,15 @@ Format:
 - **Tentative leaning:** (b). Cosmetic flexibility without breaking the data layer.
 - **Blocking?:** No.
 
-#### OQ-40 — Formulas and rollups
+#### OQ-40 — Formulas and rollups  *[RESOLVED-in-practice — shipped pre-1.0 in the Database app]*
 - **Where:** [19-properties-and-schemas.md](../data/19-properties-and-schemas.md).
 - **Question:** When do computed properties (formulas, rollups) ship?
 - **Options:**
   - (a) v2 alongside organizations and multi-user.
   - (b) Post-v2; never first-class — let an app provide them.
   - (c) v1 minimal (single-entity formulas only, no cross-entity rollups).
-- **Tentative leaning:** (a) for formulas, post-v2 for rollups (rollups need the link traversal story to be very solid first).
+- **Tentative leaning (superseded):** (a) for formulas, post-v2 for rollups (rollups need the link traversal story to be very solid first).
+- **Resolution (2026-07-18):** both shipped **pre-1.0**, well ahead of the leaning — as Database-app computed *view columns* rather than first-class vault properties, i.e. option (b)'s "an app provides them" shape delivered early instead of never. The formula + rollup engines and both column kinds landed under implementation-plan `9.12.17` (rollup engine 2026-06-05 on DT-3's typed relations; rollup column + three-step creation picker 2026-06-06; formula engine + column + authoring 2026-06-09/10), and shell **PR #183** (DT-4, 2026-07-18; CI green, merge pending the required owner review) completed the surface — the shared read-only computed cells now render on every card view (board / gallery / list) with full-vault relation wiring, not just the grid. Cross-entity rollups reuse the aggregation-footer reducers (`computeRollup` → `computeAggregation`), so the link-traversal soundness the leaning worried about is the same evaluated-membership machinery the views already trust. Promotion to first-class computed *properties* (visible outside Database, e.g. in other apps' inspectors) remains a v2 consideration.
 - **Blocking?:** No.
 
 #### OQ-41 — Vocabulary promotion suggestions

@@ -124,7 +124,7 @@ worktree; don't race on `main`.
   reads as a real engagement, not a flat note.
 - **Pairs with:** DT-1 (engagement stage transitions) + DT-4 (totals).
 
-## DT-4 — Surface Database aggregation / rollups · **P1** · status: in-progress
+## DT-4 — Surface Database aggregation / rollups · **P1** · status: ✅ done (2026-07-18 — shell PR #183, CI green; merge awaits the required owner review)
 
 - **Need (session 110):** Clients carry deal values but there's **no pipeline
   total** — Mira can't answer "what's my pipeline worth?" The engine has
@@ -148,9 +148,25 @@ worktree; don't race on `main`.
   target-property → aggregation picker, extending the B5.14 inline form) + a
   read-only rollup **cell** + grid wiring so the Engagements view shows the
   rolled-up fee column live.
+- **Progress (2026-06-06 → 06-10, rollups slice 2 + formulas, `9.12.17`):** the
+  engine became a usable column on `main` — the `ColumnSpec.rollup` property
+  kind, the three-step **"Add rollup…"** creation picker (relation → target
+  property → aggregation), the read-only grid `RollupCell`, full-vault grid
+  wiring, and the formula twin (engine + column + authoring). The footer's
+  durable **per-view aggregation persistence** (`ColumnSpec.aggregation`
+  through the view override + menu picker) closed the 9.12.18 polish remainder.
+- **Done (2026-07-18, card surfaces — shell PR #183, CI green, merge pending
+  owner review):** the last gap — computed
+  columns silently vanished on board/gallery/list cards (and the list strip
+  mounted a phantom *editable* cell for the synthetic propertyId) — closed via
+  shared read-only computed cells (`react/computed-cells.tsx`:
+  `RollupCell`/`FormulaCell` + a rollup-lookup context) rendered by every card
+  view with the grid's full-vault `allRows` wiring. A board card now shows
+  "Total fee $3,500" live, matching the grid.
 - **Acceptance:** the Clients grid shows a summed **pipeline total** ✅ (footer);
-  an Engagements view rolls up fees — *engine done, UI wiring next*. Numbers Mira
-  would otherwise compute by hand.
+  an Engagements view rolls up fees ✅ (grid cell + board/gallery/list cards).
+  Numbers Mira would otherwise compute by hand. OQ-40 re-marked
+  RESOLVED-in-practice the same turn.
 
 ## DT-5 — Website builder + content pipeline · **P1** · status: open
 
