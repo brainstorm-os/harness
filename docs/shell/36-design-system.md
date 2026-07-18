@@ -275,85 +275,48 @@ Shadow values are computed from `color.shadow.subtle`…`.strong` + spread/offse
 
 **Rule:** any control that fires an async request and any element whose content is loading must show a loader. A button awaiting a request shows the loader **in place of or alongside its label** (the button stays its own size — never collapses), disables itself, and sets `aria-busy="true"`. Non-button async regions (panels fetching data, lists hydrating, an inspector resolving an entity) show the same loader centered in the region until content is ready. No async affordance is allowed to sit visually idle while work is in flight — an unstyled wait reads as a frozen UI.
 
-The canonical loader is the dual-arc spinner below. It is **monochrome by design**: it renders in `currentColor`, so on a button it is automatically the button's text color (the primary action's foreground), and anywhere else it inherits the surrounding text color. Never hardcode its stroke — `currentColor` is the contract that keeps it correct across themes and button variants.
+The canonical loader is the single-ring spinner below: a circle in the theme's border tone with a transparent gap, rotating. The ring color is **`--color-border-default`** — the same weight as the product's chrome borders — so it reads correctly on every theme. Never hardcode an rgba into the ring.
 
-Markup (two concentric arcs, `r=40` and `r=30`, in a `0 0 100 100` viewBox):
+Markup (pure CSS — no SVG):
 
 ```html
-<span class="loader" role="status" aria-label="Loading">
-  <svg viewBox="0 0 100 100" aria-hidden="true">
-    <circle class="loader-circle circle-1" cx="50" cy="50" r="40"></circle>
-    <circle class="loader-circle circle-2" cx="50" cy="50" r="30"></circle>
-  </svg>
-</span>
+<span class="loader" role="status" aria-label="Loading"></span>
 ```
 
-CSS (canonical spec — adapted from [uiverse.io/Z4drus/short-firefox-73](https://uiverse.io/Z4drus/short-firefox-73); changed from the original only by `stroke: currentColor` and a token-driven default size, both required by our conventions):
+CSS (canonical spec — adapted from [uiverse.io by Fernando-sv](https://uiverse.io); changed from the original by the theme-token ring color and em-relative sizing, both required by our conventions):
 
 ```css
 .loader {
   display: inline-block;
+  box-sizing: border-box;
   /* Default to the surrounding text size so it sits inline in a button.
-     Override with an explicit width/height for region-level loaders. */
+     Region-level loaders set an explicit width/height AND font-size so the
+     em-scaled ring thickness grows with the loader. */
   width: 1em;
   height: 1em;
-  position: relative;
+  border: max(2px, 0.11em) solid var(--color-border-default);
+  border-left-color: transparent;
+  border-radius: 50%;
+  animation: loader-spin 1s linear infinite;
 }
 
-.loader svg {
-  width: 100%;
-  height: 100%;
-  animation: rotate-svg 2s linear infinite;
-  transform-origin: center center;
-}
-
-.loader-circle {
-  fill: none;
-  stroke: currentColor; /* inherits button text / surrounding text color — never hardcode */
-  stroke-width: 8;
-  stroke-linecap: round;
-}
-
-.circle-1 {
-  stroke-dasharray: 251.3274; /* 2 * π * 40 */
-  stroke-dashoffset: 251.3274;
-  animation: dash-circle1 1.5s cubic-bezier(0.66, 0, 0.34, 1) infinite alternate;
-}
-
-.circle-2 {
-  stroke-dasharray: 188.4956; /* 2 * π * 30 */
-  stroke-dashoffset: 0;
-  animation: dash-circle2 1.5s cubic-bezier(0.66, 0, 0.34, 1) infinite alternate;
-}
-
-@keyframes rotate-svg {
+@keyframes loader-spin {
+  0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-@keyframes dash-circle1 {
-  0%   { stroke-dashoffset: 251.3274; }
-  100% { stroke-dashoffset: 0; }
-}
-
-@keyframes dash-circle2 {
-  0%   { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: 188.4956; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  /* Reduced-motion users still get a visible busy signal, just not the spin.
-     Hold a partial arc and drop the dash/rotate animations. */
-  .loader svg { animation: none; }
-  .circle-1, .circle-2 { animation: none; }
-  .circle-1 { stroke-dashoffset: 188.4956; }
+  /* Reduced-motion users still get a visible busy signal — the held ring
+     with its gap — just no spin. */
+  .loader { animation: none; }
 }
 ```
 
 **Conventions:**
 
 - Ships once as a shared renderer primitive (alongside `<Popover>`, `<Icon>`) — apps and shell consume that, they do not paste this CSS. Same DRY ceiling as every other chrome primitive.
-- Size is `1em` by default so it tracks the button/text it sits in; region-level loaders set an explicit size (a small region uses ~`var(--space-*)`-scale; a full panel uses a larger fixed size). The arc geometry is viewBox-relative, so it stays crisp at any size.
-- It is always `currentColor`. A loader on a primary (filled) button is the on-primary text color; on a secondary/ghost button it is the normal text color; in a panel it is the body text color. This falls out of `currentColor` for free — do not theme it per variant.
+- Size is `1em` by default so it tracks the button/text it sits in; region-level loaders set an explicit size (a small region uses ~`var(--space-*)`-scale; a full panel uses a larger fixed size) and mirror it into `font-size` so the ring thickness scales proportionally.
+- The ring is always `var(--color-border-default)` with a transparent left gap. It carries the theme's border weight on every surface — filled buttons, panels, inspectors — do not theme it per variant or hardcode a color.
 - Disabled-while-busy: a busy button is also `disabled` / `aria-disabled` so the action can't double-fire; the loader is the visible reason, not a separate spinner appended next to a still-clickable button.
 
 ### Z-layers
