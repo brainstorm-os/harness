@@ -23,7 +23,7 @@ import { type ElectronApplication, type Page, _electron, test } from "@playwrigh
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
-const SHELL_DIR = join(REPO_ROOT, "packages", "shell");
+const SHELL_DIR = process.env.BRAINSTORM_SHELL_DIR ?? join(REPO_ROOT, "packages", "shell");
 const ELECTRON_BIN = join(SHELL_DIR, "node_modules", ".bin", "electron");
 const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 
@@ -185,6 +185,11 @@ test("capture marketing screenshots", async () => {
 		}
 	}
 	await dashboard.keyboard.press("Escape").catch(() => undefined);
+	// Dev-only header chrome (seed/reseed buttons) shows on any unpackaged
+	// launch — hide it so the shots match what a packaged build renders.
+	await dashboard
+		.addStyleTag({ content: ".dashboard__dev-seed{display:none!important}" })
+		.catch(() => undefined);
 	await maximizeAll();
 	await dashboard.waitForTimeout(1500);
 	await shot(dashboard, "desktop");
