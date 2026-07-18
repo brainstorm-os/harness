@@ -27,6 +27,17 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-428 — my "Stunden" collection imported as a note (again, next to its List)
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ fixed, in review (shell PR #199)
+- **what happened:** the Anytype Collection object minted BOTH its Database List and a Note twin — a junk "Stunden" note in the notes list per import source.
+- **triage / resolution:** Anytype's `details.layout` is the object-KIND discriminator (owner supplied the ObjectLayout enum; verified against the export — Stunden = 14 Collection). The importer now routes on it: Collection mints its List only; chrome layouts (Dashboard/Space/Date/SpaceView/Participant) never mint entities. Existing Note twins are residue for the sweep (import never deletes). Full kind-routing (Task(2)/Bookmark(11) → native types) filed as IE-10e residue.
+
+### F-427 — imported screenshots render page-width huge in the editor
+- **session:** owner report (2026-07-18)   **kind:** bug   **app:** shell/import + editor   **status:** ✅ fixed, in review (shell PR #199)
+- **what happened:** every imported image fills the editor at natural size; Anytype stored my chosen display width and the import dropped it.
+- **triage / resolution:** two halves. (1) the importer emitted the bare inline `image` node — the editor's resizable media block is `image-block` (alignment + `widthPercent`); it now emits that. (2) Anytype exports the width as `fields.width`, a FRACTION of editor width (verified: 0.195 → 20%) — carried into `widthPercent`, clamped 10–100. Seed stand-in added (decorator kind, v2 shape); asset-src rewrite covers the new node; re-import replants existing bodies (hash changes) so widths repair in place.
+
+
 ### F-426 — X.com won't let me post, and nothing tells me the browser's privacy shield is why
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** open
 - **what happened:** posting on X fails with a wall of console noise — our tracker blocklist cancels X's device-risk beacons (`ERR_BLOCKED_BY_CLIENT` on doubleclick/castle), X's anti-bot then 403s every `flow/viewer.json`, and the page's own nonce-CSP logs an inline-script violation. The DESIGNED fix exists — ⋯ → "Trust this site" (Browser-8) lifts the blocklist + 3p-cookie strip for the first party — but nothing at the point of breakage says so; the owner's first theory was CORS.
