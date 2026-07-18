@@ -25,7 +25,7 @@ import { type ElectronApplication, type Page, _electron, test } from "@playwrigh
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
-const SHELL_DIR = join(REPO_ROOT, "packages", "shell");
+const SHELL_DIR = process.env.BRAINSTORM_SHELL_DIR ?? join(REPO_ROOT, "packages", "shell");
 const ELECTRON_BIN = join(SHELL_DIR, "node_modules", ".bin", "electron");
 const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 
@@ -798,14 +798,24 @@ const DRIVERS: Array<[AppId, string, (p: Page, ctx: Ctx) => Promise<void>]> = [
 
 test("capture per-app marketing screenshots", async () => {
 	test.setTimeout(3_000_000);
-	rmSync(DATA_DIR, { recursive: true, force: true });
+	// Chunked invocation support (each chunk stays under external time caps):
+	// SITE_SHOT_PASS=light|dark runs one pass, SITE_APP_FILTER=dir1,dir2 limits
+	// apps, SITE_KEEP_DATA=1 keeps the seeded vault from a previous chunk.
+	if (process.env.SITE_KEEP_DATA !== "1") {
+		rmSync(DATA_DIR, { recursive: true, force: true });
+	}
 	mkdirSync(DATA_DIR, { recursive: true });
 	mkdirSync(OUT_DIR, { recursive: true });
 
-	const passes: Pass[] = [
+	const allPasses: Pass[] = [
 		{ name: "light", theme: "default-light", mode: "light", sub: "", create: true },
 		{ name: "dark", theme: "midnight", mode: "dark", sub: "midnight", create: false },
 	];
+	const passes = process.env.SITE_SHOT_PASS
+		? allPasses.filter((p) => p.name === process.env.SITE_SHOT_PASS)
+		: allPasses;
+	const only = process.env.SITE_APP_FILTER?.split(",").map((s) => s.trim());
+	const drivers = only ? DRIVERS.filter(([, dir]) => only.includes(dir)) : DRIVERS;
 
 	// Each pass boots its own shell. Re-launching an app whose window was
 	// closed by the driver only works reliably on a fresh shell, so the theme
@@ -898,7 +908,7 @@ test("capture per-app marketing screenshots", async () => {
 		);
 		await dashboard.waitForTimeout(2000);
 
-		for (const [id, dir, drive] of DRIVERS) {
+		for (const [id, dir, drive] of drivers) {
 			let page: Page | null = null;
 			const outDir = join(OUT_DIR, dir, pass.sub);
 			mkdirSync(outDir, { recursive: true });
