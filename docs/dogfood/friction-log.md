@@ -27,6 +27,23 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-450 — the Read surface's empty state tells me to "Add bookmark" — that's not how anything gets read
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** open
+- **what happened (Marcus):** the Read (and Archive) empty states reuse the inbox CTA verbatim — but adding a bookmark lands in the Inbox; nothing about the promised action fills THIS surface. The empty state renders beautifully now (the shared hero face — #219 verified live in this session) and then promises the wrong repair.
+- **what I expected:** surface-appropriate copy — Read: "Mark a bookmark as read and it lands here" (no CTA, or a "Go to Inbox" one); Archive likewise.
+- **evidence:** tests/dogfood/.sessions/909-marcus-bookmarks-design-review/03-06-surface-read.png
+
+### F-449 — clicking a bookmark card did nothing in the scripted walkthrough
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** bug?   **app:** Bookmarks   **status:** open
+- **what happened:** the spec clicked the first card and captured an unchanged screen — no detail pane, no visible response.
+- **triage:** _(open — NEEDS A PER-APP PROBE before any patch: the generic row-click limitation is a known capture gap (the card may open via its title link / double-click / an Open affordance the locator missed). Write a targeted 909b probe driving the real open affordance; only file as a product bug if that also fails.)_
+
+### F-448 — a bookmark titled by its domain reads "example.com / example.com"
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** ✅ done (2026-07-19, shell PR #222)
+- **what happened (Marcus):** the card meta repeats the title verbatim when the captured title is the bare domain — pure noise in the row.
+- **triage / resolution:** the meta shows the domain only when it differs from the title.
+
+
 ### F-441 — Code-editor's "New file" has the same unsized-button drift; stop fixing it one app at a time
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** SDK empty-state   **status:** ✅ done (2026-07-18, shell PR #209)
 - **what happened:** the hero empty-state CTA shipped with no size class again (md face, `--radius-sm`) — Code-editor this time, right after Mailbox's F-437. The owner: "would be great to fix it everywhere and stop drifting from design system."
