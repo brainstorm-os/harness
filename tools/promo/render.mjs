@@ -68,9 +68,11 @@ for (const scene of SCENES) {
 	if (scene.titleCard || scene.introCard) {
 		// Pillow renders the cards (Homebrew ffmpeg has no drawtext/freetype)
 		// in the site's indigo palette.
+		// The shell's indigo app icon (same mark as the site favicon) — the
+		// old docs/art icon9 is the pre-indigo blue and must not ship.
 		const iconCandidates = [
-			join(HARNESS, "docs", "art", "icon", "icon9.png"),
 			join(HARNESS, "packages", "shell", "art", "icon.png"),
+			join(HARNESS, "docs", "art", "icon", "icon9.png"),
 		];
 		const icon = iconCandidates.find((p) => existsSync(p)) ?? "-";
 		const mode = scene.introCard ? "intro" : "outro";

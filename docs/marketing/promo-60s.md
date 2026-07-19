@@ -83,8 +83,14 @@ clean, repeatable, and contain zero real data by construction.
 - **VO**: `edge-tts` (free, no key) en-US neural voice; macOS `say` fallback
   so the pipeline always renders. Free upgrade path if neither pleases:
   kokoro-onnx (local, Apache-2.0). Regenerate with `tools/promo/voiceover.mjs`.
-- **Music**: optional — drop a licensed track at `tools/promo/assets/music.*`
-  (YouTube Audio Library is the no-cost source) and re-render; the mix ducks
-  music −14 dB under VO. Renders fine without.
+- **Music**: the committed bed is **"Corporate company introduction video" by
+  Bertsz (freesound.org, CC0 1.0 — public domain, no attribution required,
+  commercial use fine)** at `tools/promo/assets/music.mp3`, mixed at 0.22
+  volume under the VO. To swap it, replace that file and re-render.
+  ⚠ **Epidemic Sound and Artlist are NOT free catalogs** — both are paid
+  subscription licenses behind "free music" ad keywords; a track used without
+  an active subscription draws a YouTube Content ID claim. If you subscribe to
+  either, download your track and drop it in as `music.mp3` — the license
+  stays valid for videos published while subscribed.
 - **Captions**: `promo-60s.srt` is emitted next to the mp4 (upload alongside
   on YouTube; nothing is burned in).
