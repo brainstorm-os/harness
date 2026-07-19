@@ -11,7 +11,11 @@
     "dogfood:catalog": "(cd ../shell && bun run --filter @brainstorm/shell build && bun run build:apps) && playwright test --config=playwright.catalog.config.ts",
     "dogfood:open": "node tools/dogfood-open.mjs",
     "dogfood:chat": "bun tools/dogfood-chat.ts",
-    "dogfood:backup": "mkdir -p tests/dogfood/.data-backups && tar --exclude=Cache --exclude='Code Cache' --exclude=GPUCache --exclude=DawnGraphiteCache --exclude=DawnWebGPUCache --exclude=Crashpad --exclude=blob_storage -czf tests/dogfood/.data-backups/northbound-$(date +%Y-%m-%d).tar.gz -C tests/dogfood .data && ls -lh tests/dogfood/.data-backups/"
+    "dogfood:backup": "mkdir -p tests/dogfood/.data-backups && tar --exclude=Cache --exclude='Code Cache' --exclude=GPUCache --exclude=DawnGraphiteCache --exclude=DawnWebGPUCache --exclude=Crashpad --exclude=blob_storage -czf tests/dogfood/.data-backups/northbound-$(date +%Y-%m-%d).tar.gz -C tests/dogfood .data && ls -lh tests/dogfood/.data-backups/",
+    "promo:prepare-vault": "node tools/promo/prepare-vault.mjs",
+    "promo:capture": "(cd ../shell && bun run --filter @brainstorm/shell build) && playwright test --config=playwright.promo.config.ts",
+    "promo:voiceover": "node tools/promo/voiceover.mjs",
+    "promo:render": "node tools/promo/render.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

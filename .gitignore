@@ -24,4 +24,7 @@ tests/dogfood/.screenshots/
 tests/dogfood/.screenshots-data/
 tests/dogfood/.app-screenshots-data/
 tests/dogfood/.sessions/
+tests/dogfood/.promo-data/
+tests/dogfood/.promo-data-staging/
+tests/dogfood/.promo/
 tests/dogfood/Singleton*
