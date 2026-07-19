@@ -46,7 +46,7 @@ for (const scene of SCENES) {
 	// tpad then clones the final frame out to the scene budget (screencast
 	// clips end when paints stop), and `-t` trims to the exact scene length.
 	let speed = scene.speed ?? 1;
-	if (!scene.titleCard) {
+	if (!scene.titleCard && !scene.introCard && !scene.slide) {
 		const clipPath = join(CLIPS, `${scene.id}.mov`);
 		if (existsSync(clipPath)) {
 			const dur = Number(
@@ -65,21 +65,22 @@ for (const scene of SCENES) {
 		}
 	}
 	const vf = `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS/${speed},fps=${FPS},tpad=stop_mode=clone:stop_duration=${scene.seconds},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE},setpts=PTS-STARTPTS`;
-	if (scene.titleCard || scene.introCard) {
-		// Pillow renders the cards (Homebrew ffmpeg has no drawtext/freetype)
-		// in the site's indigo palette.
-		// The shell's indigo app icon (same mark as the site favicon) — the
-		// old docs/art icon9 is the pre-indigo blue and must not ship.
+	if (scene.titleCard || scene.introCard || scene.slide) {
+		// Pillow renders the stills (Homebrew ffmpeg has no drawtext/freetype)
+		// in the site's indigo palette. Cards use the shell's indigo app icon
+		// (same mark as the site favicon); slides are text-only interstitials.
 		const iconCandidates = [
 			join(HARNESS, "packages", "shell", "art", "icon.png"),
 			join(HARNESS, "docs", "art", "icon", "icon9.png"),
 		];
 		const icon = iconCandidates.find((p) => existsSync(p)) ?? "-";
-		const mode = scene.introCard ? "intro" : "outro";
-		const cardPng = join(PROMO, `card-${mode}.png`);
+		const cardPng = join(PROMO, `card-${scene.id}.png`);
+		const args = scene.slide
+			? ["slide", scene.slide.title, scene.slide.sub ?? "", cardPng]
+			: [scene.introCard ? "intro" : "outro", icon, cardPng];
 		execFileSync(
 			"uv",
-			["run", "--with", "pillow", "python3", join(import.meta.dirname, "cards.py"), mode, icon, cardPng],
+			["run", "--with", "pillow", "python3", join(import.meta.dirname, "cards.py"), ...args],
 			{ stdio: ["ignore", "inherit", "inherit"] },
 		);
 		ffmpeg([

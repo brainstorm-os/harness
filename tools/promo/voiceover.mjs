@@ -36,6 +36,16 @@ console.log(`[promo:vo] engine: ${useEdge ? `edge-tts (${EDGE_VOICE})` : "macOS 
 
 for (const scene of SCENES) {
 	const out = join(VO_DIR, `${scene.id}.wav`);
+	if (!scene.vo) {
+		// Silent scene (slide breath) — the mix still needs a segment.
+		execFileSync("ffmpeg", [
+			"-y", "-loglevel", "error",
+			"-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
+			"-t", String(scene.seconds), out,
+		]);
+		console.log(`[promo:vo] ${scene.id}: silent (${scene.seconds}s)`);
+		continue;
+	}
 	if (useEdge) {
 		const mp3 = join(VO_DIR, `${scene.id}.mp3`);
 		execFileSync("uvx", [
