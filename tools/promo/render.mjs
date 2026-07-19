@@ -156,14 +156,14 @@ if (music) {
 			"[m][sc]sidechaincompress=threshold=0.05:ratio=6:attack=25:release=350[duck];" +
 			"[vo][duck]amix=inputs=2:duration=first:normalize=0[a]",
 		"-map", "0:v", "-map", "[a]",
-		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT_MP4,
+		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", OUT_MP4,
 	]);
 } else {
 	ffmpeg([
 		"-i", silentVideo,
 		"-i", voTrack,
 		"-map", "0:v", "-map", "1:a",
-		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT_MP4,
+		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", OUT_MP4,
 	]);
 }
 
