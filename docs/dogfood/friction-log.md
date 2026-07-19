@@ -27,6 +27,12 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-442 — imported note images bleed off the window edge inside an unstyled figure
+- **session:** owner report (2026-07-19, imported lesson notes)   **kind:** bug   **app:** editor (shared)   **status:** ✅ done (2026-07-19, shell PR #217)
+- **what happened:** images in imported notes render wider than the content column and get cut by the window edge; "it uses figure which has huge margin".
+- **what I expected:** images sized to the column, aspect kept.
+- **triage / resolution (developer, 2026-07-19, shell PR #217):** the editor's legacy bare `image` node renders `<figure class="bs-editor__image">` which had **no CSS rule anywhere** — the UA default `margin: 1em 40px` plus an uncapped imported pixel width (Anytype plants carry one) is exactly the overflow. Pre-IE-10e plants keep bare `image` nodes forever (idempotent re-import skips unchanged bodies), so the clamp went into the shared `editor-theme.css` (self-heals every doc, no migration): inline margins zeroed, figure+img `max-width: 100%`, `height: auto`, styled caption. Geometry pinned by a `styles-image-figure.test.ts` guard (the lane-fill pattern). Longer-term dedup residue: TWO image node families exist (`ImageBlockNode` `.notes__image` styled vs bare `ImageNode`) — converging them is the fix-class.
+
 ### F-441 — Code-editor's "New file" has the same unsized-button drift; stop fixing it one app at a time
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** SDK empty-state   **status:** ✅ done (2026-07-18, shell PR #209)
 - **what happened:** the hero empty-state CTA shipped with no size class again (md face, `--radius-sm`) — Code-editor this time, right after Mailbox's F-437. The owner: "would be great to fix it everywhere and stop drifting from design system."
