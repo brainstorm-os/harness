@@ -27,6 +27,12 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-443 — imported numbered lists count "1. 1. 1." — every item its own list
+- **session:** owner report (2026-07-19, with the Anytype client source for `updateNumbersTree`)   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ done (2026-07-19, shell PR #218)
+- **what happened:** a numbered list from Anytype renders every item as "1." — the numbering restarts per item.
+- **what I expected:** 1. 2. 3. — Anytype numbers client-side over consecutive Numbered siblings.
+- **triage / resolution (developer, 2026-07-19, shell PR #218):** the client splices invisible **layout-Div wrappers inline before numbering** (`updateNumbersTree`'s `unwrap`); our converter had no `block.layout` handling, so each Div wrapper opened a fresh grouping scope → one single-item `<ol>` per item. `convertChildren` now pre-flattens `layout.style === "Div"` exactly like the client; Row/Column layouts keep their own scope (client restarts numbering per cell — parity test). **Existing docs repair by re-running the import** — the F-398 hash-skip replants bodies whose new serialization differs.
+
 ### F-442 — imported note images bleed off the window edge inside an unstyled figure
 - **session:** owner report (2026-07-19, imported lesson notes)   **kind:** bug   **app:** editor (shared)   **status:** ✅ done (2026-07-19, shell PR #217)
 - **what happened:** images in imported notes render wider than the content column and get cut by the window edge; "it uses figure which has huge margin".
