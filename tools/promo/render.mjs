@@ -39,9 +39,12 @@ const segments = [];
 for (const scene of SCENES) {
 	const seg = join(PROMO, `seg-${scene.id}.mp4`);
 	const fadeOutStart = Math.max(0, scene.seconds - FADE);
-	// tpad clones the final frame out to the scene budget (screencast clips
-	// end when paints stop), then `-t` trims to the exact scene length.
-	const vf = `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,fps=${FPS},tpad=stop_mode=clone:stop_duration=${scene.seconds},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE},setpts=PTS-STARTPTS`;
+	// Per-scene time-compression (scene.speed) keeps footage dense — actions
+	// are captured at a comfortable driving pace and played back snappier.
+	// tpad then clones the final frame out to the scene budget (screencast
+	// clips end when paints stop), and `-t` trims to the exact scene length.
+	const speed = scene.speed ?? 1;
+	const vf = `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS/${speed},fps=${FPS},tpad=stop_mode=clone:stop_duration=${scene.seconds},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE},setpts=PTS-STARTPTS`;
 	if (scene.titleCard) {
 		// Pillow renders the card (Homebrew ffmpeg has no drawtext/freetype).
 		const iconCandidates = [

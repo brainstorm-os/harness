@@ -53,24 +53,27 @@ export type PromoRecorder = {
 	stop(): Promise<void>;
 };
 
-/** Picks the best available backend: ffmpeg screen capture (60fps, real
- *  cursor — needs the one-time Screen-Recording permission) when the screen
- *  device is visible, else the permission-free CDP screencast fallback
- *  (paint-driven frame rate, synthetic cursor injected by the spec).
- *  `PROMO_CAPTURE=ffmpeg|screencast` forces one. */
+/** Default backend is the CDP screencast: it films ONLY the driven app
+ *  windows, no matter what else is on the display. The ffmpeg backend films
+ *  the whole screen region — real cursor + 60fps, but it captures whatever
+ *  is frontmost, INCLUDING the operator's own windows if the machine is in
+ *  use (this exact incident happened 2026-07-19: a run auto-picked ffmpeg
+ *  once the permission appeared and filmed the owner's browser session).
+ *  Display capture therefore NEVER auto-activates — it requires the
+ *  explicit `PROMO_CAPTURE=ffmpeg` opt-in on a machine left unattended. */
 export function makePromoRecorder(clipsDir: string, region: CaptureRegion): PromoRecorder {
-	const forced = process.env.PROMO_CAPTURE;
-	if (forced === "screencast") return new ScreencastRecorder(clipsDir);
-	const device = resolveScreenDeviceIndex();
-	if (device !== null) return new SceneRecorder(clipsDir, region, device);
-	if (forced === "ffmpeg") {
-		throw new Error(
-			"recorder: PROMO_CAPTURE=ffmpeg but no screen device — grant Screen Recording permission to this terminal",
+	if (process.env.PROMO_CAPTURE === "ffmpeg") {
+		const device = resolveScreenDeviceIndex();
+		if (device === null) {
+			throw new Error(
+				"recorder: PROMO_CAPTURE=ffmpeg but no screen device — grant Screen Recording permission to this terminal",
+			);
+		}
+		console.warn(
+			"[promo] DISPLAY capture active — this films the whole screen region. The machine must be unattended for the entire run.",
 		);
+		return new SceneRecorder(clipsDir, region, device);
 	}
-	console.warn(
-		"[promo] Screen-Recording permission not granted — falling back to CDP screencast (lower fps, synthetic cursor). Grant the permission and re-run for 60fps footage.",
-	);
 	return new ScreencastRecorder(clipsDir);
 }
 

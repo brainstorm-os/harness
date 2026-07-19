@@ -5,7 +5,7 @@
  * smooth scrolling so the clips read like a person driving.
  */
 
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 function easeInOutCubic(t: number): number {
 	return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
@@ -31,44 +31,49 @@ export async function glideTo(
 	cursor.y = y;
 }
 
-/** Glide to the centre of a locator, then click. */
+function toLocator(page: Page, target: string | Locator): Locator {
+	return typeof target === "string" ? page.locator(target).first() : target.first();
+}
+
+/** Glide to the centre of a selector/Locator, then click. */
 export async function glideClick(
 	page: Page,
-	selector: string,
+	target: string | Locator,
 	options: { durationMs?: number; settleMs?: number } = {},
 ): Promise<void> {
-	const box = await page.locator(selector).first().boundingBox();
-	if (!box) throw new Error(`humanize.glideClick: no box for ${selector}`);
-	await glideTo(page, box.x + box.width / 2, box.y + box.height / 2, options.durationMs ?? 600);
-	await page.waitForTimeout(options.settleMs ?? 150);
+	const box = await toLocator(page, target).boundingBox();
+	if (!box) throw new Error("humanize.glideClick: no box for target");
+	await glideTo(page, box.x + box.width / 2, box.y + box.height / 2, options.durationMs ?? 450);
+	await page.waitForTimeout(options.settleMs ?? 120);
 	await page.mouse.down();
-	await page.waitForTimeout(70);
+	await page.waitForTimeout(60);
 	await page.mouse.up();
 }
 
-/** Press-drag from one locator to another with an eased path. */
+/** Press-drag from one selector/Locator to another with an eased path. */
 export async function glideDrag(
 	page: Page,
-	fromSelector: string,
-	toSelector: string,
+	fromTarget: string | Locator,
+	toTarget: string | Locator,
 	durationMs = 900,
 ): Promise<void> {
-	const from = await page.locator(fromSelector).first().boundingBox();
-	const to = await page.locator(toSelector).first().boundingBox();
+	const from = await toLocator(page, fromTarget).boundingBox();
+	const to = await toLocator(page, toTarget).boundingBox();
 	if (!from || !to) throw new Error("humanize.glideDrag: missing box");
-	await glideTo(page, from.x + from.width / 2, from.y + from.height / 2, 500);
+	await glideTo(page, from.x + from.width / 2, from.y + from.height / 2, 400);
 	await page.mouse.down();
-	await page.waitForTimeout(180);
+	await page.waitForTimeout(150);
 	await glideTo(page, to.x + to.width / 2, to.y + to.height / 2, durationMs);
-	await page.waitForTimeout(180);
+	await page.waitForTimeout(150);
 	await page.mouse.up();
 }
 
-/** Type text with per-keystroke jitter (feels ~55 wpm). */
-export async function typeHuman(page: Page, text: string): Promise<void> {
+/** Type text with per-keystroke jitter. Default is a brisk on-camera
+ *  typist (~90 wpm); pass `paceMs` to slow/speed it. */
+export async function typeHuman(page: Page, text: string, paceMs = 22): Promise<void> {
 	for (const ch of text) {
 		await page.keyboard.type(ch);
-		await page.waitForTimeout(35 + Math.random() * 70);
+		await page.waitForTimeout(paceMs + Math.random() * paceMs);
 	}
 }
 

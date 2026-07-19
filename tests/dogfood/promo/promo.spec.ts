@@ -1,12 +1,16 @@
 /**
  * Promo capture rig — drives the 8 storyboard scenes of the 60s promo
- * (docs/marketing/promo-60s.md) against the PROMO vault clone
- * (`tests/dogfood/.promo-data`, built by `bun run promo:prepare-vault`) and
- * records one clip per scene via the OS-level `SceneRecorder`.
+ * (docs/marketing/promo-60s.md) against a FRESH synthetic vault seeded by
+ * `seedMarketingEntities` ("Northbound Studio" — clients, projects, people,
+ * tasks, events, notes, journal, whiteboard) and records one clip per scene.
  *
- * Never touches the live Northbound vault. Runs FOCUSED (no
- * `BRAINSTORM_NO_FOCUS`) so the real cursor is on camera — the machine must
- * be unattended while this runs.
+ * The synthetic seed is the ONLY footage source — never the live dogfood
+ * vault nor any backup clone of it (owner rule 2026-07-19: real-vault clones
+ * carry personal imports and must not be filmed). The vault is wiped and
+ * re-seeded every run, so takes are clean and repeatable.
+ *
+ * Runs FOCUSED when the ffmpeg backend is active (real cursor on camera) —
+ * the machine must be unattended while this runs.
  *
  * Scene drivers are deliberately defensive: every fancy interaction (a drag,
  * a view flip) is wrapped so a selector drifting with the product never
@@ -14,7 +18,7 @@
  * and the render stays producible. Failures are logged for polish passes.
  */
 
-import { existsSync, mkdirSync } from "node:fs";
+import { copyFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import {
 	type ElectronApplication,
@@ -22,7 +26,7 @@ import {
 	_electron,
 	test,
 } from "@playwright/test";
-import { beat, glideDrag, glideTo, scrollHuman, typeHuman } from "../lib/humanize";
+import { beat, glideClick, glideDrag, glideTo, typeHuman } from "../lib/humanize";
 import { ScreencastRecorder, makePromoRecorder } from "../lib/recorder";
 
 const HARNESS = join(import.meta.dirname, "..", "..", "..");
@@ -31,6 +35,8 @@ const ELECTRON_BIN = join(SHELL_DIR, "node_modules", ".bin", "electron");
 const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 const PROMO_DATA = join(HARNESS, "tests", "dogfood", ".promo-data");
 const CLIPS_DIR = join(HARNESS, "tests", "dogfood", ".promo", "clips");
+const WALLPAPER = "stormy-sea.png";
+const WALLPAPER_SRC = join(HARNESS, "docs", "art", "wallpaper", WALLPAPER);
 
 /** 16:9 stage in logical px; captured ×2 Retina → 2880×1620 → 1080p. */
 const STAGE = { x: 0, y: 40, width: 1440, height: 810 };
@@ -43,10 +49,19 @@ type BW = {
 		vaults: {
 			list(): Promise<{ id: string }[]>;
 			session(): Promise<unknown>;
+			create(input: { name: string; path: string }): Promise<unknown>;
 			activate(id: string): Promise<unknown>;
 		};
 		apps: { launch(id: string): Promise<unknown> };
-		dev: { seedPrebuiltApps(): Promise<unknown> };
+		dev: {
+			seedPrebuiltApps(): Promise<unknown>;
+			seedMarketingEntities(): Promise<unknown>;
+		};
+		dashboard: {
+			setAppearanceMode(mode: string): Promise<void>;
+			setTheme(theme: string): Promise<void>;
+			setWallpaper(wallpaper: { kind: string; value: string }, slot?: string): Promise<void>;
+		};
 	};
 };
 
@@ -68,9 +83,9 @@ async function tileAllWindows(app: ElectronApplication): Promise<void> {
 
 test("capture promo scenes", async () => {
 	test.setTimeout(1_200_000);
-	if (!existsSync(PROMO_DATA)) {
-		throw new Error("run `bun run promo:prepare-vault` first — .promo-data missing");
-	}
+	// Fresh synthetic vault every take — no real-vault data, clean repeats.
+	rmSync(PROMO_DATA, { recursive: true, force: true });
+	mkdirSync(PROMO_DATA, { recursive: true });
 	mkdirSync(CLIPS_DIR, { recursive: true });
 
 	const app = await _electron.launch({
@@ -84,20 +99,33 @@ test("capture promo scenes", async () => {
 			BRAINSTORM_AUTO_SEED: "0",
 			BRAINSTORM_APP_WINDOW_WIDTH: String(STAGE.width),
 			BRAINSTORM_APP_WINDOW_HEIGHT: String(STAGE.height),
+			// Screencast films the window without OS focus — don't steal the
+			// operator's focus while the rig runs. The ffmpeg display backend
+			// (explicit opt-in) needs focus; drop this only for that mode.
+			...(process.env.PROMO_CAPTURE === "ffmpeg" ? {} : { BRAINSTORM_NO_FOCUS: "1" }),
 			NODE_ENV: "production",
 		},
 	});
 
 	const dashboard = await app.firstWindow({ timeout: 60_000 });
-	await dashboard.evaluate(async () => {
+	await dashboard.evaluate(async (dataDir) => {
 		const bs = (window as unknown as BW).brainstorm;
 		if (!(await bs.vaults.session())) {
-			const [vault] = await bs.vaults.list();
-			if (!vault) throw new Error("promo vault clone has no vault registered");
-			await bs.vaults.activate(vault.id);
+			await bs.vaults.create({ name: "Northbound Studio", path: `${dataDir}/vault` });
 		}
 		await bs.dev.seedPrebuiltApps();
-	});
+		await bs.dev.seedMarketingEntities();
+	}, PROMO_DATA);
+	// Promo look: dark Midnight + the stormy-sea wallpaper (matches the
+	// title card's dark ground).
+	mkdirSync(join(PROMO_DATA, "vault", "dashboard", "wallpapers"), { recursive: true });
+	copyFileSync(WALLPAPER_SRC, join(PROMO_DATA, "vault", "dashboard", "wallpapers", WALLPAPER));
+	await dashboard.evaluate(async (wallpaper) => {
+		const bs = (window as unknown as BW).brainstorm;
+		await bs.dashboard.setAppearanceMode("dark");
+		await bs.dashboard.setTheme("default-dark");
+		await bs.dashboard.setWallpaper({ kind: "image", value: wallpaper }, "dark");
+	}, WALLPAPER);
 	await dashboard.waitForTimeout(5000);
 	for (const label of ["Got it", "Close", "Done"]) {
 		const btn = dashboard.getByRole("button", { name: label }).first();
@@ -196,42 +224,72 @@ test("capture promo scenes", async () => {
 	// ── S1: dashboard reveal ────────────────────────────────────────────────
 	await scene("01-dashboard", async () => {
 		await film(dashboard);
-		await glideTo(dashboard, 300, 500, 900);
-		await beat(dashboard, 1200);
-		await glideTo(dashboard, 1100, 420, 1600);
-		await beat(dashboard, 1500);
+		await glideTo(dashboard, 300, 500, 700);
+		await beat(dashboard, 700);
+		await glideTo(dashboard, 1100, 420, 1100);
+		await beat(dashboard, 800);
 	});
 
-	// ── S2: Notes — HQ hub with the live embed ─────────────────────────────
+	// ── S2: Notes — open the HQ hub and WRITE into it ──────────────────────
 	await scene("02-notes", async () => {
 		const notes = await openApp("io.brainstorm.notes");
 		await film(notes);
-		const hq = notes.getByText(/Northbound HQ/i).first();
-		if (await hq.count().catch(() => 0)) {
-			await hq.click().catch(() => undefined);
-			await beat(notes, 1200);
+		const doc = notes
+			.locator(".notes__sidebar-item")
+			.filter({ hasText: /Harbor|Reading|Meridian|Atlas/i })
+			.first();
+		if (await doc.count().catch(() => 0)) {
+			await glideClick(notes, doc).catch(() => undefined);
+			await beat(notes, 800);
 		}
-		await scrollHuman(notes, 900, 2400);
-		await beat(notes, 1000);
+		const editor = notes.locator('[contenteditable="true"]').first();
+		if (await editor.count().catch(() => 0)) {
+			await editor.click().catch(() => undefined);
+			await notes.keyboard.press("Meta+ArrowDown").catch(() => undefined);
+			await notes.keyboard.press("Enter").catch(() => undefined);
+			await typeHuman(notes, "Harbor sign-off booked for Thursday — bring direction two. ");
+			await typeHuman(notes, "Meridian kickoff notes are in.");
+		}
+		// Properties panel open — show structured data living on the doc.
+		const props = notes.locator('[aria-controls="notes-props"]').first();
+		if (await props.count().catch(() => 0)) {
+			await glideClick(notes, props).catch(() => undefined);
+			await beat(notes, 900);
+		}
 	});
 
-	// ── S3: Database — Clients board drag + view flip ──────────────────────
+	// ── S3: Database — Clients board: DRAG a deal + flip the view ──────────
 	await scene("03-database", async () => {
 		await closeAppWindows();
 		const db = await openApp("io.brainstorm.database");
 		await film(db);
-		const clients = db.getByText(/^Clients$/).first();
-		if (await clients.count().catch(() => 0)) {
-			await clients.click().catch(() => undefined);
-			await beat(db, 1500);
+		const collection = db
+			.locator(".db-sidebar__list-item")
+			.filter({ hasText: /project|client|task/i })
+			.first();
+		if (await collection.count().catch(() => 0)) {
+			await glideClick(db, collection).catch(() => undefined);
+			await beat(db, 700);
 		}
-		await glideDrag(
-			db,
-			'[draggable="true"]',
-			'[data-testid*="column"]:nth-of-type(3), .db-board__column:nth-of-type(3)',
-			1200,
-		).catch(() => undefined);
-		await beat(db, 1500);
+		const boardTab = db.locator("#view-tabs .db-tab").filter({ hasText: /board/i }).first();
+		if (await boardTab.count().catch(() => 0)) {
+			await glideClick(db, boardTab).catch(() => undefined);
+			await beat(db, 700);
+		}
+		const card = db.locator(".dbv-board__card").first();
+		const targetCol = db.locator(".dbv-board__column").nth(2);
+		if ((await card.count().catch(() => 0)) && (await targetCol.count().catch(() => 0))) {
+			await glideDrag(db, card, targetCol, 1000).catch(() => undefined);
+			await beat(db, 600);
+		}
+		for (const label of [/calendar/i, /timeline/i, /gallery/i]) {
+			const tab = db.locator("#view-tabs .db-tab").filter({ hasText: label }).first();
+			if (await tab.count().catch(() => 0)) {
+				await glideClick(db, tab).catch(() => undefined);
+				await beat(db, 900);
+				break;
+			}
+		}
 	});
 
 	// ── S4: Graph pan/zoom → Whiteboard beat ───────────────────────────────
@@ -239,32 +297,60 @@ test("capture promo scenes", async () => {
 		await closeAppWindows();
 		const graph = await openApp("io.brainstorm.graph");
 		await film(graph);
-		await glideTo(graph, 720, 420, 500);
+		await glideTo(graph, 720, 420, 400);
 		await graph.mouse.down();
-		await glideTo(graph, 500, 300, 1200);
+		await glideTo(graph, 500, 300, 900);
 		await graph.mouse.up();
 		await graph.mouse.wheel(0, -400);
-		await beat(graph, 1200);
+		await beat(graph, 800);
 		await closeAppWindows();
 		const wb = await openApp("io.brainstorm.whiteboard");
 		await film(wb);
-		await beat(wb, 2000);
+		await glideTo(wb, 600, 400, 400);
+		await wb.mouse.down();
+		await glideTo(wb, 900, 520, 800);
+		await wb.mouse.up();
+		await beat(wb, 900);
 	});
 
-	// ── S5: Tasks → Calendar → Mailbox quick cuts ──────────────────────────
+	// ── S5: Tasks (CREATE one) → Calendar (NEW event) → Mailbox ────────────
 	await scene("05-operate", async () => {
 		await closeAppWindows();
 		const tasks = await openApp("io.brainstorm.tasks");
 		await film(tasks);
-		await beat(tasks, 2200);
+		const newTask = tasks.locator(".tasks-header__action").first();
+		if (await newTask.count().catch(() => 0)) {
+			await glideClick(tasks, newTask).catch(() => undefined);
+			const input = tasks.locator(".tasks-compose__input").first();
+			if (await input.waitFor({ timeout: 3000 }).then(() => true).catch(() => false)) {
+				await input.click().catch(() => undefined);
+				await typeHuman(tasks, "Send Vertex proposal");
+				await tasks.keyboard.press("Enter").catch(() => undefined);
+				await beat(tasks, 700);
+				await tasks.keyboard.press("Escape").catch(() => undefined);
+			}
+		}
 		await closeAppWindows();
 		const cal = await openApp("io.brainstorm.calendar");
 		await film(cal);
-		await beat(cal, 2200);
+		const newEvent = cal.locator(".cal-toolbar__new").first();
+		if (await newEvent.count().catch(() => 0)) {
+			await glideClick(cal, newEvent).catch(() => undefined);
+			await beat(cal, 500);
+			const titleInput = cal.locator("input:focus, input[placeholder]").first();
+			if (await titleInput.count().catch(() => 0)) {
+				await typeHuman(cal, "Issue #8 planning");
+				await cal.keyboard.press("Enter").catch(() => undefined);
+			}
+			await beat(cal, 600);
+			await cal.keyboard.press("Escape").catch(() => undefined);
+		}
 		await closeAppWindows();
-		const mail = await openApp("io.brainstorm.mailbox");
-		await film(mail);
-		await beat(mail, 2500);
+		// Fresh synthetic vault has no mail account — the Journal's seeded
+		// daily entries are the "operation log" beat instead.
+		const journal = await openApp("io.brainstorm.journal");
+		await film(journal);
+		await beat(journal, 1500);
 	});
 
 	// ── S6: team — the Chat surface (split-screen collab is the upgrade) ───
@@ -272,15 +358,27 @@ test("capture promo scenes", async () => {
 		await closeAppWindows();
 		const chat = await openApp("io.brainstorm.chat");
 		await film(chat);
-		await beat(chat, 1200);
+		// Fresh vault: CREATE the team channel on camera, then post into it.
+		const newChannel = chat.locator('[aria-label="New channel"]').first();
+		if (await newChannel.count().catch(() => 0)) {
+			await glideClick(chat, newChannel).catch(() => undefined);
+			const nameInput = chat.locator(".bs-input").first();
+			if (await nameInput.waitFor({ timeout: 3000 }).then(() => true).catch(() => false)) {
+				await nameInput.click().catch(() => undefined);
+				await typeHuman(chat, "studio");
+				const create = chat.getByRole("button", { name: /create channel/i }).first();
+				await create.click().catch(() => undefined);
+				await beat(chat, 700);
+			}
+		}
 		const composer = chat.locator('textarea, [contenteditable="true"]').last();
 		if (await composer.count().catch(() => 0)) {
 			await composer.click().catch(() => undefined);
-			await typeHuman(chat, "Issue #12 draft is ready for review 🎉");
-			await beat(chat, 600);
+			await typeHuman(chat, "Harbor direction two is ready for review 🎉");
+			await beat(chat, 400);
 			await chat.keyboard.press("Enter").catch(() => undefined);
 		}
-		await beat(chat, 1800);
+		await beat(chat, 1200);
 	});
 
 	// ── S7: search across everything ───────────────────────────────────────
@@ -293,7 +391,7 @@ test("capture promo scenes", async () => {
 		await glideTo(dashboard, 720, 400, 900);
 		await dashboard.keyboard.press(process.platform === "darwin" ? "Meta+k" : "Control+k");
 		await beat(dashboard, 800);
-		await typeHuman(dashboard, "renewal");
+		await typeHuman(dashboard, "harbor");
 		await beat(dashboard, 1600);
 		await glideTo(dashboard, 760, 500, 700);
 		await beat(dashboard, 900);
