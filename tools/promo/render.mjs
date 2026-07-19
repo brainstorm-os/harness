@@ -142,12 +142,19 @@ const music = existsSync(ASSETS)
 	? readdirSync(ASSETS).find((f) => /^music\.(mp3|m4a|wav|aac)$/.test(f))
 	: undefined;
 if (music) {
+	// The bed rides at a real level and DUCKS under speech via sidechain
+	// compression (a flat 0.22 gain buried the quiet Krux master at -32dB —
+	// "there is no music"). Music alone (slides) sits ~-18dB; under VO it
+	// drops ~8-10dB and stays audible but clear of the narration.
 	ffmpeg([
 		"-i", silentVideo,
 		"-i", voTrack,
 		"-stream_loop", "-1", "-i", join(ASSETS, music),
 		"-filter_complex",
-		"[2:a]volume=0.22[m];[1:a][m]amix=inputs=2:duration=first:normalize=0[a]",
+		"[1:a]asplit=2[vo][sc];" +
+			"[2:a]volume=1.6[m];" +
+			"[m][sc]sidechaincompress=threshold=0.05:ratio=6:attack=25:release=350[duck];" +
+			"[vo][duck]amix=inputs=2:duration=first:normalize=0[a]",
 		"-map", "0:v", "-map", "[a]",
 		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT_MP4,
 	]);

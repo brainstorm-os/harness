@@ -168,7 +168,31 @@ test("capture promo scenes", async () => {
 			if (page) {
 				await page.waitForLoadState("domcontentloaded").catch(() => undefined);
 				await tileAllWindows(app);
-				await page.waitForTimeout(1800);
+				await page.waitForTimeout(600);
+				// App containers stack a tab-strip above the app view, so the
+				// filmed viewport is SHORTER than the window — grow the window by
+				// the chrome delta so the page is exactly 16:9 (a padded 1540px
+				// viewport letterboxes the whole video with black bars).
+				const inner = await page
+					.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }))
+					.catch(() => null);
+				const dh = inner ? STAGE.height - inner.h : 0;
+				if (dh > 0) {
+					await app
+						.evaluate(({ BrowserWindow }, arg) => {
+							for (const w of BrowserWindow.getAllWindows()) {
+								try {
+									if (!w.webContents.getURL().includes("/renderer/index.html")) {
+										w.setContentSize(arg.w, arg.h + arg.dh);
+									}
+								} catch {
+									// best-effort
+								}
+							}
+						}, { w: STAGE.width, h: STAGE.height, dh })
+						.catch(() => undefined);
+				}
+				await page.waitForTimeout(1200);
 				return page;
 			}
 			await dashboard.waitForTimeout(250);
