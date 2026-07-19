@@ -100,11 +100,15 @@ for (const scene of SCENES) {
 			["run", "--with", "pillow", "python3", join(import.meta.dirname, "cards.py"), "caption", scene.caption, captionPng],
 			{ stdio: ["ignore", "inherit", "inherit"] },
 		);
+		// The chip fades in shortly after the cut and out again ~3s in — a
+		// chapter label, not a persistent bar over the content.
+		const capOut = Math.min(3.1, scene.seconds - 0.8);
 		ffmpeg([
 			"-i", clip,
-			"-i", captionPng,
+			"-loop", "1", "-i", captionPng,
 			"-t", String(scene.seconds),
-			"-filter_complex", `[0:v]${vf}[base];[base][1:v]overlay=0:0[v]`,
+			"-filter_complex",
+			`[1:v]format=rgba,fade=t=in:st=0.4:d=0.3:alpha=1,fade=t=out:st=${capOut}:d=0.4:alpha=1[cap];[0:v]${vf}[base];[base][cap]overlay=0:0:shortest=1[v]`,
 			"-map", "[v]",
 			"-an",
 			"-c:v", "libx264", "-preset", "medium", "-crf", "18", seg,

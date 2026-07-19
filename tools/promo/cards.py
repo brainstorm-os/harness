@@ -58,24 +58,28 @@ def outro(icon_path, out_path):
 
 
 def caption(text, out_path):
-    """Transparent lower-third pill, overlaid bottom-centre on scene footage."""
-    font = ImageFont.truetype(FONT, 40)
+    """Compact chapter chip, bottom-left. The render fades it in ~0.4s after
+    the cut and out again ~3s in, so it labels the scene without squatting
+    over the content."""
+    font = ImageFont.truetype(FONT, 30)
     probe = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
     box = probe.textbbox((0, 0), text, font=font)
     tw, th = box[2] - box[0], box[3] - box[1]
-    pad_x, pad_y = 38, 20
+    pad_x, pad_y = 24, 13
     pw, ph = tw + pad_x * 2, th + pad_y * 2
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    x0, y0 = (W - pw) / 2, H - ph - 56
+    x0, y0 = 44, H - ph - 44
     draw.rounded_rectangle(
         [(x0, y0), (x0 + pw, y0 + ph)],
         radius=ph / 2,
-        fill=(22, 22, 22, 200),
-        outline=(*INDIGO_DEEP, 220),
-        width=2,
+        fill=(22, 22, 22, 216),
     )
-    draw.text((x0 + pad_x - box[0], y0 + pad_y - box[1]), text, font=font, fill=INK)
+    # Indigo tick instead of a full outline — quieter against light footage.
+    draw.rounded_rectangle(
+        [(x0 + 14, y0 + ph / 2 - 8), (x0 + 19, y0 + ph / 2 + 8)], radius=2, fill=INDIGO
+    )
+    draw.text((x0 + pad_x + 8 - box[0], y0 + pad_y - box[1]), text, font=font, fill=INK)
     img.save(out_path)
 
 
