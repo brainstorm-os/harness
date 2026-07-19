@@ -27,6 +27,40 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-453 — the problems panel never reacts while I type broken code
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design?   **app:** Code editor   **status:** open
+- **what happened (Marcus):** typed a snippet with an unused variable into a fresh file; "No problems" never changed — the panel reads as static text, not a live surface. (The unclosed paren I typed got auto-closed, so the syntax was valid — fair.)
+- **triage:** _(open — probe-gated per the F-449 lesson: check the built-in linter's rule set first (unused-var may simply not be a rule) and whether diagnostics run on the unsaved buffer; only then decide bug vs rule-gap vs working-as-designed. If the panel IS inert on unsaved buffers, that's the find.)_
+
+### F-452 — the References panel speaks our internal dev jargon to end users
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** open
+- **what happened (Marcus):** the always-visible right panel says "No plan or open-question ids referenced in this file." — plan ids? open-question ids? That's the BRAINSTORM DEV VAULT's vocabulary leaking into a first-party app that Product Hunt users will open on day one. Nobody outside this repo knows what an OQ is.
+- **what I expected:** the panel hidden unless the vault actually has the dev-plan structures, or generic copy ("No linked objects referenced in this file").
+- **evidence:** tests/dogfood/.sessions/910-marcus-code-editor-design-review/01+03.png
+
+### F-451 — every New file mints another immortal "untitled-N.ts"
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** open
+- **what happened (Marcus):** the create flow drops you into "untitled-3.ts" with no naming moment — and the vault already held untitled-2 from someone's earlier poke. This is the untitled-flood class (F-424) being manufactured at the source.
+- **what I expected:** creation invites a name — inline rename armed on create (title selected, type-to-replace), Escape keeping the default.
+- **evidence:** tests/dogfood/.sessions/910-marcus-code-editor-design-review/01+02.png
+
+
+### F-450 — the Read surface's empty state tells me to "Add bookmark" — that's not how anything gets read
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** open
+- **what happened (Marcus):** the Read (and Archive) empty states reuse the inbox CTA verbatim — but adding a bookmark lands in the Inbox; nothing about the promised action fills THIS surface. The empty state renders beautifully now (the shared hero face — #219 verified live in this session) and then promises the wrong repair.
+- **what I expected:** surface-appropriate copy — Read: "Mark a bookmark as read and it lands here" (no CTA, or a "Go to Inbox" one); Archive likewise.
+- **evidence:** tests/dogfood/.sessions/909-marcus-bookmarks-design-review/03-06-surface-read.png
+
+### F-449 — clicking a bookmark card did nothing in the scripted walkthrough
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** bug?   **app:** Bookmarks   **status:** ✅ not-a-bug (2026-07-19, probe 909b)
+- **what happened:** the spec clicked the first card and captured an unchanged screen — no detail pane, no visible response.
+- **triage / resolution (probe 909b, 2026-07-19):** capture artifact confirmed — session 909's locator `[class*=card]` matched the cards CONTAINER (`.bookmarks__cards`), so the click landed on empty space. The targeted probe clicks `.bookmarks__card` and the detail island opens correctly (screenshot in 909b). Product behavior is fine. Bonus find in the same shot: the detail's source LINK repeats a domain title — fixed as the F-448 tail (falls back to the full URL; same shell PR #222).
+
+### F-448 — a bookmark titled by its domain reads "example.com / example.com"
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** ✅ done (2026-07-19, shell PR #222)
+- **what happened (Marcus):** the card meta repeats the title verbatim when the captured title is the bare domain — pure noise in the row.
+- **triage / resolution:** the meta shows the domain only when it differs from the title.
+
 ### F-447 — the connect dialog's primary action hides below the fold
 - **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox (connect dialog)   **status:** 🟡 partial (2026-07-19, shell PR #220 — reconnect mode drops the lecture; residue: sticky action footer for create mode)
 - **what happened (Marcus):** the IMAP form's help paragraph is five lines before a single field appears; by the time the SMTP row renders, Cancel/Connect are cut off at the popover fold — the primary action of the dialog isn't visible when it opens. In reconnect mode (dialog pre-filled, user came to change ONE field) the same five-line lecture pushes the button even further down.
