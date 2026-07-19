@@ -28,19 +28,19 @@ Newest sessions on top.
 <!-- Entries land below this line, newest session first. -->
 
 ### F-447 — the connect dialog's primary action hides below the fold
-- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox (connect dialog)   **status:** open
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox (connect dialog)   **status:** 🟡 partial (2026-07-19, shell PR #220 — reconnect mode drops the lecture; residue: sticky action footer for create mode)
 - **what happened (Marcus):** the IMAP form's help paragraph is five lines before a single field appears; by the time the SMTP row renders, Cancel/Connect are cut off at the popover fold — the primary action of the dialog isn't visible when it opens. In reconnect mode (dialog pre-filled, user came to change ONE field) the same five-line lecture pushes the button even further down.
 - **what I expected:** the primary action visible at open — shorter help (link the provider details out), or a sticky footer, and reconnect mode should drop the how-to prose entirely.
 - **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/03+07.png
 
 ### F-446 — the popover panel is translucent enough that the page bleeds through the form
-- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** SDK popover (cross-app)   **status:** open
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** SDK popover (cross-app)   **status:** ✅ done (2026-07-19, shell PR #220 — 52% elevated-surface veil over the glass, frosted look kept)
 - **what happened (Marcus):** with the indigo hero CTA behind it, the connect dialog shows blurry violet blobs THROUGH the panel, right behind the Email/Username/Password fields — the glass surface is too transparent over saturated content, and form legibility pays for it. Visible in both the connect and reconnect captures.
 - **what I expected:** a dialog surface that reads as a surface — more opacity or stronger blur on `<Popover>`'s panel (this is the shared primitive, so every app's dialogs inherit whatever we choose).
 - **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/03-03-connect-dialog-imap.png
 
 ### F-445 — a connection failure speaks errno and offers no way forward
-- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox   **status:** open
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-19, shell PR #220 — classifySyncError: connectivity class gets human copy + the inline Reconnect… affordance)
 - **what happened (Marcus):** the banner reads "Sync failed: imap: connect ECONNREFUSED 127.0.0.1:59993" — raw wire jargon — and unlike the auth failure (which earned a friendly hint + a Reconnect… button), a connection failure gets NO inline action, even though Edit connection… is exactly the fix and exists one hidden hover-menu away.
 - **what I expected:** "Couldn't reach imap.example.com — check the host and port" + the same inline Reconnect…/Edit connection affordance the auth path has.
 - **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/05-05-failure-chrome.png
