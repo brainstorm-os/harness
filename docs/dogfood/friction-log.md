@@ -28,25 +28,25 @@ Newest sessions on top.
 <!-- Entries land below this line, newest session first. -->
 
 ### F-453 — the problems panel never reacts while I type broken code
-- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design?   **app:** Code editor   **status:** open
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design?   **app:** Code editor   **status:** ✅ not-a-bug (2026-07-19, rule-set read — shell PR #223 notes)
 - **what happened (Marcus):** typed a snippet with an unused variable into a fresh file; "No problems" never changed — the panel reads as static text, not a live surface. (The unclosed paren I typed got auto-closed, so the syntax was valid — fair.)
 - **triage:** _(open — probe-gated per the F-449 lesson: check the built-in linter's rule set first (unused-var may simply not be a rule) and whether diagnostics run on the unsaved buffer; only then decide bug vs rule-gap vs working-as-designed. If the panel IS inert on unsaved buffers, that's the find.)_
 
 ### F-452 — the References panel speaks our internal dev jargon to end users
-- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** open
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** ✅ done (2026-07-19, shell PR #223 — neutral copy en+es)
 - **what happened (Marcus):** the always-visible right panel says "No plan or open-question ids referenced in this file." — plan ids? open-question ids? That's the BRAINSTORM DEV VAULT's vocabulary leaking into a first-party app that Product Hunt users will open on day one. Nobody outside this repo knows what an OQ is.
 - **what I expected:** the panel hidden unless the vault actually has the dev-plan structures, or generic copy ("No linked objects referenced in this file").
 - **evidence:** tests/dogfood/.sessions/910-marcus-code-editor-design-review/01+03.png
 
 ### F-451 — every New file mints another immortal "untitled-N.ts"
-- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** open
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** ✅ done (2026-07-19, shell PR #223 — create arms the inline rename; Escape keeps the default)
 - **what happened (Marcus):** the create flow drops you into "untitled-3.ts" with no naming moment — and the vault already held untitled-2 from someone's earlier poke. This is the untitled-flood class (F-424) being manufactured at the source.
 - **what I expected:** creation invites a name — inline rename armed on create (title selected, type-to-replace), Escape keeping the default.
 - **evidence:** tests/dogfood/.sessions/910-marcus-code-editor-design-review/01+02.png
 
 
 ### F-450 — the Read surface's empty state tells me to "Add bookmark" — that's not how anything gets read
-- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** open
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** ✅ done (2026-07-19, shell PR #223 — Read/Archive get surface-true hints; Inbox/Tags keep the CTA)
 - **what happened (Marcus):** the Read (and Archive) empty states reuse the inbox CTA verbatim — but adding a bookmark lands in the Inbox; nothing about the promised action fills THIS surface. The empty state renders beautifully now (the shared hero face — #219 verified live in this session) and then promises the wrong repair.
 - **what I expected:** surface-appropriate copy — Read: "Mark a bookmark as read and it lands here" (no CTA, or a "Go to Inbox" one); Archive likewise.
 - **evidence:** tests/dogfood/.sessions/909-marcus-bookmarks-design-review/03-06-surface-read.png
