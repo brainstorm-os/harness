@@ -151,9 +151,14 @@ if (music) {
 		"-i", voTrack,
 		"-stream_loop", "-1", "-i", join(ASSETS, music),
 		"-filter_complex",
-		"[1:a]asplit=2[vo][sc];" +
-			"[2:a]volume=1.6[m];" +
-			"[m][sc]sidechaincompress=threshold=0.05:ratio=6:attack=25:release=350[duck];" +
+		// Measured mix: the edge-tts VO track is QUIET (mean -26.7dB, peaks
+		// -6) — boost it +7dB behind a limiter so speech leads at ~-19dB;
+		// the bed stays at its natural level in the gaps (~-22dB, the part
+		// the owner liked) and sidechain-ducks ~12dB under speech.
+		"[1:a]asplit=2[voRaw][sc];" +
+			"[voRaw]volume=2.2,alimiter=limit=0.85:level=false[vo];" +
+			"[2:a]volume=1.0[m];" +
+			"[m][sc]sidechaincompress=threshold=0.02:ratio=12:attack=20:release=400[duck];" +
 			"[vo][duck]amix=inputs=2:duration=first:normalize=0[a]",
 		"-map", "0:v", "-map", "[a]",
 		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", OUT_MP4,
