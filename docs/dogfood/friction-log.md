@@ -27,6 +27,42 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-447 — the connect dialog's primary action hides below the fold
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox (connect dialog)   **status:** 🟡 partial (2026-07-19, shell PR #220 — reconnect mode drops the lecture; residue: sticky action footer for create mode)
+- **what happened (Marcus):** the IMAP form's help paragraph is five lines before a single field appears; by the time the SMTP row renders, Cancel/Connect are cut off at the popover fold — the primary action of the dialog isn't visible when it opens. In reconnect mode (dialog pre-filled, user came to change ONE field) the same five-line lecture pushes the button even further down.
+- **what I expected:** the primary action visible at open — shorter help (link the provider details out), or a sticky footer, and reconnect mode should drop the how-to prose entirely.
+- **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/03+07.png
+
+### F-446 — the popover panel is translucent enough that the page bleeds through the form
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** SDK popover (cross-app)   **status:** ✅ done (2026-07-19, shell PR #220 — 52% elevated-surface veil over the glass, frosted look kept)
+- **what happened (Marcus):** with the indigo hero CTA behind it, the connect dialog shows blurry violet blobs THROUGH the panel, right behind the Email/Username/Password fields — the glass surface is too transparent over saturated content, and form legibility pays for it. Visible in both the connect and reconnect captures.
+- **what I expected:** a dialog surface that reads as a surface — more opacity or stronger blur on `<Popover>`'s panel (this is the shared primitive, so every app's dialogs inherit whatever we choose).
+- **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/03-03-connect-dialog-imap.png
+
+### F-445 — a connection failure speaks errno and offers no way forward
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-19, shell PR #220 — classifySyncError: connectivity class gets human copy + the inline Reconnect… affordance)
+- **what happened (Marcus):** the banner reads "Sync failed: imap: connect ECONNREFUSED 127.0.0.1:59993" — raw wire jargon — and unlike the auth failure (which earned a friendly hint + a Reconnect… button), a connection failure gets NO inline action, even though Edit connection… is exactly the fix and exists one hidden hover-menu away.
+- **what I expected:** "Couldn't reach imap.example.com — check the host and port" + the same inline Reconnect…/Edit connection affordance the auth path has.
+- **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/05-05-failure-chrome.png
+- **triage:** _(open — map ECONNREFUSED/ENOTFOUND/ETIMEDOUT to human copy in the driver-error → note path and extend the banner's reconnect affordance to connection-class failures; small, ride the next Mailbox PR.)_
+
+### F-444 — a third small-radius CTA (Bookmarks) — "fix all such buttons at once"
+- **session:** owner report (2026-07-19)   **kind:** design   **app:** Bookmarks / lint infra   **status:** ✅ done (2026-07-19, shell PR #219)
+- **what happened:** the Bookmarks inbox empty state ships the same unsized primary CTA — third instance of the class (Mailbox F-437 → Code-editor F-441 → this).
+- **triage / resolution (developer, 2026-07-19, shell PR #219):** the F-441 SDK enforcement only reaches surfaces that USE the shared `<EmptyState>`; Bookmarks' was a bespoke div + bare `bs-btn`. Converted (hero face = enforced lg geometry) — and the class is now RATCHETED: `tools/check-bespoke-empty-cta.mjs` (zero-baseline, in `lint`/`lint:apps`) fails any `__empty` container offering a `data-bs-primary` CTA outside `<EmptyState>`. Red-checked against the pre-fix tree. Repo sweep confirmed no other offenders (code-editor already shared — its report predated #209; form-designer/mailbox are text-only hints).
+
+### F-443 — imported numbered lists count "1. 1. 1." — every item its own list
+- **session:** owner report (2026-07-19, with the Anytype client source for `updateNumbersTree`)   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ done (2026-07-19, shell PR #218)
+- **what happened:** a numbered list from Anytype renders every item as "1." — the numbering restarts per item.
+- **what I expected:** 1. 2. 3. — Anytype numbers client-side over consecutive Numbered siblings.
+- **triage / resolution (developer, 2026-07-19, shell PR #218):** the client splices invisible **layout-Div wrappers inline before numbering** (`updateNumbersTree`'s `unwrap`); our converter had no `block.layout` handling, so each Div wrapper opened a fresh grouping scope → one single-item `<ol>` per item. `convertChildren` now pre-flattens `layout.style === "Div"` exactly like the client; Row/Column layouts keep their own scope (client restarts numbering per cell — parity test). **Existing docs repair by re-running the import** — the F-398 hash-skip replants bodies whose new serialization differs.
+
+### F-442 — imported note images bleed off the window edge inside an unstyled figure
+- **session:** owner report (2026-07-19, imported lesson notes)   **kind:** bug   **app:** editor (shared)   **status:** ✅ done (2026-07-19, shell PR #217)
+- **what happened:** images in imported notes render wider than the content column and get cut by the window edge; "it uses figure which has huge margin".
+- **what I expected:** images sized to the column, aspect kept.
+- **triage / resolution (developer, 2026-07-19, shell PR #217):** the editor's legacy bare `image` node renders `<figure class="bs-editor__image">` which had **no CSS rule anywhere** — the UA default `margin: 1em 40px` plus an uncapped imported pixel width (Anytype plants carry one) is exactly the overflow. Pre-IE-10e plants keep bare `image` nodes forever (idempotent re-import skips unchanged bodies), so the clamp went into the shared `editor-theme.css` (self-heals every doc, no migration): inline margins zeroed, figure+img `max-width: 100%`, `height: auto`, styled caption. Geometry pinned by a `styles-image-figure.test.ts` guard (the lane-fill pattern). Longer-term dedup residue: TWO image node families exist (`ImageBlockNode` `.notes__image` styled vs bare `ImageNode`) — converging them is the fix-class.
+
 ### F-441 — Code-editor's "New file" has the same unsized-button drift; stop fixing it one app at a time
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** SDK empty-state   **status:** ✅ done (2026-07-18, shell PR #209)
 - **what happened:** the hero empty-state CTA shipped with no size class again (md face, `--radius-sm`) — Code-editor this time, right after Mailbox's F-437. The owner: "would be great to fix it everywhere and stop drifting from design system."
