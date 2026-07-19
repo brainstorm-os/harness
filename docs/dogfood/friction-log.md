@@ -27,6 +27,11 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-444 — a third small-radius CTA (Bookmarks) — "fix all such buttons at once"
+- **session:** owner report (2026-07-19)   **kind:** design   **app:** Bookmarks / lint infra   **status:** ✅ done (2026-07-19, shell PR #219)
+- **what happened:** the Bookmarks inbox empty state ships the same unsized primary CTA — third instance of the class (Mailbox F-437 → Code-editor F-441 → this).
+- **triage / resolution (developer, 2026-07-19, shell PR #219):** the F-441 SDK enforcement only reaches surfaces that USE the shared `<EmptyState>`; Bookmarks' was a bespoke div + bare `bs-btn`. Converted (hero face = enforced lg geometry) — and the class is now RATCHETED: `tools/check-bespoke-empty-cta.mjs` (zero-baseline, in `lint`/`lint:apps`) fails any `__empty` container offering a `data-bs-primary` CTA outside `<EmptyState>`. Red-checked against the pre-fix tree. Repo sweep confirmed no other offenders (code-editor already shared — its report predated #209; form-designer/mailbox are text-only hints).
+
 ### F-443 — imported numbered lists count "1. 1. 1." — every item its own list
 - **session:** owner report (2026-07-19, with the Anytype client source for `updateNumbersTree`)   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ done (2026-07-19, shell PR #218)
 - **what happened:** a numbered list from Anytype renders every item as "1." — the numbering restarts per item.
