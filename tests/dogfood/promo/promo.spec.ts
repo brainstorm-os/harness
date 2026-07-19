@@ -18,7 +18,7 @@
  * and the render stays producible. Failures are logged for polish passes.
  */
 
-import { copyFileSync, mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import {
 	type ElectronApplication,
@@ -35,8 +35,6 @@ const ELECTRON_BIN = join(SHELL_DIR, "node_modules", ".bin", "electron");
 const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 const PROMO_DATA = join(HARNESS, "tests", "dogfood", ".promo-data");
 const CLIPS_DIR = join(HARNESS, "tests", "dogfood", ".promo", "clips");
-const WALLPAPER = "stormy-sea.png";
-const WALLPAPER_SRC = join(HARNESS, "docs", "art", "wallpaper", WALLPAPER);
 
 /** 16:9 stage in logical px; captured ×2 Retina → 2880×1620 → 1080p. */
 const STAGE = { x: 0, y: 40, width: 1440, height: 810 };
@@ -56,11 +54,6 @@ type BW = {
 		dev: {
 			seedPrebuiltApps(): Promise<unknown>;
 			seedMarketingEntities(): Promise<unknown>;
-		};
-		dashboard: {
-			setAppearanceMode(mode: string): Promise<void>;
-			setTheme(theme: string): Promise<void>;
-			setWallpaper(wallpaper: { kind: string; value: string }, slot?: string): Promise<void>;
 		};
 	};
 };
@@ -107,38 +100,14 @@ test("capture promo scenes", async () => {
 		},
 	});
 
+	// The vault is created ON CAMERA in scene 01 through the real welcome
+	// flow — no bridge shortcut. The shell boots straight into the welcome
+	// view because the data dir is empty; the new default light theme +
+	// wallpaper are exactly what a first-run user sees, so nothing is
+	// overridden.
 	const dashboard = await app.firstWindow({ timeout: 60_000 });
-	await dashboard.evaluate(async (dataDir) => {
-		const bs = (window as unknown as BW).brainstorm;
-		if (!(await bs.vaults.session())) {
-			await bs.vaults.create({ name: "Northbound Studio", path: `${dataDir}/vault` });
-		}
-		await bs.dev.seedPrebuiltApps();
-		await bs.dev.seedMarketingEntities();
-	}, PROMO_DATA);
-	// Promo look: dark Midnight + the stormy-sea wallpaper (matches the
-	// title card's dark ground).
-	mkdirSync(join(PROMO_DATA, "vault", "dashboard", "wallpapers"), { recursive: true });
-	copyFileSync(WALLPAPER_SRC, join(PROMO_DATA, "vault", "dashboard", "wallpapers", WALLPAPER));
-	await dashboard.evaluate(async (wallpaper) => {
-		const bs = (window as unknown as BW).brainstorm;
-		await bs.dashboard.setAppearanceMode("dark");
-		await bs.dashboard.setTheme("default-dark");
-		await bs.dashboard.setWallpaper({ kind: "image", value: wallpaper }, "dark");
-	}, WALLPAPER);
-	await dashboard.waitForTimeout(5000);
-	for (const label of ["Got it", "Close", "Done"]) {
-		const btn = dashboard.getByRole("button", { name: label }).first();
-		if (await btn.count().catch(() => 0)) {
-			await btn.click({ timeout: 2000 }).catch(() => undefined);
-		}
-	}
-	await dashboard.keyboard.press("Escape").catch(() => undefined);
-	await dashboard
-		.addStyleTag({ content: ".dashboard__dev-seed{display:none!important}" })
-		.catch(() => undefined);
+	await dashboard.waitForTimeout(2500);
 	await tileAllWindows(app);
-	await dashboard.waitForTimeout(1500);
 
 	const scale = await app.evaluate(({ screen }) => screen.getPrimaryDisplay().scaleFactor);
 	const recorder = makePromoRecorder(CLIPS_DIR, { ...STAGE, scale });
@@ -150,21 +119,32 @@ test("capture promo scenes", async () => {
 		await page
 			.evaluate(() => {
 				if (document.getElementById("__promo-cursor")) return;
-				const dot = document.createElement("div");
-				dot.id = "__promo-cursor";
-				dot.style.cssText =
-					"position:fixed;z-index:2147483647;width:22px;height:22px;border-radius:50%;" +
-					"background:rgba(255,255,255,.9);border:2px solid rgba(20,20,20,.65);" +
-					"box-shadow:0 1px 6px rgba(0,0,0,.45);pointer-events:none;left:-60px;top:-60px";
-				document.documentElement.appendChild(dot);
+				// The classic macOS arrow (black body, white outline), tip at
+				// the pointer position; squeezes slightly on press.
+				const el = document.createElement("div");
+				el.id = "__promo-cursor";
+				el.style.cssText =
+					"position:fixed;z-index:2147483647;width:17px;height:24px;pointer-events:none;" +
+					"left:-60px;top:-60px;transform-origin:2px 2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))";
+				el.innerHTML =
+					'<svg width="17" height="24" viewBox="0 0 17 24" xmlns="http://www.w3.org/2000/svg">' +
+					'<path d="M1 1 L1 18.6 L5.3 14.8 L8 21.5 L11.2 20.2 L8.5 13.7 L14.2 13.7 Z" ' +
+					'fill="black" stroke="white" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+				document.documentElement.appendChild(el);
 				window.addEventListener(
 					"mousemove",
 					(e) => {
-						dot.style.left = `${e.clientX - 11}px`;
-						dot.style.top = `${e.clientY - 11}px`;
+						el.style.left = `${e.clientX - 1}px`;
+						el.style.top = `${e.clientY - 1}px`;
 					},
 					true,
 				);
+				window.addEventListener("mousedown", () => {
+					el.style.transform = "scale(0.82)";
+				}, true);
+				window.addEventListener("mouseup", () => {
+					el.style.transform = "scale(1)";
+				}, true);
 			})
 			.catch(() => undefined);
 	};
@@ -221,14 +201,66 @@ test("capture promo scenes", async () => {
 		await recorder.stop();
 	};
 
-	// ── S1: dashboard reveal ────────────────────────────────────────────────
-	await scene("01-dashboard", async () => {
+	// ── S1: onboarding — create the vault through the REAL welcome flow ────
+	await scene("01-onboarding", async () => {
 		await film(dashboard);
-		await glideTo(dashboard, 300, 500, 700);
-		await beat(dashboard, 700);
-		await glideTo(dashboard, 1100, 420, 1100);
-		await beat(dashboard, 800);
+		await beat(dashboard, 500);
+		await glideClick(dashboard, dashboard.getByText("Create a new vault").first());
+		await beat(dashboard, 400);
+		const nameInput = dashboard.locator('input[placeholder="Personal"]').first();
+		if (await nameInput.waitFor({ timeout: 4000 }).then(() => true).catch(() => false)) {
+			await nameInput.click().catch(() => undefined);
+			await typeHuman(dashboard, "Northbound Studio");
+		}
+		// The suggested location is the REAL ~/Documents/Brainstorm — repoint
+		// it into the promo data dir (instant fill; visually a path is a path).
+		await dashboard
+			.locator(".welcome__path-row input")
+			.first()
+			.fill(`${PROMO_DATA}/vault`)
+			.catch(() => undefined);
+		await glideClick(dashboard, dashboard.getByRole("button", { name: "Continue" }).first());
+		await beat(dashboard, 500);
+		// Pick the Small-business starter template on camera, then create.
+		const template = dashboard.getByText("Small business").first();
+		if (await template.count().catch(() => 0)) {
+			await glideClick(dashboard, template).catch(() => undefined);
+			await beat(dashboard, 400);
+		}
+		const createBtn = dashboard.getByRole("button", { name: "Create vault" }).first();
+		await createBtn.scrollIntoViewIfNeeded().catch(() => undefined);
+		await beat(dashboard, 300);
+		await glideClick(dashboard, createBtn).catch(() => undefined);
+		// The dashboard materialises — hold the reveal.
+		await beat(dashboard, 2500);
 	});
+
+	// Vault creation (+ template import) finishes asynchronously — wait for
+	// the session before seeding, or the dev channels reject.
+	await dashboard.waitForFunction(
+		async () => (await (window as unknown as BW).brainstorm.vaults.session()) !== null,
+		undefined,
+		{ timeout: 90_000, polling: 500 },
+	);
+	// Off camera: fill the fresh vault so the app scenes have real content.
+	await dashboard.evaluate(async () => {
+		const bs = (window as unknown as BW).brainstorm;
+		await bs.dev.seedPrebuiltApps();
+		await bs.dev.seedMarketingEntities();
+	});
+	await dashboard.waitForTimeout(4000);
+	for (const label of ["Got it", "Close", "Done"]) {
+		const btn = dashboard.getByRole("button", { name: label }).first();
+		if (await btn.count().catch(() => 0)) {
+			await btn.click({ timeout: 2000 }).catch(() => undefined);
+		}
+	}
+	await dashboard.keyboard.press("Escape").catch(() => undefined);
+	await dashboard
+		.addStyleTag({ content: ".dashboard__dev-seed{display:none!important}" })
+		.catch(() => undefined);
+	await tileAllWindows(app);
+	await dashboard.waitForTimeout(1000);
 
 	// ── S2: Notes — open the HQ hub and WRITE into it ──────────────────────
 	await scene("02-notes", async () => {
@@ -381,15 +413,43 @@ test("capture promo scenes", async () => {
 		await beat(chat, 1200);
 	});
 
-	// ── S7: search across everything ───────────────────────────────────────
-	await scene("07-search", async () => {
+	// ── S7: Settings — live theme flip, then back to the default ───────────
+	await scene("07-settings", async () => {
 		await closeAppWindows();
 		await film(dashboard);
-		await dashboard.bringToFront().catch(() => undefined);
-		// Motion first — screencast only emits frames on paint, and the
-		// injected cursor repaints on mousemove.
-		await glideTo(dashboard, 720, 400, 900);
-		await dashboard.keyboard.press(process.platform === "darwin" ? "Meta+k" : "Control+k");
+		// Chords need OS focus the no-focus rig doesn't have — click the real
+		// header gear instead (also nicer on camera).
+		await glideClick(dashboard, dashboard.locator('[aria-label="Settings"]').first());
+		await beat(dashboard, 700);
+		const appearanceNav = dashboard
+			.locator(".settings__nav-item")
+			.filter({ hasText: /appearance/i })
+			.first();
+		if (await appearanceNav.count().catch(() => 0)) {
+			await glideClick(dashboard, appearanceNav).catch(() => undefined);
+			await beat(dashboard, 600);
+			const swatches = dashboard.locator(".settings__appearance-theme-swatch");
+			const n = await swatches.count().catch(() => 0);
+			if (n > 2) {
+				// Flip to a couple of themes and land back on the default —
+				// the whole surface restyles live behind the panel.
+				await glideClick(dashboard, swatches.nth(2)).catch(() => undefined);
+				await beat(dashboard, 700);
+				await glideClick(dashboard, swatches.nth(1)).catch(() => undefined);
+				await beat(dashboard, 700);
+				await glideClick(dashboard, swatches.nth(0)).catch(() => undefined);
+				await beat(dashboard, 600);
+			}
+		}
+		await dashboard.keyboard.press("Escape").catch(() => undefined);
+		await beat(dashboard, 500);
+	});
+
+	// ── S8: search across everything ───────────────────────────────────────
+	await scene("08-search", async () => {
+		await closeAppWindows();
+		await film(dashboard);
+		await glideClick(dashboard, dashboard.locator('[aria-label="Search the vault"]').first());
 		await beat(dashboard, 800);
 		await typeHuman(dashboard, "harbor");
 		await beat(dashboard, 1600);

@@ -39,11 +39,31 @@ const segments = [];
 for (const scene of SCENES) {
 	const seg = join(PROMO, `seg-${scene.id}.mp4`);
 	const fadeOutStart = Math.max(0, scene.seconds - FADE);
-	// Per-scene time-compression (scene.speed) keeps footage dense — actions
-	// are captured at a comfortable driving pace and played back snappier.
+	// Per-scene time-compression keeps footage dense — actions are captured
+	// at a comfortable driving pace and played back snappier. The factor
+	// auto-raises so the WHOLE captured action fits the scene budget (a cut
+	// that trims the payoff is worse than a faster replay), capped at 3×.
 	// tpad then clones the final frame out to the scene budget (screencast
 	// clips end when paints stop), and `-t` trims to the exact scene length.
-	const speed = scene.speed ?? 1;
+	let speed = scene.speed ?? 1;
+	if (!scene.titleCard) {
+		const clipPath = join(CLIPS, `${scene.id}.mov`);
+		if (existsSync(clipPath)) {
+			const dur = Number(
+				execFileSync("ffprobe", [
+					"-v", "error",
+					"-show_entries", "format=duration",
+					"-of", "csv=p=0",
+					clipPath,
+				])
+					.toString()
+					.trim(),
+			);
+			if (Number.isFinite(dur) && dur > 0) {
+				speed = Math.min(3, Math.max(speed, dur / (scene.seconds - 0.2)));
+			}
+		}
+	}
 	const vf = `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS/${speed},fps=${FPS},tpad=stop_mode=clone:stop_duration=${scene.seconds},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE},setpts=PTS-STARTPTS`;
 	if (scene.titleCard) {
 		// Pillow renders the card (Homebrew ffmpeg has no drawtext/freetype).

@@ -14,10 +14,10 @@ bun run promo:voiceover       # free TTS narration (edge-tts; `say` fallback)
 bun run promo:render          # assembly → tests/dogfood/.promo/promo-60s-1080p.mp4
 ```
 
-## Voiceover script (~140 words · target 58s at normal cadence)
+## Voiceover script (9 scenes · 60s)
 
-> **[S1]** This is Northbound — a real research business, running entirely in
-> one private workspace.
+> **[S1]** Meet Brainstorm. Create a vault — private, encrypted, on your
+> machine — and you're in.
 > **[S2]** Notes that hold real work — clients and projects, linked right in
 > the page.
 > **[S3]** Databases with boards, calendars, and views — drag a deal, plan an
@@ -25,11 +25,12 @@ bun run promo:render          # assembly → tests/dogfood/.promo/promo-60s-1080
 > **[S4]** Map the thinking on a graph or a whiteboard.
 > **[S5]** Tasks, calendar, journal — the whole operation in one place, no
 > tabs.
-> **[S6]** And it's not just you. Your team works in the same vault — live,
-> together — while everything stays end-to-end encrypted.
-> **[S7]** Search finds anything, instantly. Your data never leaves your
-> machine unless you say so.
-> **[S8]** Brainstorm. Your whole business, in a workspace you own. Free beta
+> **[S6]** Bring the team in — same vault, live together, end-to-end
+> encrypted.
+> **[S7]** Make it yours — themes, wallpapers, shortcuts. Everything's a
+> setting away.
+> **[S8]** And search finds anything — instantly, across everything.
+> **[S9]** Brainstorm. Your whole business, in a workspace you own. Free beta
 > on GitHub.
 
 ## Scene table
@@ -40,14 +41,15 @@ so the cut reads fast without robotic driving.
 
 | # | t (s) | Surface | Action captured (all real work) | Caption (srt) |
 |---|-------|---------|--------------------------------|----------------|
-| 1 | 0–7 | Dashboard | Northbound vault, themed; cursor sweeps the live widgets | A whole business in one workspace |
-| 2 | 7–15 | Notes | Open the HQ hub and **type two real update lines** into it; open the properties panel | Documents with live data inside |
-| 3 | 15–22 | Database | Clients board: **drag a deal one stage over**, then flip to another view | Boards, calendars, views |
-| 4 | 22–29 | Graph → Whiteboard | Map pan/zoom; whiteboard interaction beat | Map the thinking |
-| 5 | 29–37 | Tasks → Calendar → Journal | **Create a task** ("Send Vertex proposal"), **create a calendar event** ("Issue #8 planning"), land on the day log | Tasks · Calendar · Journal |
-| 6 | 37–47 | Chat (team surface) | **Create the #studio channel** on camera, then **type + send** a team update *(two-shell split-screen co-editing is the queued upgrade)* | Real-time team, end-to-end encrypted |
-| 7 | 47–54 | Search | Open the launcher, **type a query**, results land live | Find anything, instantly |
-| 8 | 54–60 | Title card | Logo, "Local-first · E2E-encrypted · Open beta", download URL | brainstorm — download on GitHub |
+| 1 | 0–7 | Welcome / onboarding | **The real first-run flow**: "Create a new vault" → type "Northbound Studio" → Continue → Create vault → the dashboard materialises (new default light theme + wallpaper, untouched) | Your vault, created in seconds |
+| 2 | 7–14 | Notes | Open the Harbor brief and **type a real update line**; open the properties panel | Documents with real work inside |
+| 3 | 14–21 | Database | Board: **drag a deal one stage over**, then flip to another view | Boards, calendars, views |
+| 4 | 21–27 | Graph → Whiteboard | Map pan/zoom; whiteboard interaction beat | Map the thinking |
+| 5 | 27–35 | Tasks → Calendar → Journal | **Create a task** ("Send Vertex proposal"), **create a calendar event**, land on the day log | Tasks · Calendar · Journal |
+| 6 | 35–42 | Chat (team surface) | **Create the #studio channel** on camera, then **type + send** a team update *(two-shell split-screen co-editing is the queued upgrade)* | Real-time team, end-to-end encrypted |
+| 7 | 42–48 | Settings | `Cmd+,` → Appearance → **flip through themes live** and land back on the default | Make it yours |
+| 8 | 48–54 | Search | Open the launcher, **type a query**, results land live | Find anything, instantly |
+| 9 | 54–60 | Title card | Logo, "Local-first · E2E-encrypted · Open beta", download URL | brainstorm — download on GitHub |
 
 ## Footage source policy (owner rule, 2026-07-19)
 
