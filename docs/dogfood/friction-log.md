@@ -34,9 +34,9 @@ Newest sessions on top.
 - **evidence:** tests/dogfood/.sessions/909-marcus-bookmarks-design-review/03-06-surface-read.png
 
 ### F-449 — clicking a bookmark card did nothing in the scripted walkthrough
-- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** bug?   **app:** Bookmarks   **status:** open
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** bug?   **app:** Bookmarks   **status:** ✅ not-a-bug (2026-07-19, probe 909b)
 - **what happened:** the spec clicked the first card and captured an unchanged screen — no detail pane, no visible response.
-- **triage:** _(open — NEEDS A PER-APP PROBE before any patch: the generic row-click limitation is a known capture gap (the card may open via its title link / double-click / an Open affordance the locator missed). Write a targeted 909b probe driving the real open affordance; only file as a product bug if that also fails.)_
+- **triage / resolution (probe 909b, 2026-07-19):** capture artifact confirmed — session 909's locator `[class*=card]` matched the cards CONTAINER (`.bookmarks__cards`), so the click landed on empty space. The targeted probe clicks `.bookmarks__card` and the detail island opens correctly (screenshot in 909b). Product behavior is fine. Bonus find in the same shot: the detail's source LINK repeats a domain title — fixed as the F-448 tail (falls back to the full URL; same shell PR #222).
 
 ### F-448 — a bookmark titled by its domain reads "example.com / example.com"
 - **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** ✅ done (2026-07-19, shell PR #222)
