@@ -25,6 +25,20 @@ It is the **third plane** in a three-plane system:
 
 A stray crypto import or a product-package dependency breaks the zero-knowledge guarantee. Treat both as security regressions, not conveniences.
 
+## The second service: `feedback-collector/`
+
+This repo also hosts the **feedback collector** (`feedback-collector/`) — the
+receiving end for the shell's in-app Send-feedback dialog + opt-in crash
+reporter. It accepts **plaintext (client-redacted)** payloads, so it is a
+**separate service, port, and container** from the relay node: it never shares
+the relay's process or storage, nothing in `src/` imports from it, and it only
+reuses the pure `KeyedRateLimiter` from `src/limits.ts`. The relay-blind
+invariant above applies to the relay's route path — the collector is a
+different plane with its own README (`feedback-collector/README.md`). Its
+`src/contract.ts` mirrors the product's feedback/crash payload shapes the same
+way `src/wire.ts` mirrors the sync wire format: shared contract, never shared
+code.
+
 ## The seam: the wire protocol
 
 The single coupling to the product is the **Stage-10 wire protocol** — the first-byte channel (`0x00` control / `0x01` frame) + the routing-header schema in `src/wire.ts`. The product's `packages/shell/src/main/sync` envelope codec is the canonical source; `src/wire.ts` mirrors only what the node needs to peek at. Changes to the header schema are lockstep with the product — coordinate via `/add-dir ../app`. Treat it as a published contract: additive changes preferred, versioned breaks only.
