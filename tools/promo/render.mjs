@@ -65,17 +65,19 @@ for (const scene of SCENES) {
 		}
 	}
 	const vf = `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS/${speed},fps=${FPS},tpad=stop_mode=clone:stop_duration=${scene.seconds},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE},setpts=PTS-STARTPTS`;
-	if (scene.titleCard) {
-		// Pillow renders the card (Homebrew ffmpeg has no drawtext/freetype).
+	if (scene.titleCard || scene.introCard) {
+		// Pillow renders the cards (Homebrew ffmpeg has no drawtext/freetype)
+		// in the site's indigo palette.
 		const iconCandidates = [
 			join(HARNESS, "docs", "art", "icon", "icon9.png"),
 			join(HARNESS, "packages", "shell", "art", "icon.png"),
 		];
 		const icon = iconCandidates.find((p) => existsSync(p)) ?? "-";
-		const cardPng = join(PROMO, "title-card.png");
+		const mode = scene.introCard ? "intro" : "outro";
+		const cardPng = join(PROMO, `card-${mode}.png`);
 		execFileSync(
 			"uv",
-			["run", "--with", "pillow", "python3", join(import.meta.dirname, "title-card.py"), icon, cardPng],
+			["run", "--with", "pillow", "python3", join(import.meta.dirname, "cards.py"), mode, icon, cardPng],
 			{ stdio: ["ignore", "inherit", "inherit"] },
 		);
 		ffmpeg([
@@ -88,10 +90,20 @@ for (const scene of SCENES) {
 	} else {
 		const clip = join(CLIPS, `${scene.id}.mov`);
 		if (!existsSync(clip)) throw new Error(`missing clip: ${clip} — run promo:capture`);
+		// Caption lower-third (site-indigo pill) overlaid on the footage so
+		// a first-time viewer always knows which surface they're seeing.
+		const captionPng = join(PROMO, `caption-${scene.id}.png`);
+		execFileSync(
+			"uv",
+			["run", "--with", "pillow", "python3", join(import.meta.dirname, "cards.py"), "caption", scene.caption, captionPng],
+			{ stdio: ["ignore", "inherit", "inherit"] },
+		);
 		ffmpeg([
 			"-i", clip,
+			"-i", captionPng,
 			"-t", String(scene.seconds),
-			"-vf", vf,
+			"-filter_complex", `[0:v]${vf}[base];[base][1:v]overlay=0:0[v]`,
+			"-map", "[v]",
 			"-an",
 			"-c:v", "libx264", "-preset", "medium", "-crf", "18", seg,
 		]);

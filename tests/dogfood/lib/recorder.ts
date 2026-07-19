@@ -191,19 +191,25 @@ export class ScreencastRecorder implements PromoRecorder {
 		this.#session = session;
 		this.#page = page;
 		session.on("Page.screencastFrame", (frame) => {
-			const file = join(framesDir, `f-${String(this.#counter++).padStart(5, "0")}.png`);
+			// Ack FIRST — Chromium won't send the next frame until the last one
+			// is acknowledged, so acking after disk IO halves the frame rate.
+			session
+				.send("Page.screencastFrameAck", { sessionId: frame.sessionId })
+				.catch(() => undefined);
+			const file = join(framesDir, `f-${String(this.#counter++).padStart(5, "0")}.jpg`);
 			try {
 				writeFileSync(file, Buffer.from(frame.data, "base64"));
 				this.#frames.push({ file, ts: frame.metadata.timestamp ?? Date.now() / 1000 });
 			} catch {
 				// drop the frame, keep the stream alive
 			}
-			session
-				.send("Page.screencastFrameAck", { sessionId: frame.sessionId })
-				.catch(() => undefined);
 		});
+		// JPEG over PNG: ~10× smaller per frame → encode + IO keep up with the
+		// paint rate (PNG at Retina size capped capture at ~10fps). Downscaled
+		// to 1080p in the render, the quality difference is invisible.
 		await session.send("Page.startScreencast", {
-			format: "png",
+			format: "jpeg",
+			quality: 90,
 			maxWidth: 2880,
 			maxHeight: 1620,
 			everyNthFrame: 1,

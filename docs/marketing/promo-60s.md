@@ -14,10 +14,10 @@ bun run promo:voiceover       # free TTS narration (edge-tts; `say` fallback)
 bun run promo:render          # assembly → tests/dogfood/.promo/promo-60s-1080p.mp4
 ```
 
-## Voiceover script (9 scenes · 60s)
+## Voiceover script (10 scenes · 60s)
 
-> **[S1]** Meet Brainstorm. Create a vault — private, encrypted, on your
-> machine — and you're in.
+> **[S0]** Meet Brainstorm — an operating system for your mind.
+> **[S1]** Create a vault — private, encrypted, on your machine — and you're in.
 > **[S2]** Notes that hold real work — clients and projects, linked right in
 > the page.
 > **[S3]** Databases with boards, calendars, and views — drag a deal, plan an
@@ -27,29 +27,31 @@ bun run promo:render          # assembly → tests/dogfood/.promo/promo-60s-1080
 > tabs.
 > **[S6]** Bring the team in — same vault, live together, end-to-end
 > encrypted.
-> **[S7]** Make it yours — themes, wallpapers, shortcuts. Everything's a
-> setting away.
+> **[S7]** Make it yours — themes, wallpapers, shortcuts.
 > **[S8]** And search finds anything — instantly, across everything.
-> **[S9]** Brainstorm. Your whole business, in a workspace you own. Free beta
-> on GitHub.
+> **[S9]** Your whole business, in a workspace you own. Free beta at
+> getbrainstorm.online.
 
 ## Scene table
 
-Every scene shows **real work being done** (typed text, dragged cards, created
-items), and each clip is time-compressed per `scenes.mjs` `speed` (1.25–1.45×)
-so the cut reads fast without robotic driving.
+Every scene shows **real work being done**, each clip auto-compresses so the
+whole take fits its slot, and every footage scene carries an indigo lower-third
+caption (site palette, `tools/promo/cards.py`) so a first-time viewer always
+knows what they're seeing. Bookend cards use the site's indigo on #161616 and
+point at **getbrainstorm.online**.
 
-| # | t (s) | Surface | Action captured (all real work) | Caption (srt) |
-|---|-------|---------|--------------------------------|----------------|
-| 1 | 0–7 | Welcome / onboarding | **The real first-run flow**: "Create a new vault" → type "Northbound Studio" → Continue → Create vault → the dashboard materialises (new default light theme + wallpaper, untouched) | Your vault, created in seconds |
-| 2 | 7–14 | Notes | Open the Harbor brief and **type a real update line**; open the properties panel | Documents with real work inside |
-| 3 | 14–21 | Database | Board: **drag a deal one stage over**, then flip to another view | Boards, calendars, views |
-| 4 | 21–27 | Graph → Whiteboard | Map pan/zoom; whiteboard interaction beat | Map the thinking |
-| 5 | 27–35 | Tasks → Calendar → Journal | **Create a task** ("Send Vertex proposal"), **create a calendar event**, land on the day log | Tasks · Calendar · Journal |
-| 6 | 35–42 | Chat (team surface) | **Create the #studio channel** on camera, then **type + send** a team update *(two-shell split-screen co-editing is the queued upgrade)* | Real-time team, end-to-end encrypted |
-| 7 | 42–48 | Settings | `Cmd+,` → Appearance → **flip through themes live** and land back on the default | Make it yours |
-| 8 | 48–54 | Search | Open the launcher, **type a query**, results land live | Find anything, instantly |
-| 9 | 54–60 | Title card | Logo, "Local-first · E2E-encrypted · Open beta", download URL | brainstorm — download on GitHub |
+| # | t (s) | Surface | Action captured | Caption |
+|---|-------|---------|-----------------|---------|
+| 0 | 0–4 | Intro card | Logo + "An operating system for your mind" | — |
+| 1 | 4–11 | Welcome / onboarding | Real first-run: name the vault, pick the Small-business template, Create vault → dashboard reveal | Step 1 — create your vault |
+| 2 | 11–18 | Notes | Open the Harbor brief, type an update line, open properties | Notes — documents with real work inside |
+| 3 | 18–25 | Database | Board drag + view flip | Database — boards, calendars, views |
+| 4 | 25–30 | Graph → Whiteboard | Map pan/zoom; whiteboard beat | Graph & Whiteboard — map the thinking |
+| 5 | 30–38 | Tasks → Calendar → Journal | Create a task + a calendar event, land on the day log | Tasks · Calendar · Journal |
+| 6 | 38–44 | Chat | Create #studio, post an update | Chat — your team, end-to-end encrypted |
+| 7 | 44–49 | Settings | Header gear → Appearance → live theme flips | Settings — make it yours |
+| 8 | 49–54 | Search | Header search → type a query → results | Search — find anything, instantly |
+| 9 | 54–60 | Outro card | Brand + posture + getbrainstorm.online (indigo) | — |
 
 ## Footage source policy (owner rule, 2026-07-19)
 
