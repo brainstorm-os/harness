@@ -181,12 +181,15 @@ function srtTime(s) {
 	return `${h}:${m}:${sec},${String(ms % 1000).padStart(3, "0")}`;
 }
 let cursor = 0;
-const srt = SCENES.map((scene, i) => {
+const cues = [];
+for (const scene of SCENES) {
 	const start = cursor;
 	cursor += scene.seconds;
-	return `${i + 1}\n${srtTime(start + 0.2)} --> ${srtTime(cursor - 0.2)}\n${scene.vo}\n`;
-}).join("\n");
-writeFileSync(OUT_SRT, srt);
+	const vo = String(scene.vo ?? "").trim();
+	if (!vo) continue;
+	cues.push(`${cues.length + 1}\n${srtTime(start + 0.2)} --> ${srtTime(cursor - 0.2)}\n${vo}\n`);
+}
+writeFileSync(OUT_SRT, cues.join("\n"));
 
 const total = SCENES.reduce((a, s) => a + s.seconds, 0);
 console.log(`[promo:render] ${OUT_MP4} (${total}s) + ${OUT_SRT}${music ? ` + music bed (${music})` : " (no music bed)"}`);
