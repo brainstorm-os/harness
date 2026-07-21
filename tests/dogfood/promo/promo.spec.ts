@@ -168,7 +168,31 @@ test("capture promo scenes", async () => {
 			if (page) {
 				await page.waitForLoadState("domcontentloaded").catch(() => undefined);
 				await tileAllWindows(app);
-				await page.waitForTimeout(1800);
+				await page.waitForTimeout(600);
+				// App containers stack a tab-strip above the app view, so the
+				// filmed viewport is SHORTER than the window — grow the window by
+				// the chrome delta so the page is exactly 16:9 (a padded 1540px
+				// viewport letterboxes the whole video with black bars).
+				const inner = await page
+					.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }))
+					.catch(() => null);
+				const dh = inner ? STAGE.height - inner.h : 0;
+				if (dh > 0) {
+					await app
+						.evaluate(({ BrowserWindow }, arg) => {
+							for (const w of BrowserWindow.getAllWindows()) {
+								try {
+									if (!w.webContents.getURL().includes("/renderer/index.html")) {
+										w.setContentSize(arg.w, arg.h + arg.dh);
+									}
+								} catch {
+									// best-effort
+								}
+							}
+						}, { w: STAGE.width, h: STAGE.height, dh })
+						.catch(() => undefined);
+				}
+				await page.waitForTimeout(1200);
 				return page;
 			}
 			await dashboard.waitForTimeout(250);
@@ -179,10 +203,14 @@ test("capture promo scenes", async () => {
 	const closeAppWindows = async (): Promise<void> => {
 		await app
 			.evaluate(({ BrowserWindow }) => {
-				const all = BrowserWindow.getAllWindows();
-				for (const w of all) {
-					// Keep the dashboard (first-created) window.
-					if (all.indexOf(w) > 0) w.close();
+				// getAllWindows() order is NOT creation order — identify the
+				// dashboard by URL (closing it by index killed a whole run).
+				for (const w of BrowserWindow.getAllWindows()) {
+					try {
+						if (!w.webContents.getURL().includes("/renderer/index.html")) w.close();
+					} catch {
+						// best-effort
+					}
 				}
 			})
 			.catch(() => undefined);
@@ -262,8 +290,8 @@ test("capture promo scenes", async () => {
 	await tileAllWindows(app);
 	await dashboard.waitForTimeout(1000);
 
-	// ── S2: Notes — open the HQ hub and WRITE into it ──────────────────────
-	await scene("02-notes", async () => {
+	// ── S3: Notes — open the HQ hub and WRITE into it ──────────────────────
+	await scene("03-notes", async () => {
 		const notes = await openApp("io.brainstorm.notes");
 		await film(notes);
 		const doc = notes
@@ -290,8 +318,8 @@ test("capture promo scenes", async () => {
 		}
 	});
 
-	// ── S3: Database — Clients board: DRAG a deal + flip the view ──────────
-	await scene("03-database", async () => {
+	// ── S4: Database — Clients board: DRAG a deal + flip the view ──────────
+	await scene("04-database", async () => {
 		await closeAppWindows();
 		const db = await openApp("io.brainstorm.database");
 		await film(db);
@@ -324,8 +352,8 @@ test("capture promo scenes", async () => {
 		}
 	});
 
-	// ── S4: Graph pan/zoom → Whiteboard beat ───────────────────────────────
-	await scene("04-graph-whiteboard", async () => {
+	// ── S5: Graph pan/zoom → Whiteboard beat ───────────────────────────────
+	await scene("05-graph-whiteboard", async () => {
 		await closeAppWindows();
 		const graph = await openApp("io.brainstorm.graph");
 		await film(graph);
@@ -345,8 +373,8 @@ test("capture promo scenes", async () => {
 		await beat(wb, 900);
 	});
 
-	// ── S5: Tasks (CREATE one) → Calendar (NEW event) → Mailbox ────────────
-	await scene("05-operate", async () => {
+	// ── S6: Tasks (CREATE one) → Calendar (NEW event) → Mailbox ────────────
+	await scene("06-operate", async () => {
 		await closeAppWindows();
 		const tasks = await openApp("io.brainstorm.tasks");
 		await film(tasks);
@@ -385,8 +413,8 @@ test("capture promo scenes", async () => {
 		await beat(journal, 1500);
 	});
 
-	// ── S6: team — the Chat surface (split-screen collab is the upgrade) ───
-	await scene("06-team", async () => {
+	// ── S8: chat — the Chat surface (split-screen collab is the upgrade) ───
+	await scene("08-chat", async () => {
 		await closeAppWindows();
 		const chat = await openApp("io.brainstorm.chat");
 		await film(chat);
@@ -407,46 +435,163 @@ test("capture promo scenes", async () => {
 		if (await composer.count().catch(() => 0)) {
 			await composer.click().catch(() => undefined);
 			await typeHuman(chat, "Harbor direction two is ready for review 🎉");
-			await beat(chat, 400);
+			// Link the brief through the composer's Add-context menu — the
+			// "files in chat" beat — then send.
+			const attach = chat.locator('[aria-label="Add context"]').first();
+			if (await attach.count().catch(() => 0)) {
+				await glideClick(chat, attach).catch(() => undefined);
+				await beat(chat, 500);
+				const linkDoc = chat.getByText("Link a document").first();
+				if (await linkDoc.count().catch(() => 0)) {
+					await glideClick(chat, linkDoc).catch(() => undefined);
+					await beat(chat, 500);
+					const pick = chat.getByText(/Harbor/i).last();
+					if (await pick.count().catch(() => 0)) {
+						await glideClick(chat, pick).catch(() => undefined);
+						await beat(chat, 400);
+					}
+				} else {
+					await chat.keyboard.press("Escape").catch(() => undefined);
+				}
+			}
 			await chat.keyboard.press("Enter").catch(() => undefined);
 		}
 		await beat(chat, 1200);
 	});
 
-	// ── S7: Settings — live theme flip, then back to the default ───────────
-	await scene("07-settings", async () => {
+	// ── S9: Agent — the seeded conversation + a typed prompt ──────────────
+	await scene("09-agent", async () => {
 		await closeAppWindows();
-		await film(dashboard);
-		// Chords need OS focus the no-focus rig doesn't have — click the real
-		// header gear instead (also nicer on camera).
-		await glideClick(dashboard, dashboard.locator('[aria-label="Settings"]').first());
-		await beat(dashboard, 700);
-		const appearanceNav = dashboard
-			.locator(".settings__nav-item")
-			.filter({ hasText: /appearance/i })
-			.first();
-		if (await appearanceNav.count().catch(() => 0)) {
-			await glideClick(dashboard, appearanceNav).catch(() => undefined);
-			await beat(dashboard, 600);
-			const swatches = dashboard.locator(".settings__appearance-theme-swatch");
-			const n = await swatches.count().catch(() => 0);
-			if (n > 2) {
-				// Flip to a couple of themes and land back on the default —
-				// the whole surface restyles live behind the panel.
-				await glideClick(dashboard, swatches.nth(2)).catch(() => undefined);
-				await beat(dashboard, 700);
-				await glideClick(dashboard, swatches.nth(1)).catch(() => undefined);
-				await beat(dashboard, 700);
-				await glideClick(dashboard, swatches.nth(0)).catch(() => undefined);
-				await beat(dashboard, 600);
-			}
+		const agent = await openApp("io.brainstorm.agent");
+		await film(agent);
+		const convo = agent.getByText("Tighten the Harbor brief").first();
+		if (await convo.count().catch(() => 0)) {
+			await glideClick(agent, convo).catch(() => undefined);
+			await beat(agent, 900);
 		}
-		await dashboard.keyboard.press("Escape").catch(() => undefined);
-		await beat(dashboard, 500);
+		const composer = agent.locator('textarea, [contenteditable="true"]').last();
+		if (await composer.count().catch(() => 0)) {
+			await composer.click().catch(() => undefined);
+			// Type the prompt but don't send — no model is wired in the rig.
+			await typeHuman(agent, "Draft the pricing section from our last call notes");
+		}
+		await beat(agent, 900);
 	});
 
-	// ── S8: search across everything ───────────────────────────────────────
-	await scene("08-search", async () => {
+	// ── S10: Mailbox — mocked client mail (seeded through the app's own
+	//         entity caps; the mailbox is a viewer over Email/v1 rows) ───────
+	await scene("10-mailbox", async () => {
+		await closeAppWindows();
+		const mail = await openApp("io.brainstorm.mailbox");
+		await mail
+			.evaluate(async () => {
+				const bs = (
+					window as unknown as {
+						brainstorm?: {
+							services?: {
+								entities?: {
+									create?: (t: string, p: Record<string, unknown>) => Promise<{ id?: unknown }>;
+								} | null;
+							} | null;
+						};
+					}
+				).brainstorm;
+				const create = bs?.services?.entities?.create;
+				if (!create) return;
+				const acct = await create("brainstorm/MailAccount/v1", {
+					address: "mira@northbound.studio",
+					displayName: "Mira — Northbound",
+					enabled: true,
+				});
+				const accountRef = String(acct?.id ?? "");
+				const inbox = await create("brainstorm/MailFolder/v1", {
+					accountRef,
+					path: "INBOX",
+					role: "inbox",
+					unreadCount: 2,
+				});
+				const folderRef = String(inbox?.id ?? "");
+				const now = Date.now();
+				const mk = (
+					fromName: string,
+					fromAddr: string,
+					subject: string,
+					body: string,
+					ageMin: number,
+					unread: boolean,
+				) =>
+					create("brainstorm/Email/v1", {
+						accountRef,
+						folderRefs: [folderRef],
+						messageId: `<promo-${ageMin}@northbound.local>`,
+						threadKey: `promo-${ageMin}`,
+						from: [{ name: fromName, address: fromAddr }],
+						to: [{ name: "Mira", address: "mira@northbound.studio" }],
+						subject,
+						receivedAt: now - ageMin * 60_000,
+						bodyText: body,
+						flags: unread ? ["unread"] : [],
+					});
+				await mk(
+					"Ana Moreau",
+					"ana@harborandco.com",
+					"Re: Brand directions — we love option two",
+					"The nautical-without-clichés route is exactly right. Can we see packaging mockups by Thursday?",
+					42,
+					true,
+				);
+				await mk(
+					"Tom Becker",
+					"tom@meridianhealth.app",
+					"Booking flow — kickoff agenda",
+					"Sharing the agenda for Monday. The appointment screen is the priority for sprint one.",
+					180,
+					true,
+				);
+				await mk(
+					"Sophie Lambert",
+					"sophie@atlasrobotics.io",
+					"Series A deck — final rehearsal",
+					"Deck looks strong. Locking the rehearsal for Friday 3pm — bring the printed one-pagers.",
+					900,
+					false,
+				);
+			})
+			.catch(() => undefined);
+		await beat(mail, 1500);
+		await film(mail);
+		const row = mail.getByText("we love option two").first();
+		if (await row.count().catch(() => 0)) {
+			await glideClick(mail, row).catch(() => undefined);
+		}
+		await beat(mail, 1800);
+	});
+
+	// ── S11: Browser — omnibox + tabs (page content paints in an isolated
+	//         native view the screencast can't see; the chrome carries it) ───
+	await scene("11-browser", async () => {
+		await closeAppWindows();
+		const browser = await openApp("io.brainstorm.browser");
+		await film(browser);
+		const omnibox = browser.locator('[aria-label="Address bar"]').first();
+		if (await omnibox.count().catch(() => 0)) {
+			await glideClick(browser, omnibox).catch(() => undefined);
+			await typeHuman(browser, "getbrainstorm.online");
+			await browser.keyboard.press("Enter").catch(() => undefined);
+			await beat(browser, 2500);
+		}
+		// The "captured straight to the vault" beat — the clip star runs its
+		// visible saving → saved phases in the chrome.
+		const clip = browser.locator('[aria-label="Save to vault"]').first();
+		if (await clip.count().catch(() => 0)) {
+			await glideClick(browser, clip).catch(() => undefined);
+			await beat(browser, 1200);
+		}
+		await beat(browser, 700);
+	});
+
+	// ── S12: search across everything ───────────────────────────────────────
+	await scene("12-search", async () => {
 		await closeAppWindows();
 		await film(dashboard);
 		await glideClick(dashboard, dashboard.locator('[aria-label="Search the vault"]').first());

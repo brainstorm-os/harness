@@ -1,76 +1,106 @@
 /** Single source of truth for the promo's scene timings, VO lines, and
  *  captions — shared by voiceover.mjs and render.mjs; mirrors the scene
- *  table in docs/marketing/promo-60s.md. `speed` time-compresses the
- *  captured footage at render time (auto-raised so the whole take fits). */
+ *  table in docs/marketing/promo-60s.md.
+ *
+ *  The cut is a STORY: Mira founds Northbound Studio and runs it end-to-end
+ *  in Brainstorm — vault creation → building the studio → the team joining →
+ *  shipping. `slide` scenes are render-side interstitials (no clip, no VO —
+ *  a musical breath); `speed` time-compresses footage (auto-raised so the
+ *  whole take fits). */
 
 export const SCENES = [
 	{
-		id: "00-intro",
-		seconds: 4,
-		vo: "Meet Brainstorm — an operating system for your mind.",
-		caption: "brainstorm",
-		introCard: true,
+		id: "00-slide-meet",
+		seconds: 5,
+		vo: "Meet Mira. She's starting a studio — and she'll run it all from one place.",
+		slide: { title: "Meet Mira.", sub: "Founder, Northbound Studio" },
 	},
 	{
 		id: "01-onboarding",
 		speed: 1.3,
 		seconds: 7,
-		vo: "Create a vault — private, encrypted, on your machine — and you're in.",
-		caption: "Step 1 — create your vault",
+		vo: "Day one: a private vault. Everything the studio makes lives here — encrypted, on her machine.",
+		caption: "Day 1 — create the vault",
 	},
 	{
-		id: "02-notes",
+		id: "02-slide-build",
+		seconds: 3,
+		vo: "",
+		slide: { title: "Build the studio", sub: "" },
+	},
+	{
+		id: "03-notes",
 		speed: 1.35,
 		seconds: 7,
-		vo: "Notes that hold real work — clients and projects, linked right in the page.",
-		caption: "Notes — documents with real work inside",
+		vo: "Client briefs live in Notes — real documents, tied to real projects.",
+		caption: "Notes — briefs and documents",
 	},
 	{
-		id: "03-database",
+		id: "04-database",
 		speed: 1.45,
 		seconds: 7,
-		vo: "Databases with boards, calendars, and views — drag a deal, plan an issue.",
-		caption: "Database — boards, calendars, views",
+		vo: "The pipeline runs on boards and views — drag a deal, plan the week.",
+		caption: "Database — the pipeline",
 	},
 	{
-		id: "04-graph-whiteboard",
+		id: "05-graph-whiteboard",
 		speed: 1.35,
 		seconds: 5,
-		vo: "Map the thinking on a graph or a whiteboard.",
-		caption: "Graph & Whiteboard — map the thinking",
+		vo: "Thinking gets mapped — graph and whiteboard.",
+		caption: "Graph & Whiteboard",
 	},
 	{
-		id: "05-operate",
+		id: "06-operate",
 		speed: 1.45,
 		seconds: 8,
-		vo: "Tasks, calendar, journal — the whole operation in one place, no tabs.",
+		vo: "Tasks, calendar, journal — the day runs itself.",
 		caption: "Tasks · Calendar · Journal",
 	},
 	{
-		id: "06-team",
-		speed: 1.3,
-		seconds: 6,
-		vo: "Bring the team in — same vault, live together, end-to-end encrypted.",
-		caption: "Chat — your team, end-to-end encrypted",
+		id: "07-slide-team",
+		seconds: 3,
+		vo: "",
+		slide: { title: "The team joins", sub: "" },
 	},
 	{
-		id: "07-settings",
+		id: "08-chat",
+		speed: 1.3,
+		seconds: 8,
+		vo: "The team works in chat — updates, files, decisions — right next to the work.",
+		caption: "Chat — the team, in the vault",
+	},
+	{
+		id: "09-agent",
+		speed: 1.3,
+		seconds: 7,
+		vo: "An AI agent drafts alongside them — grounded in the vault.",
+		caption: "Agent — AI, grounded in your vault",
+	},
+	{
+		id: "10-mailbox",
 		speed: 1.35,
-		seconds: 5,
-		vo: "Make it yours — themes, wallpapers, shortcuts.",
-		caption: "Settings — make it yours",
+		seconds: 6,
+		vo: "Client mail lands beside the projects it belongs to.",
+		caption: "Mailbox — mail beside the work",
 	},
 	{
-		id: "08-search",
+		id: "11-browser",
+		speed: 1.35,
+		seconds: 6,
+		vo: "Research happens in-app — captured straight to the vault.",
+		caption: "Browser — research, captured",
+	},
+	{
+		id: "12-search",
 		speed: 1.3,
 		seconds: 5,
-		vo: "And search finds anything — instantly, across everything.",
-		caption: "Search — find anything, instantly",
+		vo: "And anything is one search away.",
+		caption: "Search — everything, instantly",
 	},
 	{
-		id: "09-title",
-		seconds: 6,
-		vo: "Your whole business, in a workspace you own. Free beta at getbrainstorm dot online.",
+		id: "13-title",
+		seconds: 7,
+		vo: "Northbound runs on Brainstorm. Yours can too — free beta at getbrainstorm dot online.",
 		caption: "getbrainstorm.online",
 		titleCard: true,
 	},

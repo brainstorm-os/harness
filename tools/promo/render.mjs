@@ -46,7 +46,7 @@ for (const scene of SCENES) {
 	// tpad then clones the final frame out to the scene budget (screencast
 	// clips end when paints stop), and `-t` trims to the exact scene length.
 	let speed = scene.speed ?? 1;
-	if (!scene.titleCard) {
+	if (!scene.titleCard && !scene.introCard && !scene.slide) {
 		const clipPath = join(CLIPS, `${scene.id}.mov`);
 		if (existsSync(clipPath)) {
 			const dur = Number(
@@ -65,21 +65,22 @@ for (const scene of SCENES) {
 		}
 	}
 	const vf = `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS/${speed},fps=${FPS},tpad=stop_mode=clone:stop_duration=${scene.seconds},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE},setpts=PTS-STARTPTS`;
-	if (scene.titleCard || scene.introCard) {
-		// Pillow renders the cards (Homebrew ffmpeg has no drawtext/freetype)
-		// in the site's indigo palette.
-		// The shell's indigo app icon (same mark as the site favicon) — the
-		// old docs/art icon9 is the pre-indigo blue and must not ship.
+	if (scene.titleCard || scene.introCard || scene.slide) {
+		// Pillow renders the stills (Homebrew ffmpeg has no drawtext/freetype)
+		// in the site's indigo palette. Cards use the shell's indigo app icon
+		// (same mark as the site favicon); slides are text-only interstitials.
 		const iconCandidates = [
 			join(HARNESS, "packages", "shell", "art", "icon.png"),
 			join(HARNESS, "docs", "art", "icon", "icon9.png"),
 		];
 		const icon = iconCandidates.find((p) => existsSync(p)) ?? "-";
-		const mode = scene.introCard ? "intro" : "outro";
-		const cardPng = join(PROMO, `card-${mode}.png`);
+		const cardPng = join(PROMO, `card-${scene.id}.png`);
+		const args = scene.slide
+			? ["slide", scene.slide.title, scene.slide.sub ?? "", cardPng]
+			: [scene.introCard ? "intro" : "outro", icon, cardPng];
 		execFileSync(
 			"uv",
-			["run", "--with", "pillow", "python3", join(import.meta.dirname, "cards.py"), mode, icon, cardPng],
+			["run", "--with", "pillow", "python3", join(import.meta.dirname, "cards.py"), ...args],
 			{ stdio: ["ignore", "inherit", "inherit"] },
 		);
 		ffmpeg([
@@ -141,21 +142,33 @@ const music = existsSync(ASSETS)
 	? readdirSync(ASSETS).find((f) => /^music\.(mp3|m4a|wav|aac)$/.test(f))
 	: undefined;
 if (music) {
+	// The bed rides at a real level and DUCKS under speech via sidechain
+	// compression (a flat 0.22 gain buried the quiet Krux master at -32dB —
+	// "there is no music"). Music alone (slides) sits ~-18dB; under VO it
+	// drops ~8-10dB and stays audible but clear of the narration.
 	ffmpeg([
 		"-i", silentVideo,
 		"-i", voTrack,
 		"-stream_loop", "-1", "-i", join(ASSETS, music),
 		"-filter_complex",
-		"[2:a]volume=0.22[m];[1:a][m]amix=inputs=2:duration=first:normalize=0[a]",
+		// Measured mix: the edge-tts VO track is QUIET (mean -26.7dB, peaks
+		// -6) — boost it +7dB behind a limiter so speech leads at ~-19dB;
+		// the bed stays at its natural level in the gaps (~-22dB, the part
+		// the owner liked) and sidechain-ducks ~12dB under speech.
+		"[1:a]asplit=2[voRaw][sc];" +
+			"[voRaw]volume=2.2,alimiter=limit=0.85:level=false[vo];" +
+			"[2:a]volume=1.0[m];" +
+			"[m][sc]sidechaincompress=threshold=0.02:ratio=12:attack=20:release=400[duck];" +
+			"[vo][duck]amix=inputs=2:duration=first:normalize=0[a]",
 		"-map", "0:v", "-map", "[a]",
-		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT_MP4,
+		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", OUT_MP4,
 	]);
 } else {
 	ffmpeg([
 		"-i", silentVideo,
 		"-i", voTrack,
 		"-map", "0:v", "-map", "1:a",
-		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT_MP4,
+		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", OUT_MP4,
 	]);
 }
 
@@ -168,12 +181,15 @@ function srtTime(s) {
 	return `${h}:${m}:${sec},${String(ms % 1000).padStart(3, "0")}`;
 }
 let cursor = 0;
-const srt = SCENES.map((scene, i) => {
+const cues = [];
+for (const scene of SCENES) {
 	const start = cursor;
 	cursor += scene.seconds;
-	return `${i + 1}\n${srtTime(start + 0.2)} --> ${srtTime(cursor - 0.2)}\n${scene.vo}\n`;
-}).join("\n");
-writeFileSync(OUT_SRT, srt);
+	const vo = String(scene.vo ?? "").trim();
+	if (!vo) continue;
+	cues.push(`${cues.length + 1}\n${srtTime(start + 0.2)} --> ${srtTime(cursor - 0.2)}\n${vo}\n`);
+}
+writeFileSync(OUT_SRT, cues.join("\n"));
 
 const total = SCENES.reduce((a, s) => a + s.seconds, 0);
 console.log(`[promo:render] ${OUT_MP4} (${total}s) + ${OUT_SRT}${music ? ` + music bed (${music})` : " (no music bed)"}`);

@@ -1,6 +1,8 @@
 # Brainstorm — 60-second promo (storyboard + VO script)
 
-The YouTube launch promo: **≤60s**, all-capabilities montage told through
+The YouTube launch promo: **~83s story cut** — Mira founds Northbound Studio
+and runs it end-to-end in Brainstorm, from vault creation to shipping — told
+through
 **Northbound Studio** — the synthetic marketing world built by
 `seedMarketingEntities` (clients Harbor & Co / Meridian / Atlas, projects,
 people, tasks, events, notes, journal, whiteboard). Footage is captured by the
@@ -9,49 +11,43 @@ narrated by a free TTS track (`tools/promo/voiceover.mjs`). Re-render any
 release with:
 
 ```sh
-bun run promo:capture         # fresh seeded vault + drive + record the 8 scenes
+bun run promo:capture         # fresh seeded vault + drive + record the story scenes
 bun run promo:voiceover       # free TTS narration (edge-tts; `say` fallback)
 bun run promo:render          # assembly → tests/dogfood/.promo/promo-60s-1080p.mp4
 ```
 
-## Voiceover script (10 scenes · 60s)
+## Voiceover script (story cut · ~83s)
 
-> **[S0]** Meet Brainstorm — an operating system for your mind.
-> **[S1]** Create a vault — private, encrypted, on your machine — and you're in.
-> **[S2]** Notes that hold real work — clients and projects, linked right in
-> the page.
-> **[S3]** Databases with boards, calendars, and views — drag a deal, plan an
-> issue.
-> **[S4]** Map the thinking on a graph or a whiteboard.
-> **[S5]** Tasks, calendar, journal — the whole operation in one place, no
-> tabs.
-> **[S6]** Bring the team in — same vault, live together, end-to-end
-> encrypted.
-> **[S7]** Make it yours — themes, wallpapers, shortcuts.
-> **[S8]** And search finds anything — instantly, across everything.
-> **[S9]** Your whole business, in a workspace you own. Free beta at
+> **[S0 slide]** Meet Mira. She's starting a studio — and she'll run it all
+> from one place.
+> **[S1]** Day one: a private vault. Everything the studio makes lives here —
+> encrypted, on her machine.
+> **[S2 slide]** *(silent — "Build the studio")*
+> **[S3]** Client briefs live in Notes — real documents, tied to real projects.
+> **[S4]** The pipeline runs on boards and views — drag a deal, plan the week.
+> **[S5]** Thinking gets mapped — graph and whiteboard.
+> **[S6]** Tasks, calendar, journal — the day runs itself.
+> **[S7 slide]** *(silent — "The team joins")*
+> **[S8]** The team works in chat — updates, files, decisions — right next to
+> the work.
+> **[S9]** An AI agent drafts alongside them — grounded in the vault.
+> **[S10]** Client mail lands beside the projects it belongs to.
+> **[S11]** Research happens in-app — captured straight to the vault.
+> **[S12]** And anything is one search away.
+> **[S13]** Northbound runs on Brainstorm. Yours can too — free beta at
 > getbrainstorm.online.
 
 ## Scene table
 
-Every scene shows **real work being done**, each clip auto-compresses so the
-whole take fits its slot, and every footage scene carries an indigo lower-third
-caption (site palette, `tools/promo/cards.py`) so a first-time viewer always
-knows what they're seeing. Bookend cards use the site's indigo on #161616 and
-point at **getbrainstorm.online**.
-
-| # | t (s) | Surface | Action captured | Caption |
-|---|-------|---------|-----------------|---------|
-| 0 | 0–4 | Intro card | Logo + "An operating system for your mind" | — |
-| 1 | 4–11 | Welcome / onboarding | Real first-run: name the vault, pick the Small-business template, Create vault → dashboard reveal | Step 1 — create your vault |
-| 2 | 11–18 | Notes | Open the Harbor brief, type an update line, open properties | Notes — documents with real work inside |
-| 3 | 18–25 | Database | Board drag + view flip | Database — boards, calendars, views |
-| 4 | 25–30 | Graph → Whiteboard | Map pan/zoom; whiteboard beat | Graph & Whiteboard — map the thinking |
-| 5 | 30–38 | Tasks → Calendar → Journal | Create a task + a calendar event, land on the day log | Tasks · Calendar · Journal |
-| 6 | 38–44 | Chat | Create #studio, post an update | Chat — your team, end-to-end encrypted |
-| 7 | 44–49 | Settings | Header gear → Appearance → live theme flips | Settings — make it yours |
-| 8 | 49–54 | Search | Header search → type a query → results | Search — find anything, instantly |
-| 9 | 54–60 | Outro card | Brand + posture + getbrainstorm.online (indigo) | — |
+The cut is a STORY (vault creation → studio → team → shipping) with silent
+slide interstitials as musical breaths. Scene list = `tools/promo/scenes.mjs`
+(single source of truth: ids, budgets, VO, captions, slides). New app scenes:
+**Agent** (seeded conversation + typed prompt), **Mailbox** (mock client mail
+seeded as `Email/v1` rows through the app's own entity caps), **Browser**
+(omnibox + tabs — page content paints in an isolated native view the
+screencast can't see; the chrome carries the scene, and a display-capture
+final pass would show real page content). Chat additionally links a document
+through the composer's Add-context menu.
 
 ## Footage source policy (owner rule, 2026-07-19)
 
@@ -83,10 +79,13 @@ clean, repeatable, and contain zero real data by construction.
 - **VO**: `edge-tts` (free, no key) en-US neural voice; macOS `say` fallback
   so the pipeline always renders. Free upgrade path if neither pleases:
   kokoro-onnx (local, Apache-2.0). Regenerate with `tools/promo/voiceover.mjs`.
-- **Music**: the committed bed is **"Corporate company introduction video" by
-  Bertsz (freesound.org, CC0 1.0 — public domain, no attribution required,
-  commercial use fine)** at `tools/promo/assets/music.mp3`, mixed at 0.22
-  volume under the VO. To swap it, replace that file and re-render.
+- **Music**: the committed bed is **"Inspiring Advertising" by Rafael Krux
+  (CC BY 4.0)** at `tools/promo/assets/music.mp3` (owner's pick from the
+  audition set in `tests/dogfood/.promo/music-candidates/`). **CC-BY requires
+  a credit — put this in the YouTube description:**
+  `Music: "Inspiring Advertising" by Rafael Krux, licensed under CC BY 4.0
+  (creativecommons.org/licenses/by/4.0)`. To swap tracks, replace the file
+  and re-render.
   ⚠ **Epidemic Sound and Artlist are NOT free catalogs** — both are paid
   subscription licenses behind "free music" ad keywords; a track used without
   an active subscription draws a YouTube Content ID claim. If you subscribe to

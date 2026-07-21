@@ -57,6 +57,19 @@ def outro(icon_path, out_path):
     img.save(out_path)
 
 
+def slide(title, sub, out_path):
+    """Story interstitial — headline + optional sub-line, indigo tick."""
+    img = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(img)
+    text_centered(draw, title, 92, INK, H // 2 - 110)
+    if sub:
+        text_centered(draw, sub, 40, MUTED, H // 2 + 30)
+    draw.rounded_rectangle(
+        [(W / 2 - 70, H / 2 + 120), (W / 2 + 70, H / 2 + 126)], radius=3, fill=INDIGO
+    )
+    img.save(out_path)
+
+
 def caption(text, out_path):
     """Compact chapter chip, bottom-left. The render fades it in ~0.4s after
     the cut and out again ~3s in, so it labels the scene without squatting
@@ -90,6 +103,8 @@ elif mode == "outro":
     outro(sys.argv[2], sys.argv[3])
 elif mode == "caption":
     caption(sys.argv[2], sys.argv[3])
+elif mode == "slide":
+    slide(sys.argv[2], sys.argv[3], sys.argv[4])
 else:
     raise SystemExit(f"unknown mode: {mode}")
 print(f"{mode} → {sys.argv[-1]}")
