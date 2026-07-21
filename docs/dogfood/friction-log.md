@@ -27,6 +27,90 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-455 — a fresh journal day is a barren white page with no invitation to write
+- **session:** 911-marcus-journal-books-preview-chat (2026-07-21)   **kind:** design   **app:** Journal   **status:** open
+- **what happened (Marcus):** opening today's entry (no content yet) shows only a small "Start with a template" label + three chips marooned in the top-left, then a vast empty white canvas. The code DOES wire a `writeHint` placeholder ("Start writing your entry…") for the empty day, but it never renders — so there's no cursor prompt, no "click here to write" invitation. Next to Books' and Preview's centered `<EmptyState>` (icon + heading + subtitle + CTA), the daily writing surface — the app's whole point — is the least inviting empty state in the fleet.
+- **what I expected:** the empty day should invite writing — a visible placeholder where the cursor lands ("Start writing your entry…", which is already authored) and/or a centered start affordance, not a blank page with the quick-start chips as a top-left afterthought.
+- **evidence:** tests/dogfood/.sessions/911-marcus-journal-books-preview-chat/01-01-journal-first.png, 02-02-journal-entry.png (0 console errors)
+- **triage:** _(open — the `placeholder={t("writeHint")}` reaches `EntryEditorIsland` for `!entry` (`app.tsx:1866`) and `resolver` is truthy in-shell, so the editor mounts — yet the placeholder text is absent in both captures. Root cause is in the mounted journal editor's placeholder rendering (a stray empty paragraph may count as "non-empty" and suppress the Lexical placeholder, or the placeholder element is unstyled/clipped). Non-trivial — deserves a focused editor-placeholder investigation, not a rushed layout change. Split from the same session's Preview fix (F-454) which was clean.)_
+
+### F-454 — Preview's window has no name when nothing's open
+- **session:** 911-marcus-journal-books-preview-chat (2026-07-21)   **kind:** design   **app:** Preview   **status:** ✅ done (2026-07-21, shell PR #231)
+- **what happened (Marcus):** with no file open, Preview's header reads blank — a bare "0 of 0" page counter sits where the title belongs. Every other app names itself (Books "Books", Chat "Chat"); Preview's is the one window that looks unlabelled/unfinished.
+- **what I expected:** the header carries the app name ("Preview") until a file is open, like the rest of the fleet.
+- **evidence:** tests/dogfood/.sessions/911-marcus-journal-books-preview-chat/05-05-preview-first.png
+- **triage / resolution (developer, 2026-07-21, shell PR #231):** the title face was `activeFile?.info.name ?? ""` — empty with nothing open. Now falls back to `t("app.title")` ("Preview"). +2 structure tests updated (were asserting the empty title). *(Session note: Books = gold-standard centered `<EmptyState>`; Chat = polished Slack-style; 0 console errors across all four apps reviewed.)*
+
+### F-453 — the problems panel never reacts while I type broken code
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design?   **app:** Code editor   **status:** ✅ not-a-bug (2026-07-19, rule-set read — shell PR #223 notes)
+- **what happened (Marcus):** typed a snippet with an unused variable into a fresh file; "No problems" never changed — the panel reads as static text, not a live surface. (The unclosed paren I typed got auto-closed, so the syntax was valid — fair.)
+- **triage:** _(open — probe-gated per the F-449 lesson: check the built-in linter's rule set first (unused-var may simply not be a rule) and whether diagnostics run on the unsaved buffer; only then decide bug vs rule-gap vs working-as-designed. If the panel IS inert on unsaved buffers, that's the find.)_
+
+### F-452 — the References panel speaks our internal dev jargon to end users
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** ✅ done (2026-07-19, shell PR #223 — neutral copy en+es)
+- **what happened (Marcus):** the always-visible right panel says "No plan or open-question ids referenced in this file." — plan ids? open-question ids? That's the BRAINSTORM DEV VAULT's vocabulary leaking into a first-party app that Product Hunt users will open on day one. Nobody outside this repo knows what an OQ is.
+- **what I expected:** the panel hidden unless the vault actually has the dev-plan structures, or generic copy ("No linked objects referenced in this file").
+- **evidence:** tests/dogfood/.sessions/910-marcus-code-editor-design-review/01+03.png
+
+### F-451 — every New file mints another immortal "untitled-N.ts"
+- **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design   **app:** Code editor   **status:** ✅ done (2026-07-19, shell PR #223 — create arms the inline rename; Escape keeps the default)
+- **what happened (Marcus):** the create flow drops you into "untitled-3.ts" with no naming moment — and the vault already held untitled-2 from someone's earlier poke. This is the untitled-flood class (F-424) being manufactured at the source.
+- **what I expected:** creation invites a name — inline rename armed on create (title selected, type-to-replace), Escape keeping the default.
+- **evidence:** tests/dogfood/.sessions/910-marcus-code-editor-design-review/01+02.png
+
+
+### F-450 — the Read surface's empty state tells me to "Add bookmark" — that's not how anything gets read
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** ✅ done (2026-07-19, shell PR #223 — Read/Archive get surface-true hints; Inbox/Tags keep the CTA)
+- **what happened (Marcus):** the Read (and Archive) empty states reuse the inbox CTA verbatim — but adding a bookmark lands in the Inbox; nothing about the promised action fills THIS surface. The empty state renders beautifully now (the shared hero face — #219 verified live in this session) and then promises the wrong repair.
+- **what I expected:** surface-appropriate copy — Read: "Mark a bookmark as read and it lands here" (no CTA, or a "Go to Inbox" one); Archive likewise.
+- **evidence:** tests/dogfood/.sessions/909-marcus-bookmarks-design-review/03-06-surface-read.png
+
+### F-449 — clicking a bookmark card did nothing in the scripted walkthrough
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** bug?   **app:** Bookmarks   **status:** ✅ not-a-bug (2026-07-19, probe 909b)
+- **what happened:** the spec clicked the first card and captured an unchanged screen — no detail pane, no visible response.
+- **triage / resolution (probe 909b, 2026-07-19):** capture artifact confirmed — session 909's locator `[class*=card]` matched the cards CONTAINER (`.bookmarks__cards`), so the click landed on empty space. The targeted probe clicks `.bookmarks__card` and the detail island opens correctly (screenshot in 909b). Product behavior is fine. Bonus find in the same shot: the detail's source LINK repeats a domain title — fixed as the F-448 tail (falls back to the full URL; same shell PR #222).
+
+### F-448 — a bookmark titled by its domain reads "example.com / example.com"
+- **session:** 909-marcus-bookmarks-design-review (2026-07-19)   **kind:** design   **app:** Bookmarks   **status:** ✅ done (2026-07-19, shell PR #222)
+- **what happened (Marcus):** the card meta repeats the title verbatim when the captured title is the bare domain — pure noise in the row.
+- **triage / resolution:** the meta shows the domain only when it differs from the title.
+
+### F-447 — the connect dialog's primary action hides below the fold
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox (connect dialog)   **status:** 🟡 partial (2026-07-19, shell PR #220 — reconnect mode drops the lecture; residue: sticky action footer for create mode)
+- **what happened (Marcus):** the IMAP form's help paragraph is five lines before a single field appears; by the time the SMTP row renders, Cancel/Connect are cut off at the popover fold — the primary action of the dialog isn't visible when it opens. In reconnect mode (dialog pre-filled, user came to change ONE field) the same five-line lecture pushes the button even further down.
+- **what I expected:** the primary action visible at open — shorter help (link the provider details out), or a sticky footer, and reconnect mode should drop the how-to prose entirely.
+- **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/03+07.png
+
+### F-446 — the popover panel is translucent enough that the page bleeds through the form
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** SDK popover (cross-app)   **status:** ✅ done (2026-07-19, shell PR #220 — 52% elevated-surface veil over the glass, frosted look kept)
+- **what happened (Marcus):** with the indigo hero CTA behind it, the connect dialog shows blurry violet blobs THROUGH the panel, right behind the Email/Username/Password fields — the glass surface is too transparent over saturated content, and form legibility pays for it. Visible in both the connect and reconnect captures.
+- **what I expected:** a dialog surface that reads as a surface — more opacity or stronger blur on `<Popover>`'s panel (this is the shared primitive, so every app's dialogs inherit whatever we choose).
+- **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/03-03-connect-dialog-imap.png
+
+### F-445 — a connection failure speaks errno and offers no way forward
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox   **status:** ✅ done (2026-07-19, shell PR #220 — classifySyncError: connectivity class gets human copy + the inline Reconnect… affordance)
+- **what happened (Marcus):** the banner reads "Sync failed: imap: connect ECONNREFUSED 127.0.0.1:59993" — raw wire jargon — and unlike the auth failure (which earned a friendly hint + a Reconnect… button), a connection failure gets NO inline action, even though Edit connection… is exactly the fix and exists one hidden hover-menu away.
+- **what I expected:** "Couldn't reach imap.example.com — check the host and port" + the same inline Reconnect…/Edit connection affordance the auth path has.
+- **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/05-05-failure-chrome.png
+- **triage:** _(open — map ECONNREFUSED/ENOTFOUND/ETIMEDOUT to human copy in the driver-error → note path and extend the banner's reconnect affordance to connection-class failures; small, ride the next Mailbox PR.)_
+
+### F-444 — a third small-radius CTA (Bookmarks) — "fix all such buttons at once"
+- **session:** owner report (2026-07-19)   **kind:** design   **app:** Bookmarks / lint infra   **status:** ✅ done (2026-07-19, shell PR #219)
+- **what happened:** the Bookmarks inbox empty state ships the same unsized primary CTA — third instance of the class (Mailbox F-437 → Code-editor F-441 → this).
+- **triage / resolution (developer, 2026-07-19, shell PR #219):** the F-441 SDK enforcement only reaches surfaces that USE the shared `<EmptyState>`; Bookmarks' was a bespoke div + bare `bs-btn`. Converted (hero face = enforced lg geometry) — and the class is now RATCHETED: `tools/check-bespoke-empty-cta.mjs` (zero-baseline, in `lint`/`lint:apps`) fails any `__empty` container offering a `data-bs-primary` CTA outside `<EmptyState>`. Red-checked against the pre-fix tree. Repo sweep confirmed no other offenders (code-editor already shared — its report predated #209; form-designer/mailbox are text-only hints).
+
+### F-443 — imported numbered lists count "1. 1. 1." — every item its own list
+- **session:** owner report (2026-07-19, with the Anytype client source for `updateNumbersTree`)   **kind:** bug   **app:** shell/import (Anytype)   **status:** ✅ done (2026-07-19, shell PR #218)
+- **what happened:** a numbered list from Anytype renders every item as "1." — the numbering restarts per item.
+- **what I expected:** 1. 2. 3. — Anytype numbers client-side over consecutive Numbered siblings.
+- **triage / resolution (developer, 2026-07-19, shell PR #218):** the client splices invisible **layout-Div wrappers inline before numbering** (`updateNumbersTree`'s `unwrap`); our converter had no `block.layout` handling, so each Div wrapper opened a fresh grouping scope → one single-item `<ol>` per item. `convertChildren` now pre-flattens `layout.style === "Div"` exactly like the client; Row/Column layouts keep their own scope (client restarts numbering per cell — parity test). **Existing docs repair by re-running the import** — the F-398 hash-skip replants bodies whose new serialization differs.
+
+### F-442 — imported note images bleed off the window edge inside an unstyled figure
+- **session:** owner report (2026-07-19, imported lesson notes)   **kind:** bug   **app:** editor (shared)   **status:** ✅ done (2026-07-19, shell PR #217)
+- **what happened:** images in imported notes render wider than the content column and get cut by the window edge; "it uses figure which has huge margin".
+- **what I expected:** images sized to the column, aspect kept.
+- **triage / resolution (developer, 2026-07-19, shell PR #217):** the editor's legacy bare `image` node renders `<figure class="bs-editor__image">` which had **no CSS rule anywhere** — the UA default `margin: 1em 40px` plus an uncapped imported pixel width (Anytype plants carry one) is exactly the overflow. Pre-IE-10e plants keep bare `image` nodes forever (idempotent re-import skips unchanged bodies), so the clamp went into the shared `editor-theme.css` (self-heals every doc, no migration): inline margins zeroed, figure+img `max-width: 100%`, `height: auto`, styled caption. Geometry pinned by a `styles-image-figure.test.ts` guard (the lane-fill pattern). Longer-term dedup residue: TWO image node families exist (`ImageBlockNode` `.notes__image` styled vs bare `ImageNode`) — converging them is the fix-class.
+
 ### F-441 — Code-editor's "New file" has the same unsized-button drift; stop fixing it one app at a time
 - **session:** owner report (2026-07-18)   **kind:** design   **app:** SDK empty-state   **status:** ✅ done (2026-07-18, shell PR #209)
 - **what happened:** the hero empty-state CTA shipped with no size class again (md face, `--radius-sm`) — Code-editor this time, right after Mailbox's F-437. The owner: "would be great to fix it everywhere and stop drifting from design system."
@@ -120,11 +204,11 @@ Newest sessions on top.
 - **triage / resolution:** two halves. (1) the importer emitted the bare inline `image` node — the editor's resizable media block is `image-block` (alignment + `widthPercent`); it now emits that. (2) Anytype exports the width as `fields.width`, a FRACTION of editor width (verified: 0.195 → 20%) — carried into `widthPercent`, clamped 10–100. Seed stand-in added (decorator kind, v2 shape); asset-src rewrite covers the new node; re-import replants existing bodies (hash changes) so widths repair in place.
 
 ### F-426 — X.com won't let me post, and nothing tells me the browser's privacy shield is why
-- **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** open
+- **session:** owner report (2026-07-18)   **kind:** design   **app:** Browser   **status:** ✅ done (2026-07-21, shell #230)
 - **what happened:** posting on X fails with a wall of console noise — our tracker blocklist cancels X's device-risk beacons (`ERR_BLOCKED_BY_CLIENT` on doubleclick/castle), X's anti-bot then 403s every `flow/viewer.json`, and the page's own nonce-CSP logs an inline-script violation. The DESIGNED fix exists — ⋯ → "Trust this site" (Browser-8) lifts the blocklist + 3p-cookie strip for the first party — but nothing at the point of breakage says so; the owner's first theory was CORS.
 - **what I expected:** when a site misbehaves under strict privacy, the browser should offer the trust escape hatch where I'm looking — e.g. the blocked-tracker chip expands into "This site may not work with tracking protection — Trust this site", instead of leaving the count as trivia.
 - **evidence:** owner console dump (flow/viewer.json 403s + castle errors + CSP violation), 2026-07-18
-- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_ **Update 2026-07-18:** the 403 half turned out to be a real bug, not the shield — the session's Electron-branded UA trips X's anti-bot even on trusted sites; split out and fixed as F-433 (shell PR #201). This entry stays open for the trust-chip discoverability UX only.
+- **triage:** _(open — UX: make the tracker chip actionable (one-click trust + reload prompt); maybe detect repeated 403/blocked-beacon patterns to raise the hint proactively. The blocklist/strip behavior itself is working as designed.)_ **Update 2026-07-18:** the 403 half turned out to be a real bug, not the shield — the session's Electron-branded UA trips X's anti-bot even on trusted sites; split out and fixed as F-433 (shell PR #201). This entry stayed open for the trust-chip discoverability UX only. **Resolved 2026-07-21 (shell #230):** the blocked-tracker shield is now a button — clicking it names the blocked count, warns "Some features may not work with protection on," and offers one-click "Trust this site & reload" (reuses Browser-8 `onToggleTrust`). +2 tests.
 
 
 ### F-425 — the Agent's nested bullet lists collapse into one dash-riddled line
