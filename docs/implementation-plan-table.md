@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected · 🔴 release-blocking · 🟢 GA-only (not beta-blocking)
 
-**Last updated:** 2026-07-03 (pm) — **`11.3` first-run model-download progress UX** ([shell PR #89](https://github.com/brainstorm-os/shell/pull/89) — the silent ~130 MB embedding-model download now shows a live Idle→Downloading(byte %)→Ready status in Settings → Search, via a NonBlocking `ThreadsafeFunction` progress callback + a pure status reducer on `search:stats`; SHA256 pin unchanged; +29 tests). 11.3 stays 🟡 for its one remaining tail: real-Electron ANN bench (incremental vector maintenance #86 + packaging #84 + this download UX now all done). **`9.18.9` Captured-image offline assets** ([shell PR #88](https://github.com/brainstorm-os/shell/pull/88) — readable capture's remote article images now sub-fetch through the favicon/cover guard chain into the encrypted asset store + rewrite to `brainstorm://asset/` so they render + work offline; bounded 40 imgs · 5 MiB · conc 4). Earlier this session, all merged: **`12.17`** a11y `accent.onFill` ([shell PR #83](https://github.com/brainstorm-os/shell/pull/83) — the theme-contrast ratchet is now green with **zero deferrals**; completes the accent a11y story with 12.16), the **`11.3` embedding packaging tail** ([shell PR #84](https://github.com/brainstorm-os/shell/pull/84) — `ort` statically links ONNX Runtime, so `native-embed` ships like the crypto `.node` across all 6 targets; 11.3 stays 🟡 for its GA polish tails: first-run-download UX, incremental vector maintenance, ANN bench), and **`B11.10` Templates COMPLETE** ([shell PR #85](https://github.com/brainstorm-os/shell/pull/85) — editor snippet insert + save-as-template; snippets store as serialized-blocks JSON in `prototype.snippet`, no headless Yjs binding). Earlier this session: `Asset-B4` byte-plane transport (🟡, dogfood-gated; split `Asset-B4b`/`B4c`), `11.3` core, `12.16`. **Open: 68 — Beta-blocking 0 · GA 32 · v2/post-v2 36.** **🎉 Public beta shipped 2026-06-29 (`v0.1.5`)** — signed + notarized macOS/Windows/Linux + in-app auto-update; **no beta-blockers remain**, everything open is GA polish or the v2 commercial stack. Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git.
+**Last updated:** 2026-07-21 — **`v0.7.0` shipped** (signed + notarized macOS/Windows/Linux, in-app auto-update). Headlines: **`Mailbox-8`** `Email/v1` entity-event triggers + an AI-triage step for Automations (shell #227); **`Mailbox-6`** attachments as File entities with lazy per-part fetch + reading-pane chips (#224/#225); **`Mailbox-11`** HTML-aware reply/forward quoting (#226); **`Agent-9`** draft-as-email hand-off to the Mailbox composer (#229); **`11.3`** semantic search now behind a first-run consent gate — no silent ~130 MB download on first vault open (#228); plus the Marcus dogfood fix batch (F-426 actionable tracker chip, F-442..F-454). **Packaging/dev track:** the `@brainstorm/*` → `@brainstorm-os/*` npm scope rename + 6 libraries published to npm (sdk-types, tokens, react-yjs, block-protocol, sdk, editor — MIT) + four package extractions (block-protocol, protocol, sqlite, capabilities); production vault/keychain/data-format unaffected. **Open: 72 — Beta-blocking 0 · GA 38 · v2/post-v2 34.** **🎉 Public beta shipped 2026-06-29 (`v0.1.5`)** — no beta-blockers remain; everything open is GA polish or the v2 commercial stack. Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git.
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -32,20 +32,20 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 
 ✅ **Cleared 2026-06-29 — public beta v0.1.5 shipped.** `13.11` (code-signing + notarisation) and `13.12` (in-app auto-update) both landed: signed + notarized macOS (Apple silicon + Intel), Windows + Linux, published to GitHub Releases with a working in-app updater. No beta-blocking iterations remain. *(GA residual, not beta-blocking: Windows EV signing `DQ-13.1-B`.)*
 
-## GA — GA (v1, post-beta) (32)
+## GA — GA (v1, post-beta) (38)
 
 ### AI broker & vector / hybrid search *(Stage 11; lexical half shipped early as Shell 9.22)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `11.0b` | Tantivy comparison: wire a Tantivy BenchEngine adapter against the same harness, re-run t… | ⚪ pending |  |
-| `11.3` | local embedding model → semantic search on. Core landed *(2026-07-03, shell PR #79)*: 11.… | 🟡 in flight | — |
 
 ### Localization, accessibility & perf budgets *(Stage 12)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `12.15` | app-renderer locale propagation + per-app translation packs (the explicitly-deferred "Sti… | 🟡 in flight |  |
+| `15d` | content (the big lift, one slot per app or fan-out). 12/18 apps landed *(2026-07-13)*: co… | 🟡 in flight |  |
 
 ### Native acceleration *(NAPI-RS, post-beta perf track)*
 
@@ -59,9 +59,20 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | -- | ---- | ------ | ---- |
 | `Asset-B4` | lazy fetch + eager thumbnail tier: materialise bytes on access (not eagerly on restore);… | 🟡 in flight | Asset-B3 ✅ |
 | `Asset-B4b` | eager thumbnail tier *(split from Asset-B4, 2026-07-03)*: a small always-synced tier (thu… | ⚪ pending | Asset-B4 |
-| `Asset-B4c` | cold-first-fetch metadata reconstruction *(split from Asset-B4, 2026-07-03)*: a device th… | ⚪ pending | Asset-B4 |
-| `Asset-B5` | restore integration: the cold-device RestoreEngine (10.14) re-materialises asset chunks f… | ⚪ pending | Asset-B4 |
-| `Asset-B6` | cross-device / offline-peer asset GC: conservative mark-and-sweep against converged refs,… | ⚪ pending | Asset-B3 (node |
+
+### Mobile companion *(design-only track
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `MOB-0` | portability spike (the 10.0 analogue): bare RN/Expo (Hermes) scaffold pairs with a real d… | ⚪ pending | OQ-MOB-1 position |
+| `MOB-1` | @brainstorm/vault-core extraction (product monorepo): identity + DEK/wrap crypto + wire +… | ⚪ pending | MOB-0 |
+| `MOB-2` | companion scaffold + pairing: brainstorm-mobile repo (own CI running the MOB-0 pairing te… | ⚪ pending | MOB-1 |
+| `MOB-3` | sync + local store: op-sqlite/expo-sqlite driver; metadata-eager / body-lazy selective sy… | ⚪ pending | MOB-2 |
+| `MOB-4` | read surfaces: tab scaffold (Home / Search / Capture / Inbox / Vault); the one stacked-la… | ⚪ pending | MOB-3 |
+| `MOB-5` | capture: OS share sheet → Bookmark/v1 (58 object); quick note / task / photo / voice → se… | ⚪ pending | MOB-3 |
+| `MOB-6` | reminders as local notifications: portable scheduler core (incl. onMissed: FireOnce water… | ⚪ pending | MOB-3 |
+| `MOB-7` | editing: property edit + task check-off + append composer first; full block editing via W… | ⚪ pending | MOB-4 |
+| `MOB-8` | hardening + store beta: biometric-gated keystore unlock (gate, never custody | ⚪ pending | MOB-4–MOB-7 |
 
 ### Window manager, menus & shortcuts *(Stage 6)*
 
@@ -69,30 +80,38 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | -- | ---- | ------ | ---- |
 | `6.11` | (post-v1) | ⚪ pending |  |
 
+### Intents, widgets, tray & notifications *(Stage 7b)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `7.14` | app notification badges (iOS-style unread counts on app icons): an app can surface a badg… | ⚪ pending |  |
+
 ### Network broker & readable extraction *(doc 38 + 58
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Net-3` | live-DOM feeder: web.capture (apps/54-web-browser.md) hands the partitioned WebContentsVi… | ⚪ pending | Net-2 + Browser-1 |
+| `Net-3` | live-DOM feeder *(gate Browser-1 ✅ | ⚪ pending | Browser-1 ✅ — cleared with the Browser app |
 
 ### Import, export & migration *(doc [45](platform/45-import-export.md)
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `IE-7` | one-shot authenticated-API Source (Notion API import, OQ-243): the non-file Source stage… | ⚪ pending | Connector framework ✅ + IE-6 |
+| `IE-10e` | Anytype fidelity v2: source-map binding · layout routing · media widths (owner reports 20… | 🟡 in flight |  |
+| `IE-11` | background import/export runs (owner call 2026-07-18: "import/export should be a backgrou… | 🟡 in flight |  |
+| `IE-10` | Anytype import (design platform/72-anytype-import.md): the highest-fidelity third-party s… | ⚪ pending | a real Anytype JSON export fixture (the des… |
 
 ### Graph *(9.13)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `9.13.10e` | live bucketed event stream (entities.subscribe) | ⚪ pending | dep-gated |
+| `9.13.10e` | live bucketed event stream (entities.subscribe | ⚪ pending | note was stale |
 
 ### Bookmarks *(9.18)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `9.18.8` | Highlights & annotations on captured content + a per-bookmark annotation list. *(gated: n… | ⚪ pending | needs editor text-anchoring on the captured… |
-| `9.18.9` | Captured-image offline assets: sub-fetch article images through the favicon/cover guard chain, store encrypted, rewrite `src`→`brainstorm://asset/<id>` so they render + work offline. | ✅ 2026-07-03 (#88) | — |
 
 ### Form-designer *(Stage 8.10)*
 
@@ -115,8 +134,6 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Mailbox-5` | JMAP transport + OAuth2 (Gmail / Microsoft 365) via the connector OAuth broker | 🟡 in flight | Connector-2 ✅ (cleared |
-| `Mailbox-6` | threading (OQ-MB-3 ✅ | ⚪ pending | 9.10 |
-| `Mailbox-8` | Email/v1 entity-event trigger source for Automations + AI-triage step | ⚪ pending | 11b + Stage 11 |
 | `Mailbox-9` | official Google OAuth client registration (pre-release, org/process task | ⚪ pending | for |
 
 ### Web Browser *(group I)*
@@ -134,30 +151,23 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | `Connector-6` | webhook-in connectors (network ingress) | ⚪ pending | Net-1 + 11b.8 |
 | `Connector-7` | Mailbox as the reference connector (proves the contract end-to-end on the socket-exceptio… | ⚪ pending | Mailbox-2 |
 
-### Object selection & cross-app drag-and-drop *(group I
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `DND-6` | keyboard / a11y twins: "Move to… / Add to… / Link to…" target-picker commands (object men… | ◑ preview-drop | DND-1 (selection |
-
 ### Object read-only lock (fleet, cross-app)
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Lock-3` | retro-fill the workflow bar *(partly paid by shell PR #18 lock-rollout-fixes/5ffda45, 202… | ⚪ pending | none (cleanup |
 
-## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (36)
+## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (34)
 
 ### Collaboration layer
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Collab-C5` | sharing UX (share dialog, member list with roles + revoke, presence) + the authorization… | 🟡 in flight |  |
+| `Collab-C5` | sharing UX. Core ✅ (built, was mis-marked): the <ShareDialog> (packages/sdk/src/share-dia… | 🟡 in flight | in the envelope pipeline, isAuthorizedWrite… |
 | `Collab-C6` | human-facing user identity (resolves OQ-ID-1; design in 16-identity-orgs-encryption.md §S… | 🟡 in flight |  |
 | `14.5` | Paddle Plus/Pro (MoR checkout, tax handling) | ⚪ pending |  |
 | `14.6` | Settings → Billing UI (plan picker, change/cancel, invoices, self-serve refund). Control-… | ◑ preview-drop |  |
-| `14.7` | quota enforcement (storage attachments + sync egress metering). Metering ingestion + per-… | ◑ preview-drop |  |
-| `14.8` | per-app AI quota + bundled credit accounting. | ⚪ pending |  |
+| `14.7` | quota enforcement (storage attachments + sync egress metering). Metering ingestion + per-… | ◑ preview-drop | arms only when account-linked ∧ metered pla… |
 | `14.9` | org subscription mechanics (seats, invites, roles, transfer). | ⚪ pending |  |
 | `14.10` | / 14.11 | ⚪ pending |  |
 | `14.14` | discount verification (education / non-profit / OSS-maintainer). | ⚪ pending |  |
@@ -169,7 +179,7 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | `14.22` | developer portal v1 (free listings only; sovereign-key sign-in; analytics; threat-intel/a… | ⚪ pending |  |
 | `14.23` | new free content kinds (LayoutPack/WallpaperPack/LocalePack/WorkflowPack/ShortcutPack) | ⚪ pending |  |
 | `14.24` | Plugin kind slot reservation (free, runtime not yet wired). | ⚪ pending |  |
-| `14.24a` | admin-panel client wiring (shell feedback view + shell-only FeedbackService + opt-in cras… | ⚪ pending |  |
+| `14.24a` | admin-panel client wiring (shell feedback view + shell-only FeedbackService + opt-in cras… | ◑ preview-drop |  |
 | `DocsHub-1` | *(v2, early | ⚪ pending |  |
 | `DocsHub-2` | *(v2, after 14.17 + 14.18 mature)* | ⚪ pending |  |
 | `DocsHub-3` | *(v2, after packages/sdk stabilises)* | ⚪ pending |  |
@@ -186,10 +196,9 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | `Account-1` | customer account web portal. apps/account (Next.js) landed: credential sign-in → plan/bil… | 🟡 in flight |  |
 | `DevPortal-1` | / Catalog-1 | 🟡 in flight |  |
 | `Support-1` | support desk + status page | ⚪ pending |  |
-| `BugTrack-1` | staff bug/crash/feedback triage | ⚪ pending |  |
+| `BugTrack-1` | staff bug/crash/feedback triage | ◑ preview-drop |  |
 | `Ops-1` | web-property auth/email/webhooks/observability | ⚪ pending |  |
-| `Mktg-1` | public-beta marketing campaign | 🟡 in flight |  |
-| `Launch-1` | publish the public beta (2026-09-01) | 🟡 in flight |  |
+| `Launch-2` | Product Hunt launch, August 2026 (owner target set 2026-07-19). The quality gate is the r… | ⚪ pending | is the |
 
 ### Encrypted attachment sync
 
@@ -208,4 +217,3 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Connector-8` | starter set (Calendar / Contacts / Slack / GitHub / Jira / Linear → canonical types) + Ma… | ⚪ pending | 14.17 |
-
