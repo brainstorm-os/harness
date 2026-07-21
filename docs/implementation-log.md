@@ -4,6 +4,84 @@ The completed-work record split out of [implementation-plan.md](implementation-p
 
 See also [implementation-plan-table.md](implementation-plan-table.md) (at-a-glance grid).
 
+## Beta program (retired) — shipped v0.1.5, 2026-06-29
+
+The public beta shipped `v0.1.5` on 2026-06-29 (~9 weeks ahead of the original `2026-09-01` target) and the product has since released through `v0.7.0`. The gate-driven scaffolding that paced the run to beta — the three clocks, the beta-freeze scope table, the G0→G4 gate roadmap, the decision queue, the beta-exit checklist, and the cut levers — is retired; it is preserved verbatim below for the record. Forward planning now lives in [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each).
+
+> **The unit is verification cycles, not calendar weeks.** Authoring is effectively free (AI agents, fanned out). What remains scarce — and what `2026-09-01` actually has to clear — is **(1) decision latency**, **(2) the irreducible verification floor**, **(3) serial-unknown depth**. A "week" in the old roadmap was human typing time; that's gone. The schedule is now paced by how fast the decision queue drains and how many soak/build/review cycles fit before the date — both generous *if decisions stay fast*, both fatal if they don't. Faster authoring raises the rate of confident-but-wrong output, so the binding constraint is **review/verification throughput, not author throughput** (the "Graph icons regressed 6×" failure mode is the canonical AI-speed risk — the gates *are* the product now).
+
+### The three clocks that actually bind
+
+| Clock | What it is | Why it doesn't compress with authoring |
+|---|---|---|
+| **Decision latency** | Human OQ/product round-trips (the burn-down queue below) | An unanswered OQ stalls a whole gate no matter how fast code is written. This is now the critical path. |
+| **Verification floor** | sync soak across real instances · multi-arch signed-build CI · perf/virtualization soak under real data volume · security review of the crypto path | Clock-bound, not author-bound: the sync layer can be written in an afternoon and still need days of soak to be *known* correct. |
+| **Serial-unknown depth** | spikes that gate *design*, not just typing (`10.0`→`10.x`) | A wrong foundational CRDT/crypto call is cheap to *fix* now but no cheaper to *detect*; you cannot parallelize discovering it. |
+
+### Beta freeze — what `2026-09-01` ships
+
+| In beta (frozen, must work) | Out of beta (continues to GA, no date) |
+|---|---|
+| Spine: `9.3.5.B` + `9.3.5.N1–N5` (Notes Lexical-yjs rewrite), `9.3.3`, `9.4.1–4`, `9.5.1–3`, `9.11 embed`, `9.10` files service | AI broker (`11.0`, `11.1–11.9`) — **no AI in beta** |
+| `10.0` spike + `10.1–10.9` E2E-encrypted multi-device sync | Theme-editor, Books, Contacts, Form-designer, Automations, Mailbox, Web-Browser, Agent, Connector |
+| At-rest encryption on-disk flip (`3b`) + startup contract probe | Net broker + readable extraction + Clip; `9.10a` chunked upload |
+| Core apps usable: Notes, Files, Database, Graph, Tasks, Calendar, Journal, Whiteboard, Bookmarks, Preview, Code-editor (their `9.4`/`9.10`-gated tails land) | Full Stage 12 (`12.3` t()-desc, `12.5` RTL, `12.8` recovery) |
+| 3rd-party app install exercised end-to-end (5.x ✅, proven in beta) | Full Stage 13 (`13.2` sig, `13.4` stress, `13.5` portability, `13.7` doc review) |
+| Beta-grade quality: `12.1` i18n, `12.4` a11y, `12.7` perf-harness, `12.9` apps/* CI gate, `13.4a` editor virtualization | GA polish + auto-update (v2) |
+| `13.1` cross-platform signed build + `13.3` Playwright smoke + `13.6` beta channel | — |
+| Import / migration `IE-1`→`IE-6`: `.bsbundle` takeout/restore + shared import engine + wizard & "Migrating from…" picker + Obsidian & Notion-export-zip switch-in (the seamless-switch story) | `IE-7` Notion-API source (→ Connector), `IE-8` automated export (→ Automations), `IE-9` adapter market (→ Marketplace) |
+
+### Gate-driven roadmap (G0→G4)
+
+Not dated phases — **gates with entry/exit conditions**. A gate clears when its exit condition is *verified*, not when its code is written. Each gate names its **serial spine** (one owner, an integration point or sequential unknown — cannot be parallelized away) and its **parallel fan-out** (N agent teams, claimed through the orchestration ledger; see Execution model). `2026-09-01` is the outer bound G4 must clear by, not a per-gate allocation.
+
+| Gate | Serial spine (1 owner) | Parallel fan-out (N teams) | Exit condition (verified, not written) | Bound by |
+|---|---|---|---|---|
+| **G0 De-risk** | `10.0` sync spike; `3b` at-rest flip + startup probe | OQ burn-down #1–4; `12.9` CI gate; `9.3.5.B` body | `10.0` proves ciphertext-only over a blind relay **and** forces OQ-10/26/27/28/29 positions; `3b` flip green | decision latency + spike depth |
+| **G1 Spine** | `9.3.5.N1–N5` Notes Lexical-yjs rewrite → `9.3.3` → `9.4.1–4` → `9.5.1–3` → `9.11 embed` | `9.10` files-service half; `13.4a` design (rides N5) | Notes at parity behind flag; a block-embed mounts end-to-end through a sandboxed frame | serial-unknown depth |
+| **G2 Sync** | `10.1–10.9` E2E-encrypted multi-device (built on `10.0`); from 2026-05-23 each remaining core-app `9.4`/`9.10`-gated tail is **also serial — inside its app's slot in Phase 2**: Tasks `9.14.3`, Calendar `9.15.3`, Whiteboard `9.17.4`/`.7`, Bookmarks `9.18.4`, Graph (remaining), Notes (remaining); already-landed: `9.17.8b` ✅, `9.13.13b` ✅, `B6.4a` ✅, `9.8.5` ✅, `9.12.16-UI` slice 1 ✅, `9.12.16-UI` slice 2 ✅ | (parallel branch OFF — see Execution model) | `10.9` green: two instances edit concurrently, blind relay sees **ciphertext only**, soaked | **verification floor** (soak — the hard one) |
+| **G3 Quality + freeze** | `13.4a` virtualization lands + soaks | `12.1` i18n · `12.4` a11y · `12.7` perf-harness · **import/migration `IE-1`→`IE-6`** (off the critical path) · bug burn-down (fan-out) | feature freeze; a11y/perf budgets hold on a dogfood-size vault; a real Notion **and** Obsidian export imports cleanly | verification floor |
+| **G4 Beta ship** ✅ | **CLEARED 2026-06-29 — `v0.1.5` public** | `13.1` multi-arch signed builds · `13.11` signing+notarisation · `13.12` in-app auto-update — all ✅ | shipped on GitHub Releases (signed/notarized mac, win, linux) | **done** |
+
+Authoring G1's bulk and the G2 fan-out is hours, not weeks; G0→G1→G2's *spine* is serial because each rung is a sequential unknown or an integration point; G2/G3/G4's date risk is **soak and multi-arch CI**, which no amount of agents shortens. Pace the calendar by those, nothing else. **From 2026-05-23 the G2 fan-out and G3 quality fan-out are run serially under the new ordering policy** ([[feedback_serial_shell_then_apps]]) — the verification floor is unchanged, the agent-team multiplier on top of it is gone.
+
+### Decision queue (the pacing item — drain this first)
+
+The roadmap's real schedule. Each blocks the gate shown; answering is a human round-trip, so latency here = date slip:
+
+| Answer before | Decision | Cost if late |
+|---|---|---|
+| **G0** | OQ-10/26/27/28/29 (sync) — *via the `10.0` spike, not on paper* | G1/G2 design churn → rebuild |
+| **G0** | OQ-185 (virtualization) — confirm before `9.3.5.N5` | N5 reworked |
+| **G1** | OQ-12 / OQ-8 (BlockEmbedNode/frame) — already positioned in [15](editing/15-embedding-and-composition.md); confirm | `9.4`/`9.5` rebuilt |
+| **before its team starts** | OQ-CT-1 (Contacts) — post-beta but cheap; unblocks a whole app or deletes it | dead plan branch |
+| **post-beta / G(GA)** | OQ-128/61 (search-arch) — *via the `11.0` bench* | AI stage churn |
+
+### Beta-exit checklist (`2026-09-01`)
+
+> **How to prove each box:** [ops/beta-exit-runbook.md](ops/beta-exit-runbook.md) — the runnable version (command/spec, pass criteria, current status). A box is done only when run **as a gate on the signed RC**, not when the code exists.
+
+- [ ] Core apps (11, above) usable; **no `◑` in the beta build for a core app**.
+- [ ] `10.9` green: two instances pair, edit concurrently, blind relay sees ciphertext only.
+- [ ] At-rest encryption flipped on-disk; startup contract probe passes against the real driver.
+- [ ] `13.1` signed builds CI-green on macOS / Windows / Linux (incl. arm64); `13.3` Playwright smoke.
+- [x] `13.11` Apple certs procured + wired; macOS `.dmg` **notarized** (`hardenedRuntime: true`) and shipped in **v0.1.5** (opens clean past Gatekeeper); auto-update feed live via GitHub Releases (`latest*.yml`). *Residual (GA, not beta-blocking): Windows EV (`DQ-13.1-B`) — Windows currently unsigned (SmartScreen prompt).*
+- [ ] `13.10` packaged-app upgrade path: a build update re-installs changed bundled apps via `AppInstaller.update()` (capability diffs granted) — verified across one real build-over-build update.
+- [ ] `13.4a` virtualization holds on a dogfood-size vault (Notes won't blow the keystroke→paint budget).
+- [ ] Switch-in works: `IE-1`→`IE-6` land; a real Notion export-zip **and** a real Obsidian vault import into a fresh vault with types/properties/links/assets preserved; `.bsbundle` takeout + restore round-trips losslessly.
+- [ ] `12.4` a11y + `12.7` perf budgets pass for the core; per-package coverage floors hold.
+- [ ] Decision-queue G0+G1 rows resolved; no open Sev-1.
+
+### Cut levers (pre-declared — if a gate's verification floor won't clear by `2026-09-01`, cut in this order)
+
+1. **Defer non-core app tails** to post-beta (Graph/Whiteboard export) — beta apps stay usable without them.
+2. **Narrow the migration ladder** to the highest-traffic source: keep `IE-1`→`IE-4` + `IE-6` (Notion), defer `IE-5` (Obsidian) to post-beta if its parser won't clear review in time — Notion is the dominant switch-in source, so the seamless-switch story survives the cut. `IE-1` `.bsbundle` takeout is *never* cut (it's the §5 hard floor).
+3. **Narrow sync** to single-user multi-device *restore* only; defer the `10.5` pairing-UX polish to GA (keep `10.9` ciphertext-only proof — non-negotiable).
+4. **Defer `13.4a`** if the dogfood vault stays under the DOM-size budget in practice (re-arm it the moment it doesn't).
+5. **Hard floor — never cut:** at-rest + in-transit encryption, data integrity/migration reversibility, the spine itself. A beta that loses or leaks data is not a beta.
+
+---
+
 ## Headline numbers
 
 **Build + test signals (last run):**

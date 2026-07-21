@@ -25,7 +25,7 @@ import type { VaultEntitiesSnapshot } from "../../../../packages/shell/src/main/
 import { EntitiesRepository } from "../../../../packages/shell/src/main/storage/entities-repo";
 import { ENTITIES_MIGRATIONS } from "../../../../packages/shell/src/main/storage/entities-schema";
 import { applyMigrations } from "../../../../packages/shell/src/main/storage/migrations";
-import { open as openSqlite } from "../../../../packages/shell/src/main/storage/sqlite";
+import { open as openSqlite } from "../../../../packages/sqlite/src/sqlite";
 import {
 	projectBookmarksFromBlob,
 	projectCalendarFromBlob,

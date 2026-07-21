@@ -34,9 +34,10 @@ for (const line of src) {
 	const idMatch = rest.match(/^([^\s—`*]+)/);
 	const id = (idMatch?.[1] ?? "?").replace(/[*`]/g, "");
 	// Only real iteration ids: digit-led (opt. B prefix) or a Name-Code like
-	// NAPI-3 / Collab-C5 / Mailbox-2. Drops prose sub-bullets ("remaining:",
-	// "Files shell bootstrap") that aren't their own iteration.
-	if (!/^(B?\d[\w.…/()]*|[A-Z][A-Za-z]+-[A-Za-z0-9])/.test(id)) continue;
+	// NAPI-3 / Collab-C5 / Mailbox-2 / P2P-0 (digits allowed inside the prefix).
+	// Drops prose sub-bullets ("remaining:", "Files shell bootstrap") that
+	// aren't their own iteration.
+	if (!/^(B?\d[\w.…/()]*|[A-Z][A-Za-z0-9]+-[A-Za-z0-9])/.test(id)) continue;
 	// task = text after the id up to the first em-dash separator; de-markdown.
 	let after = rest
 		.slice((idMatch?.[1] ?? "").length)
@@ -63,29 +64,27 @@ for (const line of src) {
 	rows.push({ section, id, task, status: ICON_STATUS[icon] ?? icon, gate });
 }
 
-// Phase classification (per the plan's roadmap rules, §Release plan & roadmap):
-//   Beta = must clear by the 2026-09-01 beta (beta-exit checklist)
-//   GA   = v1 but post-beta (GA definition-of-done)
-//   v2   = explicitly post-v1 (v1-excludes: app-store distribution, auto-update,
-//          paid, any commercial surface, multi-user) — Stage 14 / Collab / etc.
-// Section is the default signal; a small id allow/override list handles the
-// exceptions the section grouping can't see.
-type Phase = "Beta" | "GA" | "v2";
-const PHASE_ORDER: Phase[] = ["Beta", "GA", "v2"];
+// Phase classification (per the plan's roadmap rules, §Release trains):
+//   GA = v1, pre-1.0 — rides the single-user release trains 0.8.0→1.0.0
+//        (the GA definition-of-done).
+//   v2 = explicitly post-v1 (v1-excludes: paid / any commercial surface,
+//        multi-user, marketplace) — Stage 14 / Collaboration layer / etc.
+// Beta is retired (shipped v0.1.5, 2026-06-29). Section is the default signal;
+// a small id override list handles the exceptions the section grouping misses.
+type Phase = "GA" | "v2";
+const PHASE_ORDER: Phase[] = ["GA", "v2"];
 const V2_SECTION_HINTS = ["Collaboration layer", "Company / operational", "Durable sync node"];
-const BETA_ID_PREFIXES = ["9.3.5", "10.12", "10.13", "10.14", "9.12.13", "Welcome-2", "13.11"];
-const V2_IDS = ["IE-9", "Connector-8", "Asset-B7"];
+const V2_IDS = ["IE-9", "Connector-8", "Asset-B7", "P2P-4"];
 
 function phaseFor(section: string, id: string): Phase {
 	if (V2_IDS.some((v) => id.startsWith(v))) return "v2";
-	if (BETA_ID_PREFIXES.some((p) => id.startsWith(p))) return "Beta";
 	if (V2_SECTION_HINTS.some((s) => section.includes(s))) return "v2";
 	return "GA";
 }
 
 // Group by phase → section, preserving section order within each phase.
 const byPhase = new Map<Phase, Map<string, typeof rows>>();
-const phaseCount: Record<Phase, number> = { Beta: 0, GA: 0, v2: 0 };
+const phaseCount: Record<Phase, number> = { GA: 0, v2: 0 };
 for (const r of rows) {
 	const phase = phaseFor(r.section, r.id);
 	phaseCount[phase] += 1;
@@ -97,8 +96,7 @@ for (const r of rows) {
 }
 
 const PHASE_LABEL: Record<Phase, string> = {
-	Beta: "Beta-blocking (must clear 2026-09-01)",
-	GA: "GA (v1, post-beta)",
+	GA: "GA / pre-1.0 (release trains 0.8.0→1.0.0)",
 	v2: "v2 / post-v2 (commercial · multi-user · marketplace)",
 };
 
@@ -112,7 +110,5 @@ for (const phase of PHASE_ORDER) {
 		for (const r of list) out += `| \`${r.id}\` | ${r.task} | ${r.status} | ${r.gate} |\n`;
 	}
 }
-console.log(
-	`TOTAL open: ${rows.length} — Beta-blocking ${phaseCount.Beta} · GA ${phaseCount.GA} · v2 ${phaseCount.v2}\n`,
-);
+console.log(`TOTAL open: ${rows.length} — GA ${phaseCount.GA} · v2 ${phaseCount.v2}\n`);
 console.log(out);
