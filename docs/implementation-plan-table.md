@@ -2,37 +2,53 @@
 
 Scannable remaining-work companion to [implementation-plan.md](implementation-plan.md) (authoritative for pending/in-flight detail). **This file lists only what is NOT done** — one row per open iteration (🟡/⚪/◑), completed (✅) excluded, future work included. This is the same set the dev-vault Tasks app projects (Today + Upcoming), generated from the plan's open bullets via `tools/gen-open-iterations.ts`. Completed narrative + test counts live in [implementation-log.md](implementation-log.md); ✅ history lives in the plan's own bullets + git.
 
-**Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected · 🔴 release-blocking · 🟢 GA-only (not beta-blocking)
+**Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-21 — **`v0.7.0` shipped** (signed + notarized macOS/Windows/Linux, in-app auto-update). Headlines: **`Mailbox-8`** `Email/v1` entity-event triggers + an AI-triage step for Automations (shell #227); **`Mailbox-6`** attachments as File entities with lazy per-part fetch + reading-pane chips (#224/#225); **`Mailbox-11`** HTML-aware reply/forward quoting (#226); **`Agent-9`** draft-as-email hand-off to the Mailbox composer (#229); **`11.3`** semantic search now behind a first-run consent gate — no silent ~130 MB download on first vault open (#228); plus the Marcus dogfood fix batch (F-426 actionable tracker chip, F-442..F-454). **Packaging/dev track:** the `@brainstorm/*` → `@brainstorm-os/*` npm scope rename + 6 libraries published to npm (sdk-types, tokens, react-yjs, block-protocol, sdk, editor — MIT) + four package extractions (block-protocol, protocol, sqlite, capabilities); production vault/keychain/data-format unaffected. **Open: 72 — Beta-blocking 0 · GA 38 · v2/post-v2 34.** **🎉 Public beta shipped 2026-06-29 (`v0.1.5`)** — no beta-blockers remain; everything open is GA polish or the v2 commercial stack. Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git.
+**Last updated:** 2026-07-21 — **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first) and **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven). **Open: 78 — GA 43 · v2 35.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
 ---
 
-## Beta release roadmap (G0 → G4)
+## Forward release trains (2 heroes each)
 
-Detail in [implementation-plan.md §Release plan & roadmap](implementation-plan.md#release-plan--roadmap). G0–G2 ✅ (G2 cleared 2026-05-25; `10.9b` validated `eaa5e8e`).
+Full roadmap + hero assignments + the **infra + collaborative-sync line** live in [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each). Summary:
 
-| Gate                    | State | What's left to exit                                                                                                                                                    |
-| ----------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **G0 De-risk**          | ✅     | —                                                                                                                                                                      |
-| **G1 Spine**            | ✅     | —                                                                                                                                                                      |
-| **G2 Sync**             | ✅     | 🟢 tail only: `10.11b` tokens-by-default wiring — `10.10` ✅ (shell #98 + sync #3) · `10.11` core ✅, OQ-197 resolved (shell #100 + sync #4)                                                                                                  |
-| **G3 Quality + freeze** | 🟡    | `12.4` a11y ladder ✅ COMPLETE 2026-06-15 (grid cell-nav+edit the last rung) · bug burn-down · feature freeze; budgets hold                                             |
-| **G4 Beta ship**        | 🟡    | RC cut + beta-exit checklist · beta on `2026-09-01` (`13.3` ✅ Linux CI · `13.10` ✅ packaged-upgrade path landed 2026-06-15 — the last beta-blocking 🔴 hardening rung) |
+| Train | Hero 1 | Hero 2 |
+| ----- | ------ | ------ |
+| **0.8.0 — Reach out** | `Mailbox-5` JMAP/OAuth transports | `11b.8` HTTP + Webhook |
+| **0.9.0 — Find & switch in** | `11.3` semantic search ON | `IE-7` Notion-API import |
+| **0.10.0 — Compose your own** | `8.10.x` Form-designer / layouts | `Browser-6/8` downloads + agentic |
+| **0.11.0 — Bytes everywhere, fast** | `Asset-B4/B4b` attachment sync | `NAPI-P`→`NAPI-4` native accel |
+| _═ infra + collaborative-sync line ═_ | _durable node hardened · collab layer done · `P2P-0` reported_ | |
+| **0.12.0 — Share for real** | `Collab-C5` sharing UX | `P2P-1` peer-to-peer sync |
+| **1.0.0 — GA** | GA definition-of-done | — |
+| **v2 — commercial** | `14.x` billing / quotas / orgs | company ops · `Launch-2` |
+
+**Every train drains a `POLISH-*` batch** — editor blocks, entity properties, visual design, layout — until the polished-product bar is met.
 
 ---
 
 ## Remaining iterations (NOT done) — complete list
 
-Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2) then plan section, per the roadmap rules in [implementation-plan.md §Release plan & roadmap](implementation-plan.md#release-plan--roadmap). **Phase rules:** *Beta* = on the beta-exit checklist (gates `2026-09-01`); *GA* = v1 but post-beta (the GA definition-of-done); *v2* = explicitly post-v1 (the v1-excludes set: app-store distribution, auto-update, paid/commercial, multi-user). Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
+Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## Beta — Beta-blocking (must clear 2026-09-01) (0)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (43)
 
-✅ **Cleared 2026-06-29 — public beta v0.1.5 shipped.** `13.11` (code-signing + notarisation) and `13.12` (in-app auto-update) both landed: signed + notarized macOS (Apple silicon + Intel), Windows + Linux, published to GitHub Releases with a working in-app updater. No beta-blocking iterations remain. *(GA residual, not beta-blocking: Windows EV signing `DQ-13.1-B`.)*
+### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
-## GA — GA (v1, post-beta) (38)
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `P2P-0` | portability / design spike (gates the rest, like 10.0 for the sync spine): answer the loa… | ⚪ pending |  |
+| `P2P-1` | LAN peer discovery + direct pairing over the chosen transport; own-device-only first (sin… | ⚪ pending | P2P-0 |
+| `P2P-2` | live update exchange on the peer channel (the same sealed Yjs stream) with relay fallback… | ⚪ pending | P2P-1 |
+| `P2P-3` | NAT traversal / direct connectivity beyond the LAN; relay used only for signaling / boots… | ⚪ pending | P2P-2 |
+
+### Product polish & dogfood hardening *(standing quality track, `POLISH-*`; owner-driven)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `POLISH-1` | first owner-driven dogfood sweep (open): owner walks the fleet and files rungs per catego… | ⚪ pending |  |
 
 ### AI broker & vector / hybrid search *(Stage 11; lexical half shipped early as Shell 9.22)*
 
@@ -157,7 +173,13 @@ Every open iteration, **bucketed by phase** (Beta-blocking → GA → v2/post-v2
 | -- | ---- | ------ | ---- |
 | `Lock-3` | retro-fill the workflow bar *(partly paid by shell PR #18 lock-rollout-fixes/5ffda45, 202… | ⚪ pending | none (cleanup |
 
-## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (34)
+## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (35)
+
+### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `P2P-4` | multi-user P2P (shared entities across identities) | ⚪ pending | P2P-2 + collaborative-sync layer |
 
 ### Collaboration layer
 
