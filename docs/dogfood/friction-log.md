@@ -27,6 +27,20 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-455 — a fresh journal day is a barren white page with no invitation to write
+- **session:** 911-marcus-journal-books-preview-chat (2026-07-21)   **kind:** design   **app:** Journal   **status:** open
+- **what happened (Marcus):** opening today's entry (no content yet) shows only a small "Start with a template" label + three chips marooned in the top-left, then a vast empty white canvas. The code DOES wire a `writeHint` placeholder ("Start writing your entry…") for the empty day, but it never renders — so there's no cursor prompt, no "click here to write" invitation. Next to Books' and Preview's centered `<EmptyState>` (icon + heading + subtitle + CTA), the daily writing surface — the app's whole point — is the least inviting empty state in the fleet.
+- **what I expected:** the empty day should invite writing — a visible placeholder where the cursor lands ("Start writing your entry…", which is already authored) and/or a centered start affordance, not a blank page with the quick-start chips as a top-left afterthought.
+- **evidence:** tests/dogfood/.sessions/911-marcus-journal-books-preview-chat/01-01-journal-first.png, 02-02-journal-entry.png (0 console errors)
+- **triage:** _(open — the `placeholder={t("writeHint")}` reaches `EntryEditorIsland` for `!entry` (`app.tsx:1866`) and `resolver` is truthy in-shell, so the editor mounts — yet the placeholder text is absent in both captures. Root cause is in the mounted journal editor's placeholder rendering (a stray empty paragraph may count as "non-empty" and suppress the Lexical placeholder, or the placeholder element is unstyled/clipped). Non-trivial — deserves a focused editor-placeholder investigation, not a rushed layout change. Split from the same session's Preview fix (F-454) which was clean.)_
+
+### F-454 — Preview's window has no name when nothing's open
+- **session:** 911-marcus-journal-books-preview-chat (2026-07-21)   **kind:** design   **app:** Preview   **status:** ✅ done (2026-07-21, shell PR #231)
+- **what happened (Marcus):** with no file open, Preview's header reads blank — a bare "0 of 0" page counter sits where the title belongs. Every other app names itself (Books "Books", Chat "Chat"); Preview's is the one window that looks unlabelled/unfinished.
+- **what I expected:** the header carries the app name ("Preview") until a file is open, like the rest of the fleet.
+- **evidence:** tests/dogfood/.sessions/911-marcus-journal-books-preview-chat/05-05-preview-first.png
+- **triage / resolution (developer, 2026-07-21, shell PR #231):** the title face was `activeFile?.info.name ?? ""` — empty with nothing open. Now falls back to `t("app.title")` ("Preview"). +2 structure tests updated (were asserting the empty title). *(Session note: Books = gold-standard centered `<EmptyState>`; Chat = polished Slack-style; 0 console errors across all four apps reviewed.)*
+
 ### F-453 — the problems panel never reacts while I type broken code
 - **session:** 910-marcus-code-editor-design-review (2026-07-19)   **kind:** design?   **app:** Code editor   **status:** ✅ not-a-bug (2026-07-19, rule-set read — shell PR #223 notes)
 - **what happened (Marcus):** typed a snippet with an unused variable into a fresh file; "No problems" never changed — the panel reads as static text, not a live surface. (The unclosed paren I typed got auto-closed, so the syntax was valid — fair.)
