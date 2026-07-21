@@ -1,0 +1,55 @@
+1
+00:00:00,200 --> 00:00:04,800
+Meet Mira. She's starting a studio — and she'll run it all from one place.
+
+2
+00:00:05,200 --> 00:00:11,800
+Day one: a private vault. Everything the studio makes lives here — encrypted, on her machine.
+
+3
+00:00:12,200 --> 00:00:14,800
+
+
+4
+00:00:15,200 --> 00:00:21,800
+Client briefs live in Notes — real documents, tied to real projects.
+
+5
+00:00:22,200 --> 00:00:28,800
+The pipeline runs on boards and views — drag a deal, plan the week.
+
+6
+00:00:29,200 --> 00:00:33,800
+Thinking gets mapped — graph and whiteboard.
+
+7
+00:00:34,200 --> 00:00:41,800
+Tasks, calendar, journal — the day runs itself.
+
+8
+00:00:42,200 --> 00:00:44,800
+
+
+9
+00:00:45,200 --> 00:00:52,800
+The team works in chat — updates, files, decisions — right next to the work.
+
+10
+00:00:53,200 --> 00:00:59,800
+An AI agent drafts alongside them — grounded in the vault.
+
+11
+00:01:00,200 --> 00:01:05,800
+Client mail lands beside the projects it belongs to.
+
+12
+00:01:06,200 --> 00:01:11,800
+Research happens in-app — captured straight to the vault.
+
+13
+00:01:12,200 --> 00:01:16,800
+And anything is one search away.
+
+14
+00:01:17,200 --> 00:01:23,800
+Northbound runs on Brainstorm. Yours can too — free beta at getbrainstorm dot online.
