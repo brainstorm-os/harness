@@ -15,9 +15,9 @@ describe("parseUri", () => {
 			scheme: ResourceScheme.Doc,
 			path: "implementation-plan",
 		});
-		expect(parseUri("package://@brainstorm/sdk")).toEqual({
+		expect(parseUri("package://@brainstorm-os/sdk")).toEqual({
 			scheme: ResourceScheme.Package,
-			path: "@brainstorm/sdk",
+			path: "@brainstorm-os/sdk",
 		});
 	});
 
@@ -97,9 +97,9 @@ describe("readResource — doc", () => {
 
 describe("readResource — package", () => {
 	it("returns workspace package metadata", () => {
-		const result = readResource("package://@brainstorm/sdk");
+		const result = readResource("package://@brainstorm-os/sdk");
 		const parsed = JSON.parse(result.text);
-		expect(parsed.package.name).toBe("@brainstorm/sdk");
+		expect(parsed.package.name).toBe("@brainstorm-os/sdk");
 		expect(parsed.path).toContain("packages/sdk/package.json");
 	});
 
