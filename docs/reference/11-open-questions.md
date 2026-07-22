@@ -2620,7 +2620,8 @@ Format:
 - **Tentative leaning:** (a), but deferred — don't design the content-kind until 2–3 real adapters exist to pull on the contract.
 - **Blocking?:** No (post-v1; gated on the marketplace + OQ-244).
 
-#### OQ-243 — Home for one-shot authenticated-API import (e.g. Notion)
+#### OQ-243 — Home for one-shot authenticated-API import (e.g. Notion) *[RESOLVED in implementation-plan IE-7 — (a)]*
+- **Resolution (2026-07-23):** **(a)** — the one-shot Notion-API import is a non-file **Source** in the IE-2 import pipeline that reuses the connector OAuth / scoped-egress broker but keeps **no `SyncMapping` cursor** ("a connector without a cursor"). Confirmed as the tentative leaning: it keeps the parse→map→project→write tail shared with every other importer, so the API path adds only a Source + a format Parse adapter, not a parallel sync engine. First rung landed (shell PR #256): `notion-api-blocks.ts` renders API block trees into the exact markdown dialect the existing planting path parses, so IE-6's Map→Write is reused verbatim.
 - **Where:** [45-import-export.md §Extensibility](../platform/45-import-export.md), [56-connector-framework.md](../apps/56-connector-framework.md).
 - **Question:** One-shot import over the network with OAuth (import a Notion workspace via its API, run once) falls between file-import ([45](../platform/45-import-export.md), file-only) and connector sync ([56](../apps/56-connector-framework.md), continuous). Where does it live?
 - **Options:**
