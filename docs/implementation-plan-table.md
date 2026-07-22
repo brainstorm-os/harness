@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-22 — **Form-designer `8.10.4`** (conditional field visibility, shell `7733b813`) **+ Graph `9.13.10e`** (live bucketed event stream verified, shell `68607538`) **landed.** **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 75 — GA 41 · v2 34.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
+**Last updated:** 2026-07-22 — **`7.14` app-icon notification badges core shipped** (shell feat/7.14-app-badges: `ui.badge` service + dashboard chip + Mailbox consumer); **`8.10.4`** + Graph **`9.13.10e`** earlier same day. **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 75 — GA 41 · v2 34.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -107,7 +107,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `7.14` | app notification badges (iOS-style unread counts on app icons): an app can surface a badg… | ⚪ pending |  |
+| `7.14` | app notification badges (iOS-style unread counts on app icons) | 🟡 in flight |  |
 
 ### Network broker & readable extraction *(doc 38 + 58
 
