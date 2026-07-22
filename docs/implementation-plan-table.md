@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-21 — **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 79 — GA 44 · v2 35.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
+**Last updated:** 2026-07-21 — **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 78 — GA 44 · v2 34.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -211,7 +211,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `DocsHub-1` | *(v2, early | ⚪ pending |  |
 | `DocsHub-2` | *(v2, after 14.17 + 14.18 mature)* | ⚪ pending |  |
 | `DocsHub-3` | *(v2, after packages/sdk stabilises)* | ⚪ pending |  |
-| `DocsHub-4` | *(v2, after Net-1)* | ⚪ pending |  |
 | `DocsHub-5` | *(post-v2)* | ⚪ pending |  |
 | `14.25–14.28` | post-v2: paid marketplace activation, fee mechanics, multi-publisher orgs, AI credit bala… | ⚪ pending |  |
 | `14.35` | *(M5)* | ⚪ pending |  |
