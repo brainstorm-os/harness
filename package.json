@@ -17,7 +17,7 @@
     "promo:render": "node tools/promo/render.mjs",
     "promo:capture:notes": "(cd ../shell && bun run --filter @brainstorm/shell build) && playwright test --config=playwright.promo.config.ts vid-notes",
     "promo:vo:notes": "PROMO_SCENES=./notes-scenes.mjs PROMO_DIR=.promo-notes node tools/promo/voiceover.mjs",
-    "promo:render:notes": "PROMO_SCENES=./notes-scenes.mjs PROMO_DIR=.promo-notes PROMO_OUT=vid-notes node tools/promo/render.mjs"
+    "promo:render:notes": "PROMO_SCENES=./notes-scenes.mjs PROMO_DIR=.promo-notes PROMO_OUT=vid-notes PROMO_MUSIC=tools/promo/assets/vid-notes-music.mp3 PROMO_VO_GAIN=2.7 PROMO_MUSIC_GAIN=0.32 node tools/promo/render.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

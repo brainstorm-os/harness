@@ -1,12 +1,12 @@
 /**
- * VID-notes capture — the tight ~65s Notes highlight reel (the first app-
- * showcase episode). Drives the Notes app through seven beats against a fresh
+ * VID-notes capture — a full walk of the Notes app's functionality (the first
+ * app-showcase episode). Drives Notes through a dozen beats against a fresh
  * synthetic "Northbound Studio" vault and records one clip per beat via the
  * shared promo stage (`lib/promo-stage.ts`); `notes-scenes.mjs` + the promo
  * voiceover/render tools assemble the clips into `vid-notes-1080p.mp4`.
  *
  * Scene ids mirror the content scenes in `tools/promo/notes-scenes.mjs`
- * (00-slide / 08-title are render-side cards, not captured here). Drivers are
+ * (00-slide / 12-title are render-side cards, not captured here). Drivers are
  * defensive: a selector drifting never kills the run — the beat still records
  * real footage of the open surface.
  *
@@ -14,8 +14,8 @@
  */
 
 import { join } from "node:path";
-import { type Page, test } from "@playwright/test";
-import { beat, glideClick, typeHuman } from "../lib/humanize";
+import { test } from "@playwright/test";
+import { beat, glideClick, glideTo, typeHuman } from "../lib/humanize";
 import { launchPromoStage } from "../lib/promo-stage";
 
 const HARNESS = join(import.meta.dirname, "..", "..", "..");
@@ -33,22 +33,16 @@ test("capture VID-notes reel", async () => {
 
 	const notes = await s.openApp(NOTES);
 
-	const body = (): ReturnType<Page["locator"]> => notes.locator('[contenteditable="true"]').first();
-
-	/** New empty note; caret parked in the title line (top of the editor). */
+	/** New empty note, editor body focused (reliable — click the contenteditable
+	 *  itself; a coordinate click lands on the block handles and steals focus). */
 	const newNote = async (): Promise<void> => {
 		await notes.locator('[aria-label="New note"]').first().click().catch(() => undefined);
 		await notes.waitForTimeout(1000);
-		// The doc title is the first editable line — click it (fixed stage, so the
-		// position is stable) so the title populates rather than the body.
-		const titleEl = notes
-			.locator('[data-placeholder="Title"], [placeholder="Title"], [aria-label="Title"]')
-			.first();
-		if (await titleEl.count().catch(() => 0)) await titleEl.click().catch(() => undefined);
-		else await notes.mouse.click(712, 138).catch(() => undefined);
+		await notes.locator('[contenteditable="true"]').first().click().catch(() => undefined);
+		await notes.waitForTimeout(250);
 	};
 
-	/** Open a specific seeded doc by sidebar label. */
+	/** Open a seeded doc by sidebar label. */
 	const openDoc = async (label: RegExp): Promise<void> => {
 		const doc = notes.locator(".notes__sidebar-item").filter({ hasText: label }).first();
 		if (await doc.count().catch(() => 0)) {
@@ -57,7 +51,7 @@ test("capture VID-notes reel", async () => {
 		}
 	};
 
-	// ── 01: WRITE — clean typography, words front and center ──────────────
+	// ── 01: WRITE — clean typography ──────────────────────────────────────
 	await s.scene("01-write", async () => {
 		await s.film(notes);
 		await newNote();
@@ -66,12 +60,12 @@ test("capture VID-notes reel", async () => {
 		await typeHuman(
 			notes,
 			"Nautical, without the clichés. Deep indigo, a single warm accent, generous space.",
-			16,
+			15,
 		);
 		await beat(notes, 900);
 	});
 
-	// ── 02: SLASH MENU — the discoverability affordance ───────────────────
+	// ── 02: SLASH MENU — the full block palette ───────────────────────────
 	await s.scene("02-slash", async () => {
 		await s.film(notes);
 		await notes.keyboard.press("Enter");
@@ -81,58 +75,76 @@ test("capture VID-notes reel", async () => {
 		await notes.keyboard.press("Backspace").catch(() => undefined);
 	});
 
-	// ── 03: RICH BLOCKS — markdown shortcuts build structure ──────────────
-	//     Each shortcut fires from a FRESH paragraph — a bullet list is exited
-	//     with an Enter on the empty item before the quote, so `>` converts.
+	// ── 03: RICH BLOCKS — markdown shortcuts (fresh paragraph each) ───────
 	await s.scene("03-blocks", async () => {
 		await s.film(notes);
-		await typeHuman(notes, "# Deliverables", 22);
+		await typeHuman(notes, "# Deliverables", 20);
 		await notes.keyboard.press("Enter");
-		await typeHuman(notes, "Three things to ship this week:", 16);
+		await typeHuman(notes, "- Logo suite", 16);
 		await notes.keyboard.press("Enter");
-		await typeHuman(notes, "- Logo suite", 18);
+		await typeHuman(notes, "Packaging mockups", 16);
 		await notes.keyboard.press("Enter");
-		await typeHuman(notes, "Packaging mockups", 18);
+		await notes.keyboard.press("Enter"); // exit bullet list
+		await typeHuman(notes, "1. Research", 16);
 		await notes.keyboard.press("Enter");
-		await typeHuman(notes, "Launch microsite", 18);
+		await typeHuman(notes, "Design", 16);
 		await notes.keyboard.press("Enter");
-		await notes.keyboard.press("Enter"); // empty bullet → exit the list
-		await typeHuman(notes, "> Ship the first round by Thursday.", 18);
+		await notes.keyboard.press("Enter"); // exit numbered list
+		await typeHuman(notes, "[] Send direction two", 16);
+		await notes.keyboard.press("Enter");
+		await notes.keyboard.press("Enter"); // exit checklist
+		await typeHuman(notes, "> Ship the first round by Thursday.", 16);
 		await beat(notes, 1200);
 	});
 
-	// ── 04: INLINE FORMATTING — select text → the format toolbar ──────────
-	await s.scene("04-format", async () => {
+	// ── 04: CODE BLOCK — fresh note, /code, type source ───────────────────
+	await s.scene("04-code", async () => {
 		await s.film(notes);
+		await newNote();
+		await typeHuman(notes, "Brand tokens", 22);
+		await notes.keyboard.press("Enter");
+		await typeHuman(notes, "/code", 26);
+		await beat(notes, 900);
+		await notes.keyboard.press("Enter"); // insert Code (top match)
+		await beat(notes, 500);
+		await typeHuman(notes, "const indigo = '#4f46e5';", 15);
+		await notes.keyboard.press("Enter");
+		await typeHuman(notes, "const accent = '#f59e0b';", 15);
+		await beat(notes, 1100);
+	});
+
+	// ── 05: INLINE FORMATTING — select a line → the toolbar ───────────────
+	await s.scene("05-format", async () => {
+		await s.film(notes);
+		await newNote();
+		await typeHuman(notes, "Brand voice", 22);
+		await notes.keyboard.press("Enter");
+		await typeHuman(notes, "Warm, honest, a little nautical — never precious.", 15);
 		await notes.keyboard.press("Home");
 		await notes.keyboard.press("Shift+End");
 		await beat(notes, 1100);
 		const bold = notes.locator('[aria-label*="Bold"], [data-format="bold"]').first();
 		if (await bold.count().catch(() => 0)) await glideClick(notes, bold).catch(() => undefined);
 		else await notes.keyboard.press("Meta+b").catch(() => undefined);
-		await beat(notes, 900);
+		await beat(notes, 1000);
 	});
 
-	// ── 05: MENTIONS & LINKS — connect the note to the vault ──────────────
-	await s.scene("05-mention", async () => {
+	// ── 06: MENTIONS & LINKS — @ typeahead → linked chip ──────────────────
+	await s.scene("06-mention", async () => {
 		await s.film(notes);
 		await notes.keyboard.press("End");
 		await notes.keyboard.press("Enter");
-		await typeHuman(notes, "Owner ", 24);
+		await typeHuman(notes, "Owner ", 22);
 		await notes.keyboard.type("@");
 		await beat(notes, 1400);
-		// Keyboard-pick the first offered person (the mention typeahead handles
-		// arrows/Enter regardless of its DOM shape).
 		await notes.keyboard.press("ArrowDown").catch(() => undefined);
 		await beat(notes, 500);
 		await notes.keyboard.press("Enter").catch(() => undefined);
 		await beat(notes, 1100);
 	});
 
-	// ── 06: PROPERTIES — a document that is also data ─────────────────────
-	//     The seeded brief carries real properties; open its panel, then add
-	//     one on camera so the affordance is visible either way.
-	await s.scene("06-properties", async () => {
+	// ── 07: PROPERTIES — seeded brief → panel → add a property ────────────
+	await s.scene("07-properties", async () => {
 		await s.film(notes);
 		await openDoc(/Brand brief/i);
 		const props = notes
@@ -140,38 +152,99 @@ test("capture VID-notes reel", async () => {
 			.first();
 		if (await props.count().catch(() => 0)) {
 			await glideClick(notes, props).catch(() => undefined);
-			await beat(notes, 1100);
+			await beat(notes, 1000);
 		}
 		const addProp = notes.getByRole("button", { name: /add property/i }).first();
 		if (await addProp.count().catch(() => 0)) {
 			await glideClick(notes, addProp).catch(() => undefined);
 			await beat(notes, 1300);
+			// Pick "Status" from the property-type menu.
+			const status = notes.getByText(/^\s*Status\s*$/i).first();
+			if (await status.count().catch(() => 0)) {
+				await glideClick(notes, status).catch(() => undefined);
+				await beat(notes, 1200);
+			}
 			await notes.keyboard.press("Escape").catch(() => undefined);
 		}
 		await beat(notes, 700);
 	});
 
-	// ── 07: COMMENTS — collaboration lives with the work ──────────────────
-	await s.scene("07-comments", async () => {
+	// ── 08: ICONS — click the note icon → the emoji picker grid ───────────
+	await s.scene("08-icon", async () => {
 		await s.film(notes);
-		// The right panel's second tab (Properties | Comments).
+		const icon = notes
+			.locator('.notes__doc-icon, .notes__title-icon, [aria-label*="icon" i], [aria-label*="emoji" i]')
+			.first();
+		if (await icon.count().catch(() => 0)) {
+			await glideClick(notes, icon).catch(() => undefined);
+			await beat(notes, 1800); // hold the open emoji-picker grid
+			await notes.keyboard.press("Escape").catch(() => undefined);
+		}
+		await beat(notes, 700);
+	});
+
+	// ── 09: COMMENTS — the Comments tab → draft a comment ─────────────────
+	await s.scene("09-comments", async () => {
+		await s.film(notes);
 		const commentsTab = notes
 			.locator('[role="tab"], .notes__panel-tab, button')
 			.filter({ hasText: /^\s*Comments\s*$/i })
 			.first();
 		if (await commentsTab.count().catch(() => 0)) {
 			await glideClick(notes, commentsTab).catch(() => undefined);
-			await beat(notes, 1200);
+			await beat(notes, 1100);
 		}
-		// Focus the composer and draft a comment (don't send — no need).
 		const composer = notes
 			.locator('[placeholder*="omment"], [aria-label*="omment"], textarea, [contenteditable="true"]')
 			.last();
 		if (await composer.count().catch(() => 0)) {
 			await composer.click().catch(() => undefined);
-			await typeHuman(notes, "Love direction two — let's take it to the client.", 18);
+			await typeHuman(notes, "Love direction two — let's take it to the client.", 16);
 		}
-		await beat(notes, 1100);
+		await beat(notes, 1000);
+	});
+
+	// ── 10: SEARCH & ORGANIZE — search box → jump between notes ───────────
+	await s.scene("10-organize", async () => {
+		await s.film(notes);
+		const search = notes
+			.locator('[placeholder*="Search notes" i], .notes__search input, [aria-label*="earch" i]')
+			.first();
+		if (await search.count().catch(() => 0)) {
+			await glideClick(notes, search).catch(() => undefined);
+			await typeHuman(notes, "Harbor", 40);
+			await beat(notes, 1300);
+		}
+		// Jump to a result / another note in the sidebar.
+		const row = notes.locator(".notes__sidebar-item").filter({ hasText: /Positioning|Harbor/i }).first();
+		if (await row.count().catch(() => 0)) {
+			await glideClick(notes, row).catch(() => undefined);
+			await beat(notes, 1000);
+		}
+	});
+
+	// ── 11: NOTE ACTIONS — object menu (right-click title) + read-only lock ─
+	await s.scene("11-actions", async () => {
+		await s.film(notes);
+		// The object menu opens on a right-click of the title (per the codebase).
+		const title = notes.locator(".app-header__title").first();
+		if (await title.count().catch(() => 0)) {
+			const box = await title.boundingBox().catch(() => null);
+			if (box) await glideTo(notes, box.x + box.width / 2, box.y + box.height / 2, 450);
+			await title.click({ button: "right" }).catch(() => undefined);
+			await beat(notes, 1700); // hold the open actions menu
+			await notes.keyboard.press("Escape").catch(() => undefined);
+		}
+		// Toggle the read-only lock in the header.
+		const lock = notes
+			.locator('[aria-label*="lock" i], [aria-label*="read-only" i], [aria-label*="read only" i]')
+			.first();
+		if (await lock.count().catch(() => 0)) {
+			await glideClick(notes, lock).catch(() => undefined);
+			await beat(notes, 1100);
+			await glideClick(notes, lock).catch(() => undefined);
+		}
+		await beat(notes, 700);
 	});
 
 	await s.finish();

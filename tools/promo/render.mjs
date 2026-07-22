@@ -14,7 +14,7 @@
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 
 // Scene table + output dir + basename are selectable so this one renderer
 // assembles both the 60s promo and the per-app VID-* reels (e.g.
@@ -144,31 +144,40 @@ writeFileSync(videoConcatList, segments.map((p) => `file '${p}'`).join("\n"));
 const silentVideo = join(PROMO, "video-silent.mp4");
 ffmpeg(["-f", "concat", "-safe", "0", "-i", videoConcatList, "-c", "copy", silentVideo]);
 
-const music = existsSync(ASSETS)
-	? readdirSync(ASSETS).find((f) => /^music\.(mp3|m4a|wav|aac)$/.test(f))
-	: undefined;
-if (music) {
-	// The bed rides at a real level and DUCKS under speech via sidechain
-	// compression (a flat 0.22 gain buried the quiet Krux master at -32dB —
-	// "there is no music"). Music alone (slides) sits ~-18dB; under VO it
-	// drops ~8-10dB and stays audible but clear of the narration.
+// Music bed + mix are selectable so a reel can bring its own track and its own
+// VO-vs-music balance. PROMO_MUSIC picks the file (else auto-find music.* in
+// assets/); PROMO_VO_GAIN / PROMO_MUSIC_GAIN set the balance (defaults are the
+// promo's). Keep VO_GAIN well above MUSIC_GAIN so narration always leads.
+const VO_GAIN = process.env.PROMO_VO_GAIN ?? "2.2";
+const MUSIC_GAIN = process.env.PROMO_MUSIC_GAIN ?? "1.0";
+const musicPath = process.env.PROMO_MUSIC
+	? isAbsolute(process.env.PROMO_MUSIC)
+		? process.env.PROMO_MUSIC
+		: join(HARNESS, process.env.PROMO_MUSIC)
+	: existsSync(ASSETS)
+		? (() => {
+				const f = readdirSync(ASSETS).find((n) => /^music\.(mp3|m4a|wav|aac)$/.test(n));
+				return f ? join(ASSETS, f) : undefined;
+			})()
+		: undefined;
+if (musicPath && existsSync(musicPath)) {
+	// The bed rides under speech via sidechain compression: narration is boosted
+	// behind a limiter so it leads, and the bed ducks ~12dB whenever VO is
+	// present and returns in the gaps.
 	ffmpeg([
 		"-i", silentVideo,
 		"-i", voTrack,
-		"-stream_loop", "-1", "-i", join(ASSETS, music),
+		"-stream_loop", "-1", "-i", musicPath,
 		"-filter_complex",
-		// Measured mix: the edge-tts VO track is QUIET (mean -26.7dB, peaks
-		// -6) — boost it +7dB behind a limiter so speech leads at ~-19dB;
-		// the bed stays at its natural level in the gaps (~-22dB, the part
-		// the owner liked) and sidechain-ducks ~12dB under speech.
-		"[1:a]asplit=2[voRaw][sc];" +
-			"[voRaw]volume=2.2,alimiter=limit=0.85:level=false[vo];" +
-			"[2:a]volume=1.0[m];" +
-			"[m][sc]sidechaincompress=threshold=0.02:ratio=12:attack=20:release=400[duck];" +
-			"[vo][duck]amix=inputs=2:duration=first:normalize=0[a]",
+		`[1:a]asplit=2[voRaw][sc];` +
+			`[voRaw]volume=${VO_GAIN},alimiter=limit=0.85:level=false[vo];` +
+			`[2:a]volume=${MUSIC_GAIN}[m];` +
+			`[m][sc]sidechaincompress=threshold=0.02:ratio=12:attack=20:release=400[duck];` +
+			`[vo][duck]amix=inputs=2:duration=first:normalize=0[a]`,
 		"-map", "0:v", "-map", "[a]",
 		"-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", OUT_MP4,
 	]);
+	console.log(`[promo:render] music: ${musicPath} (VO gain ${VO_GAIN}, music gain ${MUSIC_GAIN})`);
 } else {
 	ffmpeg([
 		"-i", silentVideo,
@@ -198,4 +207,4 @@ for (const scene of SCENES) {
 writeFileSync(OUT_SRT, cues.join("\n"));
 
 const total = SCENES.reduce((a, s) => a + s.seconds, 0);
-console.log(`[promo:render] ${OUT_MP4} (${total}s) + ${OUT_SRT}${music ? ` + music bed (${music})` : " (no music bed)"}`);
+console.log(`[promo:render] ${OUT_MP4} (${total}s) + ${OUT_SRT}${musicPath ? ` + music bed (${musicPath})` : " (no music bed)"}`);
