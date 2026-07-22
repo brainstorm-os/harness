@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-21 — **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 78 — GA 44 · v2 34.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
+**Last updated:** 2026-07-22 — **Form-designer `8.10.4` conditional field visibility landed** (shell `7733b813`): the predicate-eval-backed `visibility-rules` logic is now wired into a Builder condition editor + Fill-mode hide/validate/persist. **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 77 — GA 43 · v2 34.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (44)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (43)
 
 ### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
@@ -141,7 +141,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `8.10.2` | editing canvas: drag-to-reorder cells, stacked↔grid switch, live Layout/v1 mutation with… | 🟡 in flight | 8.3 |
 | `8.10.3` | group nesting + chrome-cell palette (actionBar/breadcrumb/meta/windowControls/entityHeade… | ⚪ pending | 8.4 (resolves OQ-90 |
-| `8.10.4` | conditional visibility rules per cell (reuse the Database filter-language predicate, not… | ⚪ pending |  |
 | `8.10.5` | save-as-Layout/v1 entity + apply-to-type + install-time validateAppLayouts (8.5) round-tr… | 🟡 in flight | 8.5 |
 
 ### Automations *(Stage 11b)*
