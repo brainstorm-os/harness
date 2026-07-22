@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-456 — creating a vault in Downloads on Windows fails with "directory is not empty"
+- **session:** user report (2026-07-22)   **kind:** bug   **app:** Shell (vault create)   **status:** ✅ done (2026-07-22, shell PR #243)
+- **what I was trying to do:** create a new vault in (or in a fresh folder under) my Downloads folder on Windows.
+- **what happened:** vault creation was refused with "Directory is not empty" even though the folder looked empty to me.
+- **what I expected:** a folder that only holds Windows/OneDrive housekeeping files should be usable for a new vault.
+- **evidence:** multiple Windows user reports; no dogfood shot (external report).
+- **triage / resolution (developer, 2026-07-22, shell PR #243):** `ensureDirectoryUsable` (`packages/shell/src/main/vault/vault.ts`) treated **any** non-empty folder as unusable, but Windows Downloads / OneDrive-synced folders routinely carry a `desktop.ini` (and `Thumbs.db`; macOS `.DS_Store`), so a freshly-made folder there was rejected. Fix: OS-metadata entries no longer count toward emptiness; real user content still rejects. New test `vault-directory-usable.test.ts` (metadata-only folder succeeds; a folder with `report.pdf` still throws). Shipped alongside the analytics observability work that now lets us **see** this class of failure (`Error Encountered` events — the 0.8.0 analytics observability rider, shell PR #243).
+
 ### F-455 — a fresh journal day is a barren white page with no invitation to write
 - **session:** 911-marcus-journal-books-preview-chat (2026-07-21)   **kind:** design   **app:** Journal   **status:** open
 - **what happened (Marcus):** opening today's entry (no content yet) shows only a small "Start with a template" label + three chips marooned in the top-left, then a vast empty white canvas. The code DOES wire a `writeHint` placeholder ("Start writing your entry…") for the empty day, but it never renders — so there's no cursor prompt, no "click here to write" invitation. Next to Books' and Preview's centered `<EmptyState>` (icon + heading + subtitle + CTA), the daily writing surface — the app's whole point — is the least inviting empty state in the fleet.
