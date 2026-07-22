@@ -27,4 +27,6 @@ tests/dogfood/.sessions/
 tests/dogfood/.promo-data/
 tests/dogfood/.promo-data-staging/
 tests/dogfood/.promo/
+tests/dogfood/.promo-notes/
+tests/dogfood/.promo-notes-data/
 tests/dogfood/Singleton*

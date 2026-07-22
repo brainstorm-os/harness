@@ -15,15 +15,21 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { SCENES } from "./scenes.mjs";
+
+// Scene table + output dir + basename are selectable so this one renderer
+// assembles both the 60s promo and the per-app VID-* reels (e.g.
+// PROMO_SCENES=./notes-scenes.mjs PROMO_DIR=.promo-notes PROMO_OUT=vid-notes).
+// Defaults are the promo.
+const { SCENES } = await import(process.env.PROMO_SCENES ?? "./scenes.mjs");
+const OUT_BASENAME = process.env.PROMO_OUT ?? "promo-60s";
 
 const HARNESS = resolve(import.meta.dirname, "..", "..");
-const PROMO = join(HARNESS, "tests", "dogfood", ".promo");
+const PROMO = join(HARNESS, "tests", "dogfood", process.env.PROMO_DIR ?? ".promo");
 const CLIPS = join(PROMO, "clips");
 const VO = join(PROMO, "vo");
 const ASSETS = join(import.meta.dirname, "assets");
-const OUT_MP4 = join(PROMO, "promo-60s-1080p.mp4");
-const OUT_SRT = join(PROMO, "promo-60s.srt");
+const OUT_MP4 = join(PROMO, `${OUT_BASENAME}-1080p.mp4`);
+const OUT_SRT = join(PROMO, `${OUT_BASENAME}.srt`);
 
 const FADE = 0.25;
 const FPS = 60;
