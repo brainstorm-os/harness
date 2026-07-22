@@ -48,11 +48,23 @@ Download: https://getbrainstorm.online
 Source (AGPL): https://github.com/brainstorm-os/shell
 Feedback & issues: https://github.com/brainstorm-os/shell/issues
 
-Music: "Uplifting Corporate" — SoundRider.
-⚠️ TODO (owner): confirm the exact required attribution + license for this
-track before publishing, and paste the credit line the source requires here.
-A wrong/absent credit risks a YouTube copyright claim.
+Music: "Uplifting Corporate" by Soundrider (Dope), from the album "New Horizon"
+— licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/).
+Source: Jamendo.
 ```
+
+**License — CC BY 3.0 (verified from the file's embedded metadata):** the track
+was downloaded from Jamendo's free Creative Commons catalog; its `LICENSE` /
+`WCOP` / `copyright` ID3 tags all read `creativecommons.org/licenses/by/3.0/`.
+CC BY 3.0 **permits commercial use and YouTube** (monetized or not) **provided
+the attribution above is present** — keep it in the description, verbatim.
+
+Caveat: the original Jamendo track page (id 1670597) now 404s and the artist
+appears on Jamendo's paid licensing arm, but a CC grant is **irrevocable**, so
+the CC BY 3.0 licence embedded in the downloaded copy still applies. If YouTube
+Content ID auto-claims the track, dispute it with the embedded CC BY 3.0
+metadata as proof — so **keep `tools/promo/assets/vid-notes-music.mp3` and its
+tags**. (Run `ffprobe -show_entries format_tags <file>` to re-read them.)
 
 ## Tags
 
