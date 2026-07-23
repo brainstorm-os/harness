@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-21 — **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first) and **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven). **Open: 78 — GA 43 · v2 35.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
+**Last updated:** 2026-07-22 — **`7.14` app-icon notification badges core shipped** (shell feat/7.14-app-badges: `ui.badge` service + dashboard chip + Mailbox consumer); **`8.10.4`** + Graph **`9.13.10e`** earlier same day. **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 75 — GA 41 · v2 34.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (43)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (41)
 
 ### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
@@ -49,6 +49,13 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `POLISH-1` | first owner-driven dogfood sweep (open): owner walks the fleet and files rungs per catego… | ⚪ pending |  |
+
+### App showcase videos *(standing content + polish cadence, `VID-*`; owner-driven, one app / week)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `VID-1` | first episode (owner picks the headliner | ⚪ pending |  |
+| `VID-notes` | Notes is VID-1 (owner pick 2026-07-22). Polish gate PASSED | 🟡 in flight | PASSED |
 
 ### AI broker & vector / hybrid search *(Stage 11; lexical half shipped early as Shell 9.22)*
 
@@ -100,7 +107,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `7.14` | app notification badges (iOS-style unread counts on app icons): an app can surface a badg… | ⚪ pending |  |
+| `7.14` | app notification badges (iOS-style unread counts on app icons) | 🟡 in flight |  |
 
 ### Network broker & readable extraction *(doc 38 + 58
 
@@ -112,16 +119,10 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `IE-7` | one-shot authenticated-API Source (Notion API import, OQ-243): the non-file Source stage… | ⚪ pending | Connector framework ✅ + IE-6 |
+| `IE-7` | one-shot authenticated-API Source (Notion API import) | 🟡 in flight | Connector framework ✅ + IE-6 ✅ |
 | `IE-10e` | Anytype fidelity v2: source-map binding · layout routing · media widths (owner reports 20… | 🟡 in flight |  |
 | `IE-11` | background import/export runs (owner call 2026-07-18: "import/export should be a backgrou… | 🟡 in flight |  |
 | `IE-10` | Anytype import (design platform/72-anytype-import.md): the highest-fidelity third-party s… | ⚪ pending | a real Anytype JSON export fixture (the des… |
-
-### Graph *(9.13)*
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `9.13.10e` | live bucketed event stream (entities.subscribe | ⚪ pending | note was stale |
 
 ### Bookmarks *(9.18)*
 
@@ -135,15 +136,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `8.10.2` | editing canvas: drag-to-reorder cells, stacked↔grid switch, live Layout/v1 mutation with… | 🟡 in flight | 8.3 |
 | `8.10.3` | group nesting + chrome-cell palette (actionBar/breadcrumb/meta/windowControls/entityHeade… | ⚪ pending | 8.4 (resolves OQ-90 |
-| `8.10.4` | conditional visibility rules per cell (reuse the Database filter-language predicate, not… | ⚪ pending |  |
 | `8.10.5` | save-as-Layout/v1 entity + apply-to-type + install-time validateAppLayouts (8.5) round-tr… | 🟡 in flight | 8.5 |
-
-### Automations *(Stage 11b)*
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `11b.8` | HTTP step + Webhook trigger (network ingress). HTTP step landed 2026-06-16 (PR #148) over… | 🟡 in flight | a no-op → any user-authored workflow become… |
-| `11b.10` | FileWatch / Startup triggers | ⚪ pending | 9.10 (Files host |
 
 ### Mailbox *(group I)*
 
@@ -173,7 +166,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `Lock-3` | retro-fill the workflow bar *(partly paid by shell PR #18 lock-rollout-fixes/5ffda45, 202… | ⚪ pending | none (cleanup |
 
-## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (35)
+## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (34)
 
 ### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
@@ -205,7 +198,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `DocsHub-1` | *(v2, early | ⚪ pending |  |
 | `DocsHub-2` | *(v2, after 14.17 + 14.18 mature)* | ⚪ pending |  |
 | `DocsHub-3` | *(v2, after packages/sdk stabilises)* | ⚪ pending |  |
-| `DocsHub-4` | *(v2, after Net-1)* | ⚪ pending |  |
 | `DocsHub-5` | *(post-v2)* | ⚪ pending |  |
 | `14.25–14.28` | post-v2: paid marketplace activation, fee mechanics, multi-publisher orgs, AI credit bala… | ⚪ pending |  |
 | `14.35` | *(M5)* | ⚪ pending |  |

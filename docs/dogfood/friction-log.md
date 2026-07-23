@@ -27,6 +27,23 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-457 — flipping to the year overview and back drops me on January, not this month
+- **session:** 912-mira-calendar-deep / 912b-calendar-view-anchor-repro   **kind:** bug   **app:** Calendar   **status:** ✅ done (2026-07-23, shell PR #257)
+- **what I was trying to do:** doing my usual planning — I tapped **Year** to eyeball the whole year, then tapped **Month** to get back to what I was doing.
+- **what happened:** the month grid jumped to **January 2026** and stayed there, even though it's July. The agenda then showed "January 2026" under a "Today" heading, which made no sense. The **Today** button pulls me back, but I shouldn't have to.
+- **what I expected:** switching to Year and back leaves me on the month I was already looking at (July).
+- **evidence:** tests/dogfood/.sessions/912-mira-calendar-deep/09-12-new-event-detail.png (grid reads "January 2026"); repro 912b notes: `initial "July 2026" → after Year→Month "January 2026"`.
+- **triage:** root cause — `setView` collapsed the anchor to `startOfYear` (Jan 1) for the Year tab, and the Month tab never re-normalized, so it kept January. The year view derives Jan→Dec from `getFullYear(anchor)` and year-nav steps ±12 months, so a Jan-1 anchor was never needed. Fixed by a pure `viewSwitchAnchor` (Day/Week snap; Month/Year/Agenda keep the anchor) + a Year→Month regression test. Only the Year round-trip was affected — direct Month→Agenda was already fine. **shell PR #257.**
+  - _(Seed-data note, NOT a product bug: this session also surfaced garbled all-day event titles — "ipeline ready", a reversed "…d up from now on", random "Ship pricing page 63574" suffixes. They render identically across month + week views, so they're stored Northbound-seed artifacts, consistent with the earlier `012b-corrupt-event-forensics` corruption — left alone.)_
+
+### F-456 — creating a vault in Downloads on Windows fails with "directory is not empty"
+- **session:** user report (2026-07-22)   **kind:** bug   **app:** Shell (vault create)   **status:** ✅ done (2026-07-22, shell PR #243)
+- **what I was trying to do:** create a new vault in (or in a fresh folder under) my Downloads folder on Windows.
+- **what happened:** vault creation was refused with "Directory is not empty" even though the folder looked empty to me.
+- **what I expected:** a folder that only holds Windows/OneDrive housekeeping files should be usable for a new vault.
+- **evidence:** multiple Windows user reports; no dogfood shot (external report).
+- **triage / resolution (developer, 2026-07-22, shell PR #243):** `ensureDirectoryUsable` (`packages/shell/src/main/vault/vault.ts`) treated **any** non-empty folder as unusable, but Windows Downloads / OneDrive-synced folders routinely carry a `desktop.ini` (and `Thumbs.db`; macOS `.DS_Store`), so a freshly-made folder there was rejected. Fix: OS-metadata entries no longer count toward emptiness; real user content still rejects. New test `vault-directory-usable.test.ts` (metadata-only folder succeeds; a folder with `report.pdf` still throws). Shipped alongside the analytics observability work that now lets us **see** this class of failure (`Error Encountered` events — the 0.8.0 analytics observability rider, shell PR #243).
+
 ### F-455 — a fresh journal day is a barren white page with no invitation to write
 - **session:** 911-marcus-journal-books-preview-chat (2026-07-21)   **kind:** design   **app:** Journal   **status:** open
 - **what happened (Marcus):** opening today's entry (no content yet) shows only a small "Start with a template" label + three chips marooned in the top-left, then a vast empty white canvas. The code DOES wire a `writeHint` placeholder ("Start writing your entry…") for the empty day, but it never renders — so there's no cursor prompt, no "click here to write" invitation. Next to Books' and Preview's centered `<EmptyState>` (icon + heading + subtitle + CTA), the daily writing surface — the app's whole point — is the least inviting empty state in the fleet.

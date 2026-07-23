@@ -1563,14 +1563,14 @@ Format:
 
 ### Automations & workflows (added in 39)
 
-#### OQ-163 — Webhook ingress endpoint topology
+#### OQ-163 — Webhook ingress endpoint topology *[RESOLVED in implementation-plan 11b.8 → (a)]*
 - **Where:** [39-automations-and-workflows.md](../apps/39-automations-and-workflows.md).
-- **Question:** Does the shell expose a single shared webhook endpoint with per-workflow path routing (`https://<relay>/wh/<workflowId>/<secret>`), or one endpoint per workflow?
+- **Question:** Does the shell expose a single shared webhook endpoint with per-workflow path routing (`https://<relay>/wh/<routeId>/<secret>`), or one endpoint per workflow?
 - **Options & trade-offs:**
   - (a) Single shared endpoint, path-routed, per-workflow rotating secrets — simpler to operate; one DNS / TLS setup; matches the network-broker shape from [38](../security/38-network-and-proxy.md).
   - (b) One endpoint per workflow — what n8n users expect; harder to operate; needs dynamic listener allocation.
-- **Tentative leaning:** (a) for v1.
-- **Blocking?:** No — webhook triggers are out of scope for the first cut anyway; resolve before the Stage 11b iteration that lands `Webhook` triggers.
+- **Resolution (11b.8):** **(a)** — ONE endpoint, path-routed `/wh/<routeId>/<secret>`, per-workflow rotating secret (the builder mints `routeId` + `secret`; the secret rotates in place without changing the route). The same topology serves both ingress planes: a **loopback listener** (`127.0.0.1`, live now — reachable by same-machine tools / a user-run tunnel) and the **relay plane** (the relay terminates the public `https://<relay>/wh/<routeId>/<secret>` and forwards down the desktop's connection; the desktop re-verifies the secret constant-time). Gated by the `network.ingress` capability (runtime grant, Settings → Privacy → Network — not a static manifest cap). The relay is UNTRUSTED for auth and holds no vault keys.
+- **Blocking?:** No — was resolved as the `Webhook` trigger landed (11b.8).
 
 #### OQ-164 — Automation-host failover across devices
 - **Where:** [39-automations-and-workflows.md](../apps/39-automations-and-workflows.md).
@@ -2119,8 +2119,8 @@ Format:
 - **Resolution:** **Reuse the Notes HTML-import path** (no parallel converter); freeze the allowlist↔block-set equivalence in a shared constant; golden-test the edge cases. **Sequencing note:** the pure `extractReadable` core emits the neutral `ReadableArticle` (`meta` + `blocks: BlockNode[]` + `textContent`) and is buildable independently; the `BlockNode[] → Yjs body` write step (which is where the Notes importer is reused) lands with the Bookmarks integration (9.18.5), so the core does not couple to the editor package.
 - **Blocking?:** No.
 
-#### OQ-RX-7 — Web-clipper transport, trust & browser matrix *[DEFERRED — out of release scope 2026-05-30]*
-- **Status:** The web clipper was **removed from the release plan** (user directive 2026-05-30) and is now a **separate development effort**. This OQ no longer gates any release work; it is parked until that effort starts (the leaning below stands as the entry point).
+#### OQ-RX-7 — Web-clipper transport, trust & browser matrix *[RETIRED — clipper dropped 2026-07-21]*
+- **Status:** The external-browser web clipper is **dropped** (user directive 2026-07-21) — **superseded by in-app clipping in the Web Browser** (`Net-3` live-DOM capture → same Net-2 core → same `Bookmark/v1`), so a separate browser extension is not needed. This OQ is **retired** and gates no work. The design + leaning below are preserved only for the historical record; revisit only if an external-browser clipper is ever re-scoped.
 - **Where:** [apps/58-readable-content-extraction.md](../apps/58-readable-content-extraction.md) (§Web clipper), [apps/54-web-browser.md](../apps/54-web-browser.md), [platform/57-open-resolution.md](../platform/57-open-resolution.md).
 - **Question:** The external-browser web clipper (highly used; reinstated 2026-05-19, scoped post-v1 as Clip-1) is a third *feeder* onto the same extraction core + `Bookmark/v1` — not a new type. How does it reach the shell, and which browsers ship?
 - **Options:**
@@ -2620,7 +2620,8 @@ Format:
 - **Tentative leaning:** (a), but deferred — don't design the content-kind until 2–3 real adapters exist to pull on the contract.
 - **Blocking?:** No (post-v1; gated on the marketplace + OQ-244).
 
-#### OQ-243 — Home for one-shot authenticated-API import (e.g. Notion)
+#### OQ-243 — Home for one-shot authenticated-API import (e.g. Notion) *[RESOLVED in implementation-plan IE-7 — (a)]*
+- **Resolution (2026-07-23):** **(a)** — the one-shot Notion-API import is a non-file **Source** in the IE-2 import pipeline that reuses the connector OAuth / scoped-egress broker but keeps **no `SyncMapping` cursor** ("a connector without a cursor"). Confirmed as the tentative leaning: it keeps the parse→map→project→write tail shared with every other importer, so the API path adds only a Source + a format Parse adapter, not a parallel sync engine. First rung landed (shell PR #256): `notion-api-blocks.ts` renders API block trees into the exact markdown dialect the existing planting path parses, so IE-6's Map→Write is reused verbatim.
 - **Where:** [45-import-export.md §Extensibility](../platform/45-import-export.md), [56-connector-framework.md](../apps/56-connector-framework.md).
 - **Question:** One-shot import over the network with OAuth (import a Notion workspace via its API, run once) falls between file-import ([45](../platform/45-import-export.md), file-only) and connector sync ([56](../apps/56-connector-framework.md), continuous). Where does it live?
 - **Options:**
