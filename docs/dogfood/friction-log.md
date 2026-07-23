@@ -27,6 +27,29 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-458 — my triage automation figures out an email is urgent but can't write that anywhere
+- **session:** 914-mira-business-automation-audit (2026-07-23)   **kind:** gap   **app:** Automations   **status:** open
+- **what I was trying to do:** build the automation I actually want for my business — "when a support email comes in, have the AI decide how urgent it is, then tag the email (or open a task) with that priority so my team sees it."
+- **what happened:** the AI step happily classifies the email ("urgent"), but there's no step that can take that answer and put it *onto* an object. The **Entity** step only writes whatever the previous step already produced — I can't say "set `priority` to the AI's answer" — and the **Code** step can reshape text but can't build a `{ priority: … }` record (no way to write an object). So the automation can think, but it can't file. The only actions that actually land are "draft a reply" (opens a Mailbox draft) and "notify me" — and the notification text is fixed, so it can't even say *which* email or *how* urgent.
+- **what I expected:** to pick "update this email → set priority = <the AI's answer>", or "create a Task titled <subject>, priority = <the AI's answer>", right in the builder.
+- **evidence:** verified in-process — `packages/shell/src/main/integration/business-triage-flow.test.ts` (shell branch `verify/business-automation-flow`): the classify→draft path passes; the second case pins that the pure step set cannot assemble a new entity's fields from AI output. Root cause: `EntityStep` has no static/computed properties field (`operandProperties(ctx.input)` is the only source) and `code-expression.ts` has no object-literal grammar.
+- **triage:** _(open — the intended path for "act with computed fields" is an **AIAgent step with a mutating intent tool**, but today the only broadly-handled write-ish intent is `compose` (draft email). Smallest fixes, any one of which unblocks "classify + file": (a) a static/template `properties` field on the Entity Create/Update step that can interpolate prior step outputs; or (b) object-literal + `merge()` support in the Code grammar; or (c) a first-party "file/label" intent (create-Task / set-property) the AIAgent can call. Recommend (a) — smallest, most legible in the builder.)_
+
+### F-459 — building an email automation needs a hidden "Code" step just to pass the email along
+- **session:** 914-mira-business-automation-audit (2026-07-23)   **kind:** design   **app:** Automations   **status:** open
+- **what I was trying to do:** wire "when a new Email arrives → look at the email → classify it." I picked the **Email arrives** trigger, then added a **Get Email** step, expecting it to just work.
+- **what happened:** the Get step got nothing. It turns out the trigger hands the next step `{ entityId: … }`, but the Entity step wants a bare id (or `{ id: … }`), so they don't line up — I had to drop in a **Code** step containing `input.entityId` between them to translate. No normal person building an automation would guess that.
+- **what I expected:** the **Email arrives** trigger should feed straight into a step that acts on that email, with no glue step.
+- **evidence:** verified in `business-triage-flow.test.ts` — the workflow only runs once a `Code: input.entityId` step is inserted before `Entity Get`. Root cause: `AutomationsHost.onEntityChange` fires the payload `{ entityId, type, verb }` (automations-host.ts), but `entityInterpreter`'s `operandId` reads a bare string or `{ id }` (step-interpreters.ts), never `entityId`.
+- **triage:** _(open — smallest fix: teach `operandId` to also accept `{ entityId }` (and/or have the EntityEvent trigger payload carry `id` as an alias). One-line-ish, removes the glue step from every entity-triggered workflow.)_
+
+### F-460 — I asked the assistant to "make a task for this" and it just talked back
+- **session:** 914-mira-business-automation-audit (2026-07-23)   **kind:** gap   **app:** Agent   **status:** open
+- **what I was trying to do:** use the AI assistant the way I'd use a chief-of-staff — "read this and create a follow-up task", "add this person to my contacts."
+- **what happened:** the assistant can *find* things and *open* them, and it can draft an email or save our chat as an automation — but it can't actually create or change anything in my workspace from the chat. It answered as if it had done it, but nothing appeared.
+- **what I expected:** the assistant to take the action (create the task, update the record) — or at least tell me it can't, rather than implying it did.
+- **evidence:** `apps/agent/src/logic/agent-tools.ts` — `curatedAgentTools` offers exactly one tool, `open` (read-only navigation); the code note says mutating verbs "arrive with the per-conversation grant UI (Agent-5)". So chat-side actions are limited to open / draft-email / save-as-automation. (Automations workflows CAN act via AIAgent tools — the chat app just doesn't expose them yet.)
+- **triage:** _(open — two things: (1) the honesty bug — the model shouldn't claim it acted when it has no write tool; tighten the system prompt to state its tools are read-only. (2) the feature — land the Agent-5 per-conversation grant UI so a user can grant, e.g., "create Task" and the curated set expands beyond `open`. Ties to F-458's "file/label" intents.)_
 ### F-457 — flipping to the year overview and back drops me on January, not this month
 - **session:** 912-mira-calendar-deep / 912b-calendar-view-anchor-repro   **kind:** bug   **app:** Calendar   **status:** ✅ done (2026-07-23, shell PR #257)
 - **what I was trying to do:** doing my usual planning — I tapped **Year** to eyeball the whole year, then tapped **Month** to get back to what I was doing.
