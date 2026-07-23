@@ -12,9 +12,12 @@
     "dogfood:open": "node tools/dogfood-open.mjs",
     "dogfood:chat": "bun tools/dogfood-chat.ts",
     "dogfood:backup": "mkdir -p tests/dogfood/.data-backups && tar --exclude=Cache --exclude='Code Cache' --exclude=GPUCache --exclude=DawnGraphiteCache --exclude=DawnWebGPUCache --exclude=Crashpad --exclude=blob_storage -czf tests/dogfood/.data-backups/northbound-$(date +%Y-%m-%d).tar.gz -C tests/dogfood .data && ls -lh tests/dogfood/.data-backups/",
-    "promo:capture": "(cd ../shell && bun run --filter @brainstorm/shell build) && playwright test --config=playwright.promo.config.ts",
+    "promo:capture": "(cd ../shell && bun run --filter @brainstorm/shell build) && playwright test --config=playwright.promo.config.ts promo.spec",
     "promo:voiceover": "node tools/promo/voiceover.mjs",
-    "promo:render": "node tools/promo/render.mjs"
+    "promo:render": "node tools/promo/render.mjs",
+    "promo:capture:notes": "(cd ../shell && bun run --filter @brainstorm/shell build) && playwright test --config=playwright.promo.config.ts vid-notes",
+    "promo:vo:notes": "PROMO_SCENES=./notes-scenes.mjs PROMO_DIR=.promo-notes node tools/promo/voiceover.mjs",
+    "promo:render:notes": "PROMO_SCENES=./notes-scenes.mjs PROMO_DIR=.promo-notes PROMO_OUT=vid-notes PROMO_MUSIC=tools/promo/assets/vid-notes-music.mp3 PROMO_VO_GAIN=2.7 PROMO_MUSIC_GAIN=0.32 node tools/promo/render.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

@@ -13,10 +13,14 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { SCENES } from "./scenes.mjs";
+
+// The scene table + output dir are selectable so the same pipeline drives both
+// the 60s promo and the per-app VID-* reels (e.g. PROMO_SCENES=./notes-scenes.mjs
+// PROMO_DIR=.promo-notes). Defaults are the promo.
+const { SCENES } = await import(process.env.PROMO_SCENES ?? "./scenes.mjs");
 
 const HARNESS = resolve(import.meta.dirname, "..", "..");
-const VO_DIR = join(HARNESS, "tests", "dogfood", ".promo", "vo");
+const VO_DIR = join(HARNESS, "tests", "dogfood", process.env.PROMO_DIR ?? ".promo", "vo");
 mkdirSync(VO_DIR, { recursive: true });
 
 const EDGE_VOICE = process.env.PROMO_VOICE ?? "en-US-AndrewMultilingualNeural";
