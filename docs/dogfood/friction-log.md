@@ -76,10 +76,11 @@ Newest sessions on top.
 - **triage / resolution:** the meta shows the domain only when it differs from the title.
 
 ### F-447 — the connect dialog's primary action hides below the fold
-- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox (connect dialog)   **status:** 🟡 partial (2026-07-19, shell PR #220 — reconnect mode drops the lecture; residue: sticky action footer for create mode)
+- **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** Mailbox (connect dialog)   **status:** ✅ done (2026-07-23)
 - **what happened (Marcus):** the IMAP form's help paragraph is five lines before a single field appears; by the time the SMTP row renders, Cancel/Connect are cut off at the popover fold — the primary action of the dialog isn't visible when it opens. In reconnect mode (dialog pre-filled, user came to change ONE field) the same five-line lecture pushes the button even further down.
 - **what I expected:** the primary action visible at open — shorter help (link the provider details out), or a sticky footer, and reconnect mode should drop the how-to prose entirely.
 - **evidence:** tests/dogfood/.sessions/908-marcus-mailbox-design-review/03+07.png
+- **triage / resolution (developer, 2026-07-23):** Cancel/Connect moved to the shared Popover sticky footer (`form=` association keeps submit wired). Reconnect mode drops the IMAP how-to lecture entirely. Create mode keeps help in the scrollable body; primary action always visible at open.
 
 ### F-446 — the popover panel is translucent enough that the page bleeds through the form
 - **session:** 908-marcus-mailbox-design-review (2026-07-19)   **kind:** design   **app:** SDK popover (cross-app)   **status:** ✅ done (2026-07-19, shell PR #220 — 52% elevated-surface veil over the glass, frosted look kept)
@@ -254,28 +255,29 @@ Newest sessions on top.
 - **what I expected:** every image the export contains, showing the image it actually is.
 - **evidence:** tests/dogfood/.sessions/905-anytype-files-deep-verify/notes.md ([file-blocks] lines, 09:44 run: 26/28 loaded, 2 raw CIDs)
 - **triage / resolution (developer, 2026-07-18, shell PR):** the export **states the binary mapping outright** — every file object's `details.source` is the export-relative binary path (`files/<name>`), 457/457 exact on the real export including all 37 name-less pasted screenshots, zero collisions. The hash route is a dead end (`fileId`/`fileSourceChecksum` hash the *encrypted* DAG — unreproducible from the exported plaintext), and the slug matcher was reverse-engineering a mapping it never needed to guess. Importer now binds `source`-first (slug chain kept as fallback for source-less exports); name-less objects synthesize a display name (binary basename + mime-derived extension) so sealed assets serve `image/png`, not octet-stream. **Verified against ground truth, not aggregates:** plan audit binds 457/457 with a bijective object↔binary map, 397/397 body images resolve; in-app re-run created the 37 missing File entities (+26MB), second run idempotent (0 created, +0MB), "Stunde 6 | Natasha" loads 28/28 images (was 26). **Process lesson (the real F-396 failure):** the fix was accepted on aggregate counts ("420/457 bound, missing dropped to 38") without asserting *which* binary each object got or auditing the residue — deep verifies must check the full mapping against the export, which is exactly what caught the 41 wrong-content bindings.
-- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (AI)   **status:** open
+### F-416 — Anthropic's tile truncates mid-word: "Anthropic (Clau…"
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (AI)   **status:** ✅ done (2026-07-23)
 - **what I was trying to do:** glance over the provider tiles on Settings → AI.
 - **what happened:** the first tile's label truncates mid-word inside its own parenthesis — "Anthropic (Clau…" — while every neighbour fits. The tile is fixed-width; the one label that matters most reads like a typo.
 - **what I expected:** the full name, or a truncation that doesn't cut inside a parenthesis ("Anthropic").
 - **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/13-ai.png
-- **triage:** _(open — drop the parenthetical from the tile label (keep it in the dialog title), or let tile labels wrap to two lines.)_
+- **triage / resolution (developer, 2026-07-23):** tile uses a short label (`shell.settings.ai.anthropic.tile` = "Anthropic"); credential dialog keeps the full "Anthropic (Claude)" name. Optional `tileNameKey` on `ProviderMeta` so other providers can follow without forking the tile.
 
 ### F-415 — Backup & Migration shouts five identical red buttons at me
-- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Backup & Migration)   **status:** open
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Backup & Migration)   **status:** ✅ done (2026-07-23)
 - **what I was trying to do:** find the one action I actually wanted (export a backup) among the import cards.
 - **what happened:** all five cards — Export vault, Import data, Obsidian, Notion, Anytype — end in the same filled-accent primary. On Rose (red accent) the page reads like five alarm buttons; nothing says which action is the headline and which are occasional migrations.
 - **what I expected:** one primary (probably Export vault) and quieter secondary faces for the import entry points.
 - **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/07-backup-migration.png
-- **triage:** _(open — button-hierarchy call for the design pass; the shared Button already has ghost/neutral variants to use.)_
+- **triage / resolution (developer, 2026-07-23):** Export vault stays `ButtonVariant.Primary`; Import data / Obsidian / Anytype / Notion entry points drop to `Neutral`. In-dialog confirm actions stay primary (contextual). Hierarchy assertion in the panel smoke test.
 
 ### F-414 — Default apps asks me to pick an opener for "brainstorm/AutomationHostDesignation/v1"
-- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Default apps)   **status:** open
+- **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Default apps)   **status:** ✅ done (2026-07-23)
 - **what I was trying to do:** set which app opens my notes and bookmarks.
 - **what happened:** the OBJECT TYPES list greets me with raw internal ids — `brainstorm/AutomationHostDesignation/v1`, `brainstorm/TokenSet/v1`, `brainstorm/WhiteboardEdge/v1`, `brainstorm/BrowsingSession/v1` — dozens of rows for types I never open by hand, all labeled in wire-format. My actual types are buried in the middle.
 - **what I expected:** human names ("Note", "Bookmark"), and only types a user can actually open.
 - **evidence:** tests/dogfood/.sessions/908-settings-sweep/before/10-default-apps.png
-- **triage:** _(open — needs the entity-type display-name lookup + an "openable" filter (openers registry knows which types have handlers); wire-format ids stay in a dev view if anywhere.)_
+- **triage / resolution (developer, 2026-07-23):** `buildDefaultsCatalog` drops plumbing types (`isPlumbingEntityType`) and types no app claims as an opener (generic Notes inheritance alone no longer floods the list). Each entry carries a human `label` via `typeDisplayName`; the Settings face shows the caption, wire id stays on `title=`.
 
 ### F-413 — my avatar is a pale circle with a speck of dust in it
 - **session:** 908-settings-sweep   **kind:** design   **app:** shell/settings (Identity)   **status:** ✅ done (2026-07-18)
@@ -358,20 +360,20 @@ Newest sessions on top.
 - **triage:** _(open — uniqueness check (per collection) in the create dialog; and the duplicates dialog pattern from Contacts (F-158) would suit the property catalog too.)_
 
 ### F-403 — my dashboard shows a database id where the company name should be
-- **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts (widget)   **status:** open
+- **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts (widget)   **status:** ✅ done (2026-07-23)
 - **what I was trying to do:** glance at the Contacts widget after cleaning up my duplicate Vertex contact.
 - **what happened:** Jonas Wehner's second line reads `ent_mrq2jeakonfzl4aj`. In the app his company shows fine (a "Vertex Labs" chip), but the widget prints the raw entity id. It's not the merge — the 903 capture shows the same leak on an older contact (`ent_mrbyrapeyce60oel`), so ANY contact whose company is a linked Company entity wears an id on my desktop.
 - **what I expected:** the company name (or nothing) — never an internal id.
 - **evidence:** tests/dogfood/.sessions/906-northbound-v050-team-tour/13-dashboard-no-whats-new.png; tests/dogfood/.sessions/903-recent-ship-sweep/01-dashboard-labels.png (same leak, pre-0.5.0)
-- **triage:** _(open — `apps/contacts/src/widget-data.ts` `personSubtitle` guards against *object* companies but the app stores a linked company as a raw id **string**, so the `typeof company === "string"` branch returns the id. Detect `ent_`-shaped ids (or resolve them like the app does) and fall back to empty.)_
+- **triage / resolution (developer, 2026-07-23):** widget query now includes `Company/v1` so linked `Person.company` ids resolve to names via `companyNameIndex`; unresolved `ent_*` ids fall back to empty (never paint wire format). Free-text company strings still show. Unit coverage for resolve / hide / free-text.
 
 ### F-404 — I merged two contacts and the app never told me it worked (it errored instead)
-- **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts   **status:** open
+- **session:** 906-northbound-v050-team-tour   **kind:** bug   **app:** Contacts   **status:** ✅ done (2026-07-23)
 - **what I was trying to do:** finish the duplicate review — "Merge 2 contacts".
 - **what happened:** the merge itself worked (one row left, fields unioned — genuinely good), but there was no confirmation of any kind, and the console logged `pageerror: io.brainstorm.contacts lacks capability for ui.notify` at that moment. So the app *tried* to tell me and the shell dropped it: the toast the flow ships is dead on arrival because the capability isn't in the manifest.
 - **what I expected:** "Merged 2 contacts — the duplicate is in the Bin" (the dialog promises Bin recovery; the confirmation is where I'd learn that held).
 - **evidence:** tests/dogfood/.sessions/906-northbound-v050-team-tour/console.log (pageerror line); 07-contacts-after-merge.png
-- **triage:** _(open — either grant `ui.notify` in the Contacts manifest or drop the notify call; also worth a sweep for other apps calling capabilities they don't hold, since the failure is silent-to-the-user but a real pageerror.)_
+- **triage / resolution (developer, 2026-07-23):** granted `notifications.post` in the Contacts manifest (the Stage 7.7 cap that backs `ui.notify`). Merge / vCard toasts can now reach the shell.
 
 ### F-405 — Journal (and Tasks) advertise "Type '/' for commands" but the menu can't embed anything
 - **session:** 906 / 906c / 906d   **kind:** bug   **app:** editor (Journal + Tasks hosts)   **status:** open
@@ -382,12 +384,12 @@ Newest sessions on top.
 - **triage:** _(open — F-070 follow-up: the shared block-embed/mention nodes are in the Journal/Tasks builds (`apps/journal/src/ui/entry-editor.tsx` promotes `block-embed`), but the hosts' slash typeahead isn't wired to the entity-search/embed commands the Notes menu has. Wire the shared embed picker into both hosts' `/` menus.)_
 
 ### F-406 — the Files view menu shows me "Ic…", "G…", "G…" and expects me to pick one
-- **session:** 906-northbound-v050-team-tour   **kind:** design   **app:** Files   **status:** open
+- **session:** 906-northbound-v050-team-tour   **kind:** design   **app:** Files   **status:** ✅ done (2026-07-18, shell `0e7d3df6` — verified live; friction log catch-up 2026-07-23)
 - **what I was trying to do:** switch the Vault view to Gallery from the header's view select.
 - **what happened:** the dropdown renders so narrow every option label truncates to two letters — "Ic…", "G…", "G…" — and the *current* option renders as a bare checkmark with **no label at all**. Two of the four options both read "G…" (Gallery? Grid?), so the menu is literally undecidable without trial and error. This is the shared select-menu primitive wearing its check-column wrong, not a Files-only style.
 - **what I expected:** a menu wide enough for its own labels: List / Icons / Gallery / Grid, check on the current one.
 - **evidence:** tests/dogfood/.sessions/906-northbound-v050-team-tour/11-files-view-menu.png
-- **triage:** _(open — the trigger-anchored select menu appears to inherit the trigger's width as a max; option rows need intrinsic min-width (label + check column). Check `@brainstorm/sdk/select-menu` sizing against a short trigger like "List ⌄".)_
+- **triage / resolution (developer, 2026-07-18, `0e7d3df6`):** select opener floors `minWidth` at 200px (`Math.max(trigger, 200)`); empty icon column reserved so checked/unchecked rows align. Live-verified: 200px surface, 0 clipped labels.
 
 ### F-402 — every imported note opens with a blank title over the body
 - **session:** 905-anytype-files-deep-verify / 905b   **kind:** bug   **app:** shell/import + Notes   **status:** ✅ done (2026-07-18)
