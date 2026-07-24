@@ -149,7 +149,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Browser-5` | clip-to-vault affordance landed *(2026-06-09, F-161)*: per-tab "Save to vault" button in… | ◑ preview-drop | Net-2 |
-| `Browser-8` | agentic surface: web.browse:read-only sub-cap for autonomous loops (OQ-WV-5) + AI summari… | ⚪ pending | Stage 11 / 11b |
+| `Browser-8` | agentic surface: read-only browsing ✅ (OQ-WV-5 resolved); remaining = the production extractor + AI summ… | 🟡 in flight | Stage 11 / 11b ✅ |
 
 ### Agent writes your vault *(Agent-11
 
