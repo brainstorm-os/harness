@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-24 — **`IE-7` Notion-API import complete** (shell `feat/ie-7-notion-api`): connect a Notion workspace by integration token, preview what it can see, and import pages + database rows straight over the API — no export file (same import plan + dedupe `notion:<page id>` as the export-zip path; token Tier-2, never crosses IPC back out, every call rides Net-1). Also today: the **`Agent-11` ladder COMPLETED** (`11d` database rows + `11e` new databases — propose→approve throughout) and **Agent-Teams** filed (Agent-Teams-1..5, incl. @-mention-an-agent-in-Chat — the 0.12.0 flagship). **`v0.9.0` shipped, plus hotfix `v0.9.1`** (agentic vault-writes · LAN sync · fr/de/it/pt · Notion import). Forward work is **release trains** to GA (`1.0.0`), then v2. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
+**Last updated:** 2026-07-24 — **`Browser-8` read-only browsing + `Net-3` live-DOM feeder** (shell #284 + #285). **OQ-WV-5 resolved → yes**: agent-driven browsing is navigate-and-read, enforced structurally — `web.browse:read-only` is a separate capability scope, the mode comes from the caps the broker verified on the opening call, and a read-only view runs in its own partition whose session refuses every non-GET/HEAD request. **Net-3** then makes in-browser reads real: the page's RENDERED DOM (not a re-fetch — the page on screen is often not what a second GET returns) goes to the same Net-2 extraction worker the static feeder uses. Browser-8 stays in flight for the AI summarize/extract surface. Earlier today: the **`Agent-11` ladder completed** (11d + 11e) and **`IE-7`** Notion-API import shipped. Forward work is **release trains** to GA (`1.0.0`), then v2. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (47)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (44)
 
 ### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
@@ -149,14 +149,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `Browser-5` | clip-to-vault affordance landed *(2026-06-09, F-161)*: per-tab "Save to vault" button in… | ◑ preview-drop | Net-2 |
 | `Browser-8` | agentic surface: read-only browsing ✅ (OQ-WV-5 resolved); remaining = the production extractor + AI summ… | 🟡 in flight | Stage 11 / 11b ✅ |
-
-### Agent writes your vault *(Agent-11
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `Agent-11c/11d/11e` | propose provenance/back-links (the created object links back to the conversation that pro… | ⚪ pending |  |
-| `Agent-11d` | database rows: schema-aware coercion of NL into an existing database's columns (proposed… | ⚪ pending |  |
-| `Agent-11e` | new database: schema inference (columns + types) + rows, as a two-part proposal. | ⚪ pending |  |
 
 ### Agent teams & orchestration *(0.12.0 flagship
 
