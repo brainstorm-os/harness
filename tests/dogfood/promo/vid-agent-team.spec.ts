@@ -19,7 +19,7 @@
 
 import { join } from "node:path";
 import { test } from "@playwright/test";
-import { beat, glideClick, typeHuman } from "../lib/humanize";
+import { beat, typeHuman } from "../lib/humanize";
 import { launchPromoStage } from "../lib/promo-stage";
 
 const HARNESS = join(import.meta.dirname, "..", "..", "..");
