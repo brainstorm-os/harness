@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-24 — **plan + table actualised against `main`.** The table is now REGENERATED from the plan (`bun tools/gen-open-iterations.ts`), which is why the count moved: **82 open — GA 48 · v2 34** (the old 47 counted four rungs the plan already marked ✅ — including a superseded bundled `Agent-11c/11d/11e` bullet, now removed — and missed the LAN ladder entirely). Corrections this pass: **`Mailbox-5` ✅** — all four `MailProtocol`s build a real driver (shell #241); what's left is manual live-account verification + the separate `Mailbox-9` registration, neither of which is code. **`Agent-Teams-1` 🟡** — 1a + 1b landed (shell #276/#277). **`LAN-*` filed as a divergence** — the track-C wedge shipped in shell #264 with its own rung ids and no plan rung to see it: LAN-1/2/6 ✅ as the *localhost proof*, LAN-3/4/5/7/8/9 open, with the real external-socket bind **withheld behind a mandatory security review** (the shell's first inbound socket). It is the concrete first slice of `P2P-1`/`P2P-2`, so that section is re-scoped rather than duplicated. Also this pass: **`Browser-8`** read-only browsing (OQ-WV-5 resolved) + **`Net-3`** live-DOM feeder; earlier today the **`Agent-11` ladder completed** (11d + 11e) and **`IE-7`** Notion-API import shipped. Forward work is **release trains** to GA (`1.0.0`), then v2. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
+**Last updated:** 2026-07-24 — **plan + table actualised against `main`.** The table is now REGENERATED from the plan (`bun tools/gen-open-iterations.ts`), which is why the count moved: **81 open — GA 47 · v2 34** (the old 47 counted four rungs the plan already marked ✅ — including a superseded bundled `Agent-11c/11d/11e` bullet, now removed — and missed the LAN ladder entirely). Corrections this pass: **`Mailbox-5` ✅** — all four `MailProtocol`s build a real driver (shell #241); what's left is manual live-account verification + the separate `Mailbox-9` registration, neither of which is code. **`Agent-Teams-1` 🟡** — 1a + 1b landed (shell #276/#277). **`LAN-*` filed as a divergence** — the track-C wedge shipped in shell #264 with its own rung ids and no plan rung to see it: LAN-1/2/6 ✅ as the *localhost proof*, LAN-3/4/5/7/8/9 open, with the real external-socket bind **withheld behind a mandatory security review** (the shell's first inbound socket). It is the concrete first slice of `P2P-1`/`P2P-2`, so that section is re-scoped rather than duplicated. Also this pass: **`Browser-8`** read-only browsing (OQ-WV-5 resolved) + **`Net-3`** live-DOM feeder; earlier today the **`Agent-11` ladder completed** (11d + 11e) and **`IE-7`** Notion-API import shipped. Forward work is **release trains** to GA (`1.0.0`), then v2. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (48)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (47)
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
 
@@ -124,7 +124,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `IE-7` | one-shot authenticated-API Source (Notion API import) | 🟡 in flight | Connector framework ✅ + IE-6 ✅ |
 | `IE-10e` | Anytype fidelity v2: source-map binding · layout routing · media widths (owner reports 20… | 🟡 in flight |  |
 | `IE-11` | background import/export runs (owner call 2026-07-18: "import/export should be a backgrou… | 🟡 in flight |  |
 | `IE-10` | Anytype import (design platform/72-anytype-import.md): the highest-fidelity third-party s… | ⚪ pending | a real Anytype JSON export fixture (the des… |
