@@ -291,11 +291,19 @@ const RULE_RE = /^(-{3,}|\*{3,}|_{3,})$/;
 const LIST_RE = /^(\s*)(?:[-*+]|\d+[.)])\s+(.+)$/;
 const TABLE_DELIM_RE = /^\|?[\s:|-]+\|?$/;
 
-function isParagraphBreak(raw: string): boolean {
+/** Whether `raw` ends the paragraph being accumulated. `next` is the line
+ *  after it — needed because a `|` line is only a TABLE when a delimiter row
+ *  follows; otherwise it is ordinary prose that merely starts with a pipe
+ *  (a wrapped type union, a shell pipeline), and treating it as structure
+ *  both loses the text and starves the loop of progress. */
+function isParagraphBreak(raw: string, next: string | undefined): boolean {
 	const t = raw.trim();
 	if (t.length === 0) return true;
 	if (t.startsWith("```")) return true;
-	if (t.startsWith("|")) return true;
+	if (t.startsWith("|")) {
+		const delim = (next ?? "").trim();
+		return TABLE_DELIM_RE.test(delim) && delim.includes("-");
+	}
 	if (t.startsWith(">")) return true;
 	if (HEADING_RE.test(t)) return true;
 	if (RULE_RE.test(t)) return true;
@@ -331,6 +339,17 @@ export function markdownToBlocks(
 	let titleSkipped = false;
 
 	while (i < lines.length) {
+		// Every branch below must consume at least one line. A branch that
+		// declines input WITHOUT advancing `i` spins this loop forever and
+		// blocks the whole seed synchronously (no timer, no error — the
+		// process just stops). That happened for real: a wrapped prose line
+		// starting with `|` (a TypeScript union continuation in
+		// `apps/website-publish.md`) is not a table, so the table branch
+		// declined it, and `isParagraphBreak` then said "break" before the
+		// paragraph loop could take it. The guard at the bottom of the loop
+		// makes progress structural rather than a property each branch has to
+		// remember.
+		const lineAtLoopStart = i;
 		const raw = lines[i] ?? "";
 		const t = raw.trim();
 
@@ -414,12 +433,21 @@ export function markdownToBlocks(
 		}
 
 		const paraLines: string[] = [];
-		while (i < lines.length && !isParagraphBreak(lines[i] ?? "")) {
+		while (i < lines.length && !isParagraphBreak(lines[i] ?? "", lines[i + 1])) {
 			paraLines.push((lines[i] ?? "").trim());
 			i++;
 		}
 		const inlines = inlineRun(paraLines.join(" "), resolver);
 		if (inlines.length > 0) blocks.push(paragraph(inlines));
+
+		if (i === lineAtLoopStart) {
+			// Nothing claimed this line. Emit it as prose rather than dropping
+			// it (the content is real — it was only mistaken for structure),
+			// and step past it so the loop always terminates.
+			const orphan = inlineRun(t, resolver);
+			if (orphan.length > 0) blocks.push(paragraph(orphan));
+			i++;
+		}
 	}
 
 	return blocks;
