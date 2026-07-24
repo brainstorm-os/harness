@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-24 — **Agent-Teams track filed** (the `vid-agent-team` reel showed no team because the feature was unbuilt; owner directive to build it). Agent-Teams-1..5 (agents as principals · Team surface + scoped grants · @-mention-an-agent-in-Chat · seeded starter agents · delegation) added under [Agent teams & orchestration](implementation-plan.md), grounded in [platform/69](platform/69-agent-teams-and-orchestration.md); the single-device demo is v1-buildable now, the 0.12.0 flagship. Earlier today: 0.9.0 shipped + four features (Agent-11c · Browser-6 · Form 8.10.5 · i18n 12.15/15d). Forward work is **release trains** to GA (`1.0.0`), then v2. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
+**Last updated:** 2026-07-24 — **the `Agent-11` ladder is COMPLETE**: `11d` database rows + `11e` new databases shipped (shell `feat/agent-11d-db-rows`, `feat/agent-11e-new-database`). The agent now proposes a row in one of your databases (columns + types derived from the live vault, unknown/ambiguous database refused) and whole new databases (schema inference + seed rows, created as Collection + Grid view + one object per row on your approval) — propose→approve throughout, so nothing reaches the vault without a human gesture. Shared pieces promoted to the SDK (`decideRowCreate`/`GENERIC_OBJECT_TYPE`/`coerceScalarValue` → sdk-types; `humanizeKey`, `uniqueName` → sdk). Earlier today: **Agent-Teams track filed** (Agent-Teams-1..5, the 0.12.0 flagship) and 0.9.0 shipped + four features (Agent-11c · Browser-6 · Form 8.10.5 · i18n 12.15/15d). Forward work is **release trains** to GA (`1.0.0`), then v2. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (47)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (44)
 
 ### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
@@ -150,14 +150,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `Browser-5` | clip-to-vault affordance landed *(2026-06-09, F-161)*: per-tab "Save to vault" button in… | ◑ preview-drop | Net-2 |
 | `Browser-8` | agentic surface: web.browse:read-only sub-cap for autonomous loops (OQ-WV-5) + AI summari… | ⚪ pending | Stage 11 / 11b |
-
-### Agent writes your vault *(Agent-11
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `Agent-11c/11d/11e` | propose provenance/back-links (the created object links back to the conversation that pro… | ⚪ pending |  |
-| `Agent-11d` | database rows: schema-aware coercion of NL into an existing database's columns (proposed… | ⚪ pending |  |
-| `Agent-11e` | new database: schema inference (columns + types) + rows, as a two-part proposal. | ⚪ pending |  |
 
 ### Agent teams & orchestration *(0.12.0 flagship
 
