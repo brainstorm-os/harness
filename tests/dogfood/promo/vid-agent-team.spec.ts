@@ -19,7 +19,7 @@
 
 import { join } from "node:path";
 import { test } from "@playwright/test";
-import { beat, glideClick, typeHuman } from "../lib/humanize";
+import { beat, typeHuman } from "../lib/humanize";
 import { launchPromoStage } from "../lib/promo-stage";
 
 const HARNESS = join(import.meta.dirname, "..", "..", "..");
@@ -41,22 +41,36 @@ test("capture VID-agent-team reel", async () => {
 	await s.seedMarketing();
 
 	const agent = await s.openApp(AGENT);
+	agent.on("console", (m) => {
+		const t = m.text();
+		if (t.includes("[agent-diag]") || t.toLowerCase().includes("error")) console.log("[APP]", t);
+	});
 
-	/** Card locator by the summary text the agent proposed. */
-	const card = (text: RegExp) =>
-		agent.locator('[data-testid="agent-proposal"]').filter({ hasText: text }).first();
+	/** Card locator by its `data-kind` — the card's field VALUES live in
+	 *  `<input>`s (not DOM text), so `hasText` can't match them; the kind attr can. */
+	const card = (kind: string) =>
+		agent.locator(`[data-testid="agent-proposal"][data-kind="${kind}"]`).first();
 
 	// ── 01: ASK — tell the agent, in your own words ──────────────────────────
 	await s.scene("01-ask", async () => {
 		await s.film(agent);
+		// Wait for the app to mount (the send button is the reliable ready-signal)
+		// before starting a fresh chat, so the New-chat click doesn't miss and the
+		// transcript opens clean.
+		await agent
+			.locator('[data-testid="agent-send"]')
+			.first()
+			.waitFor({ state: "visible", timeout: 15_000 })
+			.catch(() => undefined);
 		await agent
 			.locator('[aria-label="New chat"]')
 			.first()
 			.click()
 			.catch(() => undefined);
-		await beat(agent, 700);
+		await beat(agent, 900);
 		const composer = agent.locator('[contenteditable="true"], textarea').last();
 		await composer.click().catch(() => undefined);
+		await beat(agent, 300);
 		await typeHuman(agent, PROMPT, 22);
 		await beat(agent, 500);
 		await agent
@@ -80,10 +94,12 @@ test("capture VID-agent-team reel", async () => {
 	// ── 03: EDIT — you're the editor ─────────────────────────────────────────
 	await s.scene("03-edit", async () => {
 		await s.film(agent);
-		const email = card(/Priya/).locator("input").nth(1);
-		if (await email.count().catch(() => 0)) {
-			await email.click().catch(() => undefined);
-			await beat(agent, 500);
+		// The contact card's Phone field (empty) — fill it to show live editing.
+		const phone = card("contact").locator("input").nth(2);
+		if (await phone.count().catch(() => 0)) {
+			await phone.click().catch(() => undefined);
+			await beat(agent, 300);
+			await typeHuman(agent, "+1 555 0142", 40);
 		}
 		await beat(agent, 900);
 	});
@@ -92,30 +108,36 @@ test("capture VID-agent-team reel", async () => {
 	await s.scene("04-approve", async () => {
 		await s.film(agent);
 		// Discard the check-in event, keep the contact + the task.
-		await card(/check-in|Meridian/)
+		await card("event")
 			.locator('[data-testid="agent-proposal-discard"]')
 			.click()
 			.catch(() => undefined);
-		await beat(agent, 700);
-		await card(/Priya/)
+		await beat(agent, 800);
+		await card("contact")
 			.locator('[data-testid="agent-proposal-approve"]')
 			.click()
 			.catch(() => undefined);
-		await beat(agent, 700);
-		await card(/Follow up/)
+		await beat(agent, 800);
+		await card("task")
 			.locator('[data-testid="agent-proposal-approve"]')
 			.click()
 			.catch(() => undefined);
-		await beat(agent, 900);
+		await beat(agent, 1000);
 	});
 
 	// ── 05: KEPT — the drafts are now real, in their apps ────────────────────
 	await s.scene("05-kept", async () => {
 		const contacts = await s.openApp(CONTACTS);
 		await s.film(contacts);
-		await beat(contacts, 1400);
+		await beat(contacts, 1600);
 		const tasks = await s.openApp(TASKS);
 		await s.film(tasks);
+		// The follow-up is due next week — Upcoming surfaces it (Today wouldn't).
+		await tasks
+			.locator("text=Upcoming")
+			.first()
+			.click()
+			.catch(() => undefined);
 		await beat(tasks, 1400);
 	});
 });

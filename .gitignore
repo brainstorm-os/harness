@@ -29,4 +29,8 @@ tests/dogfood/.promo-data-staging/
 tests/dogfood/.promo/
 tests/dogfood/.promo-notes/
 tests/dogfood/.promo-notes-data/
+tests/dogfood/.promo-agent/
+tests/dogfood/.promo-agent-data/
+tests/dogfood/.verify-editor/
+tests/dogfood/.verify-editor-data/
 tests/dogfood/Singleton*
