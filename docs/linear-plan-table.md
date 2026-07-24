@@ -12,6 +12,7 @@ So progress is visible — this list grows as the open table below shrinks. Comp
 
 | Done | ID | Task | Landed |
 | ---- | -- | ---- | ------ |
+| ✅ | `Browser-8` (complete) | **Summarize this page** — the ⋯ menu reads the live page (Net-3) and summarizes it through the broker, into a dismissible panel. Goes through `ai.transform` with a NEW `AiTransformKind.Summarize`, so the page rides `source` (user role only) and the "content, never instructions" guard lives once in the contract for every app that summarizes (shell `feat/browser-8-summarize`) | 2026-07-24 |
 | ✅ | `Net-3` | **Live-DOM feeder** — the rendered DOM of a partitioned `WebContentsView` goes to the SAME Net-2 extraction worker the static feeder uses (one shape for an in-browser read and a fetched URL). Clamps on both sides of the parser; truncation flagged, never silently elided (shell #285) | 2026-07-24 |
 | ✅ | `Browser-8` (read-only half) | **Agentic browsing is navigate-and-read** — **OQ-WV-5 resolved**: `web.browse:read-only` as a separate capability scope, mode derived from broker-verified caps and fixed at open, own throwaway partition, session refuses every non-GET/HEAD request. Remaining: the AI summarize/extract surface (shell #284) | 2026-07-24 |
 | ✅ | `IE-7` | **Notion import over the API** — no export file: connect a workspace, preview what the integration can see, import. Lands in the same `NotionImportPlan` the export-zip path produces, so one write path + one dedupe rule (`notion:<page id>`). Token stored Tier-2, never back across IPC (shell #282) | 2026-07-24 |
@@ -42,14 +43,13 @@ So progress is visible — this list grows as the open table below shrinks. Comp
 
 ## Open work (single-track order)
 
-Regenerated against `implementation-plan-table.md` ground truth, **2026-07-24** (Open: **81** — GA 47 · v2 34). Ordered by the current release train first, then by what unblocks the most.
+Regenerated against `implementation-plan-table.md` ground truth, **2026-07-24** (Open: **80** — GA 46 · v2 34). Ordered by the current release train first, then by what unblocks the most.
 
 **Read this before picking a row:** several rows are **gate-blocked by design** and should not be started ahead of their gate — `8.10.2`/`8.10.3` wait on the post-v1 Layouts render pipeline (`8.3`/`8.4`); `LAN-4`/`LAN-9` wait on a mandatory security review of the shell's first inbound socket; `9.18.8` waits on editor text-anchoring; `IE-10` waits on a real Anytype export fixture. Rows marked **owner** are standing tracks that ride alongside the queue rather than blocking it.
 
 | # | ID | Task | Train | Gate / dep | Status |
 | -: | -- | ---- | ----- | ---------- | ------ |
-| 1 | `Browser-8` (rest) | AI summarize/extract surface — the read path underneath it is live as of `Net-3`; `capture` → `Bookmark/v1` binds the same way | 0.10.0 | none (extractor bound) | 🟡 |
-| 2 | `Browser-5` | clip-to-vault — affordance shipped; bind the write path to the same Net-3 feeder | 0.10.0 | `Net-3` ✅ | ◑ |
+| 1 | `Browser-5` | clip-to-vault — affordance shipped; bind the write path to the same Net-3 feeder | 0.10.0 | `Net-3` ✅ | ◑ |
 | 3 | `8.10.2` | Form-designer editing canvas — `stacked`↔`grid` switch + per-cell subscriptions (drag-to-reorder ✅) | 0.10.0 hero | **`8.3` render pipeline (unbuilt)** | 🟡 |
 | 4 | `8.10.3` | Form-designer group nesting + chrome-cell palette | 0.10.0 hero | **`8.4` chrome registry** (OQ-90) | ⚪ |
 | 5 | `9.18.8` | Bookmarks highlights & annotations on captured content | 0.10.0 rider | editor text-anchoring on the captured body | ⚪ |
@@ -94,4 +94,4 @@ Regenerated against `implementation-plan-table.md` ground truth, **2026-07-24** 
 
 ---
 
-**Resume pointer:** the top of the queue is **`Browser-8`'s remaining half** (row 1) — the AI summarize/extract surface, genuinely unblocked now that `Net-3` bound the extractor — with **`Browser-5`** (row 2) as its natural twin, since clip-to-vault binds the same feeder. Both are 0.10.0. The train's other hero, Form-designer `8.10.2`/`8.10.3` (rows 3–4), is **gate-blocked on the unbuilt Layouts render pipeline `8.3`/`8.4`** — building that pipeline is the real unlock if 0.10.0 is to close on its named heroes. Two long-lead items deserve starting out of order: **`Mailbox-9`** (row 19 — external OAuth registration, months of lead time, 🔴 for GA) and **`NAPI-P`** (row 13 — it gates every native target). The LAN ladder (rows 20–24) can progress to `LAN-3`, but **must not open a real socket** before the security review. Regenerate the source counts with `bun tools/gen-open-iterations.ts`; this linear file is hand-ordered and updated when dependency state changes.
+**Resume pointer:** `Browser-8` is **complete** (read-only browsing + summarize), so the top of the queue is **`Browser-5`** (row 1) — clip-to-vault, which binds the same Net-3 feeder the summarize path just proved. The train's other hero, Form-designer `8.10.2`/`8.10.3` (rows 3–4), is **gate-blocked on the unbuilt Layouts render pipeline `8.3`/`8.4`** — building that pipeline is the real unlock if 0.10.0 is to close on its named heroes. Two long-lead items deserve starting out of order: **`Mailbox-9`** (row 19 — external OAuth registration, months of lead time, 🔴 for GA) and **`NAPI-P`** (row 13 — it gates every native target). The LAN ladder (rows 20–24) can progress to `LAN-3`, but **must not open a real socket** before the security review. Regenerate the source counts with `bun tools/gen-open-iterations.ts`; this linear file is hand-ordered and updated when dependency state changes.
