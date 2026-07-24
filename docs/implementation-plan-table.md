@@ -113,7 +113,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Net-3` | live-DOM feeder *(gate Browser-1 ✅ | ⚪ pending | Browser-1 ✅ — cleared with the Browser app |
 
 ### Import, export & migration *(doc [45](platform/45-import-export.md)
 
