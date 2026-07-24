@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-22 — **`7.14` app-icon notification badges core shipped** (shell feat/7.14-app-badges: `ui.badge` service + dashboard chip + Mailbox consumer); **Form-designer `8.10.4`** conditional field visibility (shell `7733b813`: predicate-eval `visibility-rules` wired into a Builder condition editor + Fill-mode hide/validate/persist) + Graph **`9.13.10e`** earlier same day. **`v0.7.0` shipped**; **roadmap restructured.** The pre-beta gate machinery (G0→G4, beta-freeze, decision queue, beta-exit checklist, cut levers) is **retired** and archived in [implementation-log.md § Beta program (retired)](implementation-log.md#beta-program-retired--shipped-v015-2026-06-29). Forward work is now **release trains** — each with two hero features + a mandatory product-polish batch — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). **New tracks:** **`P2P-*`** peer-to-peer sync (design-only spike, `P2P-0` first), **`POLISH-*`** product-polish / dogfood hardening (standing, owner-driven), and **`VID-*`** weekly app-showcase videos (standing, one app / week — a polish→capture→publish cadence, owner-driven). **Open: 75 — GA 41 · v2 34.** 🎉 Public beta shipped 2026-06-29 (`v0.1.5`); everything open is GA / pre-1.0 polish or the v2 commercial stack.
+**Last updated:** 2026-07-24 — **four features merged in parallel (shell #271–#274):** `Agent-11c` server-authoritative provenance + chat back-link chips · `Browser-6` downloads → Files host (bytes sealed as `File/v1` in the vault) · Form-designer `8.10.5` apply-form-as-type-default + install-contract (`validateAppLayouts`) round-trip · i18n `12.15/15d` — declared the shipped fr/de/it/pt overlay packs across all 12 apps (closing the `check-app-i18n` lint gate) and confirmed the app-renderer locale seam end-to-end. Authored in four isolated git worktrees, integrated as four PRs. **Open: 76 — GA 42 · v2 34** (the prior `75` was stale-low). Forward work is **release trains** — two heroes + a product-polish batch each — up to GA (`1.0.0`), then the v2 commercial stack (see [implementation-plan.md § Release trains](implementation-plan.md#release-trains--the-forward-queue-2-heroes-each)). 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (41)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (42)
 
 ### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
@@ -68,7 +68,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `12.15` | app-renderer locale propagation + per-app translation packs (the explicitly-deferred "Sti… | 🟡 in flight |  |
-| `15d` | content (the big lift, one slot per app or fan-out). 12/18 apps landed *(2026-07-13)*: co… | 🟡 in flight |  |
+| `15d` | content (the big lift, one slot per app or fan-out). 12/18 apps landed *(2026-07-13; fr/d… | 🟡 in flight | enforces — #274 closed a mismatch where the… |
 
 ### Native acceleration *(NAPI-RS, post-beta perf track)*
 
@@ -136,7 +136,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `8.10.2` | editing canvas: drag-to-reorder cells, stacked↔grid switch, live Layout/v1 mutation with… | 🟡 in flight | 8.3 |
 | `8.10.3` | group nesting + chrome-cell palette (actionBar/breadcrumb/meta/windowControls/entityHeade… | ⚪ pending | 8.4 (resolves OQ-90 |
-| `8.10.5` | save-as-Layout/v1 entity + apply-to-type + install-time validateAppLayouts (8.5) round-tr… | 🟡 in flight | 8.5 |
 
 ### Mailbox *(group I)*
 
@@ -150,8 +149,15 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Browser-5` | clip-to-vault affordance landed *(2026-06-09, F-161)*: per-tab "Save to vault" button in… | ◑ preview-drop | Net-2 |
-| `Browser-6` | downloads → Files host service | ⚪ pending | 9.10 |
 | `Browser-8` | agentic surface: web.browse:read-only sub-cap for autonomous loops (OQ-WV-5) + AI summari… | ⚪ pending | Stage 11 / 11b |
+
+### Agent writes your vault *(Agent-11
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `Agent-11c/11d/11e` | propose provenance/back-links (the created object links back to the conversation that pro… | ⚪ pending |  |
+| `Agent-11d` | database rows: schema-aware coercion of NL into an existing database's columns (proposed… | ⚪ pending |  |
+| `Agent-11e` | new database: schema inference (columns + types) + rows, as a two-part proposal. | ⚪ pending |  |
 
 ### Connector framework *(group I)*
 
@@ -231,3 +237,4 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Connector-8` | starter set (Calendar / Contacts / Slack / GitHub / Jira / Linear → canonical types) + Ma… | ⚪ pending | 14.17 |
+
