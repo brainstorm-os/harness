@@ -53,6 +53,8 @@ Regenerated against `implementation-plan-table.md` ground truth, **2026-07-24** 
 | 3 | `8.10.2` | Form-designer editing canvas — `stacked`↔`grid` switch + per-cell subscriptions (drag-to-reorder ✅) | 0.10.0 hero | **`8.3` render pipeline (unbuilt)** | 🟡 |
 | 4 | `8.10.3` | Form-designer group nesting + chrome-cell palette | 0.10.0 hero | **`8.4` chrome registry** (OQ-90) | ⚪ |
 | 5 | `9.18.8` | Bookmarks highlights & annotations on captured content | 0.10.0 rider | editor text-anchoring on the captured body | ⚪ |
+| 5.1 | `Props-3` | Tasks → `<EntityPropertiesPanel>` — needs an ordered host-row slot on the shared panel first | 0.10.0 rider | **SDK slot decision** | ⚪ |
+| 5.2 | `Props-4` | Notes → `<EntityPropertiesPanel>` — the one clean migration; its add-picker is shared with the Lexical `/property` command | 0.10.0 rider | **picker decision** | ⚪ |
 | 6 | `7.14` (rest) | App badges — OS dock/taskbar aggregation under ONE owner · Chat/Agent/Automations consumers · running-windows strip | 0.10.0 rider | core ✅ | 🟡 |
 | 7 | `Lock-3` | Retro-fill the read-only-lock workflow bar (cleanup) | 0.10.0 rider | none | ⚪ |
 | 8 | `IE-11` | Background import/export runs (owner call 2026-07-18) | 0.10.0 rider | none | 🟡 |

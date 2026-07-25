@@ -176,6 +176,13 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `Lock-3` | retro-fill the workflow bar *(partly paid by shell PR #18 lock-rollout-fixes/5ffda45, 202… | ⚪ pending | none (cleanup |
 
+### Properties-panel management (fleet, cross-app)
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `Props-3` | Tasks: needs a host-row slot on <EntityPropertiesPanel> first (blocked, not mechanical).… | ⚪ pending | the SDK slot decision |
+| `Props-4` | Notes onto <EntityPropertiesPanel> | ⚪ pending | the picker decision |
+
 ## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (34)
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
