@@ -1426,6 +1426,29 @@ User feedback (2026-06-30): *"we have a design system, so [an input not matching
 
 ---
 
+## Properties-panel management (fleet, cross-app)
+
+Audit (2026-07-25, this session): **whether you can add or remove a property on an object depends on which app you opened it in** — the same entity in the same vault. The SDK already ships the complete answer and almost nobody uses it.
+
+Two shared surfaces exist, one layered on the other: the primitive **`@brainstorm-os/sdk/properties-panel` → `<PropertiesPanel>`** (chrome + rows the host builds itself), and the complete **`@brainstorm-os/sdk/property-ui` → `<EntityPropertiesPanel>`** (a `ValuesMap` → editable rows **+ add-menu + remove + a `canMutate` lock gate**, wrapping the primitive). Only **Journal** and **Preview** use the complete one. Eight apps hand-build rows on the primitive and each re-implements — or silently omits — add / remove / lock:
+
+| Capability today | Apps |
+| --- | --- |
+| add **and** remove | Notes, Tasks *(both hand-rolled)*; Journal, Preview *(shared)* |
+| neither | Bookmarks, Books, Contacts, Database, Files, Graph |
+
+Lock enforcement lands at three different layers: row-level `readOnly` (Bookmarks, Books, Contacts, Notes, Tasks) · shared `canMutate` (Journal, Preview) · **commit-level only (Database)**. Graph and Files have no lock concept.
+
+**Scope correction — only 4 of the 8 are migratable.** `<EntityPropertiesPanel>` is driven by a real user-bindable `ValuesMap`. Books (`bookToValues(book)` — typed author/format/pages), Files (`customPropertyRows()` — size/type/path), Database (columns via `EditableCell`) and Graph (selection summary) render **derived projections**, not bindable bags; migrating them would mean inventing a values bag they don't have. They stay on the primitive *by decision*, not by drift.
+
+- ⚪ Props-1 — **Database: raise the lock to row level**. `editProperty` no-ops for a locked record (`apps/database/src/app.ts:1466`, `:3548`), so inspector rows still *look* editable and silently discard the edit — a silent-data-loss shape, and the one item here independent of the migration. Thread `isRecordLocked()` into the row's `readOnly` so locked rows paint locked. Smallest rung; do it first. **Gate: none.**
+- ⚪ Props-2 — **Bookmarks + Contacts onto `<EntityPropertiesPanel>`**. Both have a real values bag and currently offer *no* add/remove, so this is a pure win with no bespoke picker to reconcile: they gain the full management surface and shed their hand-rolled row builders. Ships the migration pattern the rest follow. **Gate: none.**
+- ⚪ Props-3 — **Tasks onto `<EntityPropertiesPanel>`**. Has a values bag and hand-rolled add + remove (`apps/tasks/src/ui/task-properties-panel.tsx`). **Check first** whether its add-property picker is entangled with any editor/slash surface the way Notes' is (Props-4); if it isn't, this is mechanical. **Gate: none.**
+- ⚪ Props-4 — **Notes onto `<EntityPropertiesPanel>` — blocked on a picker decision (OQ)**. Notes' `addPropertyStore` is **shared with the Lexical editor**: the `/property` slash command (`apps/notes/src/editor/commands.tsx:501,513`) and `add-property-menu-plugin.tsx` open the same store. `<EntityPropertiesPanel>` brings its own `AddPropertyPicker`, so migrating as-is gives Notes **two different add-property pickers**. Decide which wins — teach the shared panel to accept a host-supplied picker, or move the editor's slash command onto the shared one — before any code moves. **Gate: the picker decision.**
+- ⚪ Props-5 — **record the non-migrators as deliberate**. Add Books / Files / Graph / Database's derived-projection panels to [apps/09-shared-sdk-catalog.md](apps/09-shared-sdk-catalog.md) → *"What is deliberately not shared"*, with the `ValuesMap` reasoning, so the next audit doesn't re-litigate it. Also decide whether `<EntityPropertiesPanel>` should grow a per-row override (the primitive's `valueNode`, which Database needs for `EditableCell`) or stay values-bag-only. **Gate: none.**
+
+---
+
 ## Open questions that gate work
 
 Resolving these is the precondition for the work they gate (full ledger: [reference/11-open-questions.md](reference/11-open-questions.md)).

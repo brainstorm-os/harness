@@ -48,12 +48,17 @@ So progress is visible — this list grows as the open table below shrinks. Comp
 
 ## Open work (single-track order)
 
-Reconciled against `implementation-plan-table.md` ground truth, **last 2026-07-03 (pm)** (Open: 68 — Beta-blocking 0 · GA 32 · v2/post-v2 36). **No open iteration gates the beta** — the only thing between here and `2026-09-01` is the RC-cut process work (row 6). Stage-10 sync (`10.12`/`10.13`/`10.14`) + the durable node (`SYNC-2..5`) are ✅ real-shell verified. **Encrypted attachment sync** is the live infra track: `Asset-B1`–`B4`-core ✅ (DEK re-homing → chunked wire → durable CAS → up/download transport wired), `B4b`/`B4c`/`B5`/`B6` next (GA). The DnD spine shipped (`DND-1`–`DND-5` ✅); only the a11y twins (`DND-6` ✅ (shell #185)) remain. The AI/Stage-11 push (`11.4`/`11.5`/`11.6`/`11.8`/`11.9`) and import/export (`IE-1…IE-6` + `IE-8` core) have **landed but stay 🟡** behind documented residue tails (real vector recall via `11.3`, `extract intoType`/streaming, per-app budgets, IE-7 API source), so they remain below.
+Reconciled against `implementation-plan-table.md` ground truth, **last 2026-07-03 (pm)** (Open: 73 — Beta-blocking 0 · GA 37 · v2/post-v2 36). **No open iteration gates the beta** — the only thing between here and `2026-09-01` is the RC-cut process work (row 6). Stage-10 sync (`10.12`/`10.13`/`10.14`) + the durable node (`SYNC-2..5`) are ✅ real-shell verified. **Encrypted attachment sync** is the live infra track: `Asset-B1`–`B4`-core ✅ (DEK re-homing → chunked wire → durable CAS → up/download transport wired), `B4b`/`B4c`/`B5`/`B6` next (GA). The DnD spine shipped (`DND-1`–`DND-5` ✅); only the a11y twins (`DND-6` ✅ (shell #185)) remain. The AI/Stage-11 push (`11.4`/`11.5`/`11.6`/`11.8`/`11.9`) and import/export (`IE-1…IE-6` + `IE-8` core) have **landed but stay 🟡** behind documented residue tails (real vector recall via `11.3`, `extract intoType`/streaming, per-app budgets, IE-7 API source), so they remain below.
 
 | # | ID | Task | Run | Gate / dep | Status |
 | -: | -- | ---- | --- | ---------- | ------ |
 | 1 | `9.13.10e` | Graph live bucketed event stream (delivered by the 9.13.16 reactivity refactor — no separate `entities.subscribe`) | R2 Core apps | prior graph-streaming rung (dep-gated) | ✅ (2026-07-22, shell `68607538`) |
 | 2 | `9.7.6` | Code-editor inline squiggles + problem list (core ✅) | R2 Core apps | LSP language-server binary (out-of-sandbox) | 🟡 |
+| 3 | `Props-1` | Database: raise the read-only lock to row level — locked rows currently look editable and **silently discard** the edit | R2 Core apps | none | ⚪ |
+| 3.1 | `Props-2` | Bookmarks + Contacts onto the shared `<EntityPropertiesPanel>` — they gain add/remove; ships the migration pattern | R2 Core apps | Props-1 | ⚪ |
+| 3.2 | `Props-3` | Tasks onto `<EntityPropertiesPanel>` — check for a slash/editor picker entanglement first | R2 Core apps | Props-2 | ⚪ |
+| 3.3 | `Props-4` | Notes onto `<EntityPropertiesPanel>` — its add-picker is shared with the Lexical `/property` command | R2 Core apps | **picker decision** | ⚪ |
+| 3.4 | `Props-5` | record Books/Files/Graph/Database's derived-projection panels as deliberately-not-shared | R2 Core apps | Props-2 | ⚪ |
 | 4 | `9.18.8` | Bookmarks highlights & annotations on captured content + per-bookmark list | R2 Core apps | editor text-anchoring on captured body | ⚪ |
 | 5 | `9.18.9` | Bookmarks captured-image offline assets (store article images in the encrypted asset store) | R2 Core apps | asset Part-B (`Asset-B*`) + `assets.*` | ⚪ |
 | 6 | — | bug burn-down + feature freeze → RC cut | 🚩 BETA `2026-09-01` | all feature gates ✅ | ⚪ |
