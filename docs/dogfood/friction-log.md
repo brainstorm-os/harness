@@ -54,12 +54,13 @@ Newest sessions on top.
 - **triage:** _(open — smallest fix: teach `operandId` to also accept `{ entityId }` (and/or have the EntityEvent trigger payload carry `id` as an alias). One-line-ish, removes the glue step from every entity-triggered workflow.)_
 
 ### F-460 — I asked the assistant to "make a task for this" and it just talked back
-- **session:** 914-mira-business-automation-audit (2026-07-23)   **kind:** gap   **app:** Agent   **status:** open
+- **session:** 914-mira-business-automation-audit (2026-07-23)   **kind:** gap   **app:** Agent   **status:** ✅ done (Agent-11b 2026-07-23 · 11d/11e shipped in v0.10.0)
 - **what I was trying to do:** use the AI assistant the way I'd use a chief-of-staff — "read this and create a follow-up task", "add this person to my contacts."
 - **what happened:** the assistant can *find* things and *open* them, and it can draft an email or save our chat as an automation — but it can't actually create or change anything in my workspace from the chat. It answered as if it had done it, but nothing appeared.
 - **what I expected:** the assistant to take the action (create the task, update the record) — or at least tell me it can't, rather than implying it did.
 - **evidence:** `apps/agent/src/logic/agent-tools.ts` — `curatedAgentTools` offers exactly one tool, `open` (read-only navigation); the code note says mutating verbs "arrive with the per-conversation grant UI (Agent-5)". So chat-side actions are limited to open / draft-email / save-as-automation. (Automations workflows CAN act via AIAgent tools — the chat app just doesn't expose them yet.)
 - **triage:** _(open — two things: (1) the honesty bug — the model shouldn't claim it acted when it has no write tool; tighten the system prompt to state its tools are read-only. (2) the feature — land the Agent-5 per-conversation grant UI so a user can grant, e.g., "create Task" and the curated set expands beyond `open`. Ties to F-458's "file/label" intents.)_
+- **closed 2026-07-26 (verified in code):** the evidence line — "`curatedAgentTools` offers exactly one tool, `open`" — is no longer true. It now returns `open` **plus** the full propose set, plus `PROPOSE_ROW_VERB` (when the vault has databases) and `PROPOSE_DATABASE_VERB`. **Agent-11b** (2026-07-23, the same day this was filed — the session ran against a pre-11b build) made the agent generate real vault data in chat, and **11d/11e** shipped in `v0.10.0`. Both halves of the triage are answered: the write path exists, and it's *propose→approve* rather than silent action, with `PROPOSE_TOOL_GUIDANCE` in the system prompt — so the model no longer has to claim an action it can't take. What it produces is a card you approve, which is the honest form of "make a task for this".
 ### F-457 — flipping to the year overview and back drops me on January, not this month
 - **session:** 912-mira-calendar-deep / 912b-calendar-view-anchor-repro   **kind:** bug   **app:** Calendar   **status:** ✅ done (2026-07-23, shell PR #257)
 - **what I was trying to do:** doing my usual planning — I tapped **Year** to eyeball the whole year, then tapped **Month** to get back to what I was doing.
@@ -197,7 +198,7 @@ Newest sessions on top.
 - **triage:** _(open — (a) capture full stderr of the per-app build, (b) a failed build must surface as a boot-blocking banner/notification, not a console warn, (c) don't mark the app "seeded/skipped" when its build failed. Root-cause of the esbuild exits still to be found — same class as the DEPLOYFIX-59069a1 poisoned-vault trap, new vector.) **Second vector confirmed 2026-07-18 (22:10 smoke):** the vite per-app CSS cache served PR #205's app-theme.css change stale — the smoke build's `bs-btn--lg` rule lacked the new `border-radius` even though main had it; a warm-cache seed rebuild propagates app-source changes but not shared-SDK CSS. (d) the seeder should build with a cold CSS cache or hash the SDK inputs into the app-bundle hash.)_
 
 ### F-435 — composing mail is plain-text; I want the real editor surface and HTML mail out
-- **session:** owner report (2026-07-18)   **kind:** gap   **app:** Mailbox   **status:** open → planned as Mailbox-11
+- **session:** owner report (2026-07-18)   **kind:** gap   **app:** Mailbox   **status:** ✅ done (2026-07-18, shell #208 — Mailbox-11)
 - **what I was trying to do:** write a mail with formatting.
 - **what happened:** the composer body is a bare textarea; sent mail is text-only.
 - **what I expected:** the shared rich-text editor surface (like Notes), sending proper HTML mail.
