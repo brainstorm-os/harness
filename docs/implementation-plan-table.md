@@ -138,7 +138,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `8.10.2` | editing canvas: drag-to-reorder cells, stacked↔grid switch, live Layout/v1 mutation with… | 🟡 in flight | 8.3 |
 | `8.10.3` | group nesting + chrome-cell palette (actionBar/breadcrumb/meta/windowControls/entityHeade… | ⚪ pending | 8.4 (resolves OQ-90 |
 
 ### Mailbox *(group I)*
