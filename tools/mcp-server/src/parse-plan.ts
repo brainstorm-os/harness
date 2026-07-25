@@ -84,7 +84,7 @@ export const BULLET_RE = /^\s*-\s+([✅🟡◑⚪❌])\s+(\S.*)$/u;
  *  plan-side bullet. A second branch catches the letter/word-suffixed
  *  track ids (`NAPI-P`, `Public-source`) the digit-suffix list can't. */
 const LEAD_ID_RE =
-	/^(KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|Asset-B\d+[a-z]?|POLISH-(?:[A-Z]+-)?\d+[a-z]?|DS-[A-Za-z]+(?:-[A-Za-z]+)*-\d+[a-z]?|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|Mktg|Launch|Lock|IE|AS|SYNC|MCP|DND|MOB|P2P)-\d+[a-z]?|(?:NAPI|Public)-[A-Za-z][\w-]*|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
+	/^(Agent-Teams-\d+[a-z]?|KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|Asset-B\d+[a-z]?|POLISH-(?:[A-Z]+-)?\d+[a-z]?|DS-[A-Za-z]+(?:-[A-Za-z]+)*-\d+[a-z]?|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|Mktg|Launch|Lock|IE|AS|SYNC|MCP|DND|MOB|P2P|LAN)-\d+[a-z]?|(?:NAPI|Public)-[A-Za-z][\w-]*|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
 
 function iconToStatus(icon: string): IterationStatus {
 	switch (icon) {
@@ -157,10 +157,13 @@ function stagesFromSpec(spec: string): string[] {
 
 function leadId(bulletText: string): string | null {
 	// Many bullets bold their lead id ("**Help-1 — in-app Help center…**")
-	// — strip a single `**` prefix so the id sits at position 0 where
-	// LEAD_ID_RE expects it.
-	const stripped = bulletText.replace(/^\*\*/, "");
-	const firstToken = /^(\S+)/.exec(stripped)?.[1] ?? "";
+	// or code-span it ("`P2P-0` — portability spike…") — strip a single `**`
+	// and/or a leading backtick so the id sits at position 0 where LEAD_ID_RE
+	// expects it. Without the backtick strip a whole section can silently
+	// vanish from the projection: every `P2P-*` bullet writes its id in a code
+	// span, so the vault's task picture showed none of them.
+	const stripped = bulletText.replace(/^\*\*/, "").replace(/^`/, "");
+	const firstToken = (/^(\S+)/.exec(stripped)?.[1] ?? "").replace(/`.*$/, "");
 	return LEAD_ID_RE.exec(firstToken)?.[1] ?? null;
 }
 

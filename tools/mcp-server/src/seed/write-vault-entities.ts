@@ -88,6 +88,15 @@ export async function writeVaultEntities(
 	if (blobs.selfHosting) projectSelfHostingFromBlob(blobs.selfHosting, snapshot);
 	if (blobs.notes) projectNotesFromBlob(blobs.notes, snapshot);
 
+	// Every projector already stamps the entity's `createdAt`/`updatedAt`
+	// COLUMNS, but only some also mirror them into the property bag — so a
+	// seeded Note / Iteration / OpenQuestion / DesignDoc / Journal entry showed
+	// a blank "Created" wherever the UI reads properties (which is where an
+	// app-created entity puts them: see the Agent's own create mapper). Mirror
+	// them here, once, rather than in each projector: the rule can't then drift
+	// per type, and an explicit property value always wins.
+	stampTimestampProperties(snapshot);
+
 	const entitiesProjected = snapshot.entities.length;
 	const linksProjected = snapshot.links.length;
 	if (entitiesProjected === 0 && linksProjected === 0) {
@@ -157,5 +166,20 @@ export async function writeVaultEntities(
 		return { ...stats, deferredToSidecar: false, entitiesProjected, linksProjected };
 	} finally {
 		db.close();
+	}
+}
+
+/** Mirror each entity's timestamp COLUMNS into its property bag, so the
+ *  seeded rows carry `createdAt`/`updatedAt` the same way an app-created
+ *  entity does. Never overwrites a value a projector set deliberately. */
+function stampTimestampProperties(snapshot: VaultEntitiesSnapshot): void {
+	for (const entity of snapshot.entities) {
+		const properties = entity.properties as Record<string, unknown>;
+		if (properties.createdAt === undefined && typeof entity.createdAt === "number") {
+			properties.createdAt = entity.createdAt;
+		}
+		if (properties.updatedAt === undefined && typeof entity.updatedAt === "number") {
+			properties.updatedAt = entity.updatedAt;
+		}
 	}
 }

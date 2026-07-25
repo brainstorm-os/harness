@@ -305,3 +305,37 @@ describe("buildDocsAsNotes", () => {
 		expect(notes[2]?.icon?.value).toBe("📚"); // reference
 	});
 });
+
+describe("markdownToBlocks — always makes progress (the seed-hang regression)", () => {
+	it("does not hang on a prose line that merely starts with a pipe", () => {
+		// Real content from `apps/website-publish.md`: a wrapped TypeScript union
+		// continuation. It is not a table (no delimiter row follows), so the table
+		// branch declines it — and `isParagraphBreak` used to call it a break
+		// before the paragraph loop could take it, leaving `i` unmoved and
+		// spinning the block loop forever. That hung the ENTIRE vault seed with
+		// no error and no timer (the loop blocks the event loop synchronously).
+		const md = [
+			"# Title",
+			"",
+			"Some prose that wraps onto the next line and happens to break before a",
+			"| null, allowDataImages?: boolean }`. Rewrite `link`/`autolink` hrefs",
+			"",
+			"Trailing paragraph.",
+		].join("\n");
+		const blocks = markdownToBlocks(md, () => null);
+		expect(blocks.length).toBeGreaterThan(0);
+		// The pipe line is content, not structure — it must survive.
+		expect(JSON.stringify(blocks)).toContain("allowDataImages");
+	});
+
+	it("still parses a real table (a delimiter row follows the header)", () => {
+		const md = ["| A | B |", "| --- | --- |", "| 1 | 2 |"].join("\n");
+		const blocks = markdownToBlocks(md, () => null);
+		expect(JSON.stringify(blocks)).toContain("table");
+	});
+
+	it("terminates on a lone pipe line at end of input", () => {
+		const blocks = markdownToBlocks("| dangling", () => null);
+		expect(Array.isArray(blocks)).toBe(true);
+	});
+});
