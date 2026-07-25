@@ -54,7 +54,7 @@ Reconciled against `implementation-plan-table.md` ground truth, **last 2026-07-0
 | -: | -- | ---- | --- | ---------- | ------ |
 | 1 | `9.13.10e` | Graph live bucketed event stream (delivered by the 9.13.16 reactivity refactor — no separate `entities.subscribe`) | R2 Core apps | prior graph-streaming rung (dep-gated) | ✅ (2026-07-22, shell `68607538`) |
 | 2 | `9.7.6` | Code-editor inline squiggles + problem list (core ✅) | R2 Core apps | LSP language-server binary (out-of-sandbox) | 🟡 |
-| 3 | `Props-5` | record the six derived-projection panels as deliberately-not-shared (stops this audit repeating) | R2 Core apps | none | ⚪ |
+| 3 | `Props-5` | record the six derived-projection panels as deliberately-not-shared (stops this audit repeating) | R2 Core apps | none | ✅ (2026-07-25, SDK catalog → *What is deliberately not shared*) |
 | 3.1 | `Props-3` | Tasks → `<EntityPropertiesPanel>`: needs an ordered host-row slot on the shared panel first | R2 Core apps | **SDK slot decision** | ⚪ |
 | 3.2 | `Props-4` | Notes → `<EntityPropertiesPanel>` — the one clean migration; add-picker is shared with the Lexical `/property` command | R2 Core apps | **picker decision** | ⚪ |
 | 4 | `9.18.8` | Bookmarks highlights & annotations on captured content + per-bookmark list | R2 Core apps | editor text-anchoring on captured body | ⚪ |

@@ -176,7 +176,18 @@ Per-app rule: write only the mirrors that have a reader. Notes writes `title`+`b
 
 Over-extraction is also a smell. These stay per-app on purpose — do **not** try to unify them:
 
-- **Properties-panel *wrappers*.** The `PropertiesPanel` chrome is shared; the per-app adapter that maps an entity's `values` to rows and writes changes back is app-specific and correct.
+- **Properties-panel *adapters* — and the six apps that correctly stay on the primitive.** Two shared surfaces exist, one layered on the other: `@brainstorm-os/sdk/properties-panel` → **`<PropertiesPanel>`** (chrome + rows the host builds) and `@brainstorm-os/sdk/property-ui` → **`<EntityPropertiesPanel>`** (a stored `ValuesMap` → editable rows + add-menu + remove + a `canMutate` gate, wrapping the primitive). **The test for which surface an app belongs on is not "which panel does it import" or "how many rows does it show" — it is "does the app own a stored `ValuesMap`."** `<EntityPropertiesPanel>`'s write verb is `onWriteValues(next: ValuesMap)`, a *whole-bag* write. An app whose properties are a **projection of typed fields** has no bag to write it to: it would have to reverse-map the returned bag key-by-key back into typed fields — strictly worse than the per-key `onChange` the primitive already gives it. Journal and Preview own a bag and use the complete panel; Notes and Tasks own one and are tracked migrations (implementation-plan Props-3 / Props-4). The six below are **deliberate non-migrators — audited 2026-07-25, do not re-file**:
+
+  | App | Projection (display only) | Writes back as |
+  | --- | --- | --- |
+  | Bookmarks | `bookmarkToValues(bookmark, tagsDict)` → fixed `BOOKMARK_PROPERTY_DEFS` | `applyBookmarkPropertyValue` → typed partial. The tags dictionary resolves at *event* time — a whole-bag write cannot express that |
+  | Contacts | `personToValues(person)` | `applyPersonPropertyValue` → typed patch |
+  | Books | `bookToValues(book)` — typed author / format / pages | typed patch |
+  | Files | `customPropertyRows(entity.properties)` — size / type / path | read-only |
+  | Database | columns via `EditableCell` | per-cell edit |
+  | Graph | selection summary | read-only |
+
+  Lock enforcement is sound in all of them, just spelled three ways: row-level `readOnly` (Bookmarks, Books, Contacts, Notes, Tasks) · shared `canMutate` (Journal, Preview) · **the *absence of* `onEdit`** (Database — `apps/database/src/app.ts:1607`, per Lock-4). Graph and Files have no lock concept. So a grep for the literal `readOnly` proves nothing about whether a panel honours the lock — read the call site.
 - **App sidebars and content lists.** Calendar's mini-calendar+source filters, Tasks' projects+archived tree, Files' folder tree, Notes' note list — these are different UI schemas. They share *primitives* (virtualization, DnD, list rows) but not algorithms.
 - **App bootstrap / state machines / event wiring** in each `app.tsx`.
 - **i18n manifests** (the strings) — only the `createT` machinery and cross-app label helpers are shared.

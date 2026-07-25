@@ -188,7 +188,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `Props-3` | Tasks: needs a host-row slot on <EntityPropertiesPanel> first (blocked, not mechanical).… | ⚪ pending | the SDK slot decision |
 | `Props-4` | Notes onto <EntityPropertiesPanel> | ⚪ pending | the picker decision |
-| `Props-5` | record the six non-migrators as deliberate. Add Bookmarks / Contacts / Books / Files / Gr… | ⚪ pending | none |
 
 ## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (34)
 
