@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-461 — half the rows in a menu have icons and half don't
+- **session:** owner spot-check (2026-07-25)   **kind:** design   **app:** Shell (dashboard widget menu; likely fleet-wide)   **status:** open
+- **what I was trying to do:** resize a dashboard widget from its ⋯ menu.
+- **what happened:** the menu is visibly two different menus stacked. The **Size** group (Small / Medium / Large) has no leading icon at all and shows the current size as a filled row highlight; the actions below it (**Open app**, **Remove widget**) each carry an icon. So the icon gutter is empty for the top half and occupied for the bottom half, and the selected size is communicated by a highlight rather than the check the select-menu convention specifies.
+- **what I expected:** one menu. Either every row carries a leading glyph, or the enumerated-choice rows carry a **check on the chosen option** (the documented affordance — see CLAUDE.md §select-menu: "check on the chosen option") in the same gutter the icons use, so labels and gutter line up down the whole menu.
+- **evidence:** owner screenshot 2026-07-25 (dashboard widget ⋯ menu). Not yet reproduced in a dogfood capture.
+- **triage:** _(open — do NOT fix only the widget menu. This is a fleet question: which menus mix icon-bearing and icon-less rows, and which enumerated-choice groups signal selection by highlight instead of a check. **Sweep every `openAnchoredMenu` / `openObjectMenu` / `openSelectMenu` call site**, decide the rule once (leading glyph optional, but the gutter must be consistent within a menu; a chosen option in an enumerated group always gets the check), then land it as a shared-runtime default rather than per-menu edits — otherwise it re-drifts. Candidate for a lint ratchet in the same shape as `check-panel-toggles.mjs`: a menu config whose rows disagree on `icon` presence. Owner-reported, so it also wants a real screenshot capture to pin the before/after.)_
+
 ### F-458 — my triage automation figures out an email is urgent but can't write that anywhere
 - **session:** 914-mira-business-automation-audit (2026-07-23)   **kind:** gap   **app:** Automations   **status:** open
 - **what I was trying to do:** build the automation I actually want for my business — "when a support email comes in, have the AI decide how urgent it is, then tag the email (or open a task) with that priority so my team sees it."
