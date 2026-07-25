@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (48)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (47)
 
 ### Peer-to-peer sync *(design-only spike, `P2P-0` first; NOT started)*
 
@@ -186,10 +186,9 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Props-2` | Bookmarks + Contacts onto <EntityPropertiesPanel>. Both have a real values bag and curren… | ⚪ pending | none |
-| `Props-3` | Tasks onto <EntityPropertiesPanel>. Has a values bag and hand-rolled add + remove (apps/t… | ⚪ pending | none |
+| `Props-3` | Tasks: needs a host-row slot on <EntityPropertiesPanel> first (blocked, not mechanical).… | ⚪ pending | the SDK slot decision |
 | `Props-4` | Notes onto <EntityPropertiesPanel> | ⚪ pending | the picker decision |
-| `Props-5` | record the non-migrators as deliberate. Add Books / Files / Graph / Database's derived-pr… | ⚪ pending | none |
+| `Props-5` | record the six non-migrators as deliberate. Add Bookmarks / Contacts / Books / Files / Gr… | ⚪ pending | none |
 
 ## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (34)
 
