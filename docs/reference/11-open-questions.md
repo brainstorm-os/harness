@@ -643,14 +643,14 @@ Format:
 - **Tentative leaning:** Yes in v2 — extends [14-app-store.md](../apps/14-app-store.md) with a "Layout pack" content kind.
 - **Blocking?:** No.
 
-#### OQ-90 — Canonical chrome-cell registry
+#### OQ-90 — Canonical chrome-cell registry *[RESOLVED in implementation-plan Stage 8.4]*
 - **Where:** [27-layouts.md](../shell/27-layouts.md).
 - **Question:** What is the canonical set of `chrome.kind` values, and is the set open (apps register their own chrome kinds) or curated (shell-defined only)?
 - **Options:**
   - (a) Curated. Shell ships `actionBar`, `breadcrumb`, `meta`, `windowControls`, `entityHeader`, `tabs`. New ones added in shell releases.
   - (b) Open. Apps register chrome kinds (e.g. `io.example.tasks/burndown-bar`). Risk of namespace bloat.
-- **Tentative leaning:** (a) shell-curated. Apps that want custom structural rendering use a `block` cell.
-- **Blocking?:** Yes for the chrome-cell rendering pipeline.
+- **Resolution: (a) — shell-curated and closed.** The six kinds `ChromeKind` froze in 8.1 are the whole set; an app cannot register a seventh. A chrome cell is *shell-rendered by definition* — it draws with the active theme, opens menus through the shared runtime, and carries the shell's a11y semantics; a kind an app defined would have none of that. An open set would also make a layout's portability depend on which apps happen to be installed, which defeats "layouts are data you can move". The escape hatch already exists and is honest about what it is: a `block` cell the app renders itself, with no pretence of being shell chrome. Enforced structurally — `renderChromeCell` (`@brainstorm-os/sdk/layout-chrome`) is exhaustive over `ChromeKind`, so a new kind is a compile error until it has a renderer.
+- **Blocking?:** Was blocking for the chrome-cell rendering pipeline; resolved before 8.4 landed.
 
 ---
 
