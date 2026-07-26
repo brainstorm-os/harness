@@ -181,6 +181,38 @@ Numbered in the Track-C LAN namespace; resolve (take a position, document here +
 
 **What is still deliberately NOT in the MVP:** mDNS auto-discovery (LAN-3 uses the pairing address; mDNS is a fast-follow), the blob/asset plane (`0x02`), bundled backfill (`0x03`), dual LAN+cloud transport (OQ-LAN-6), and TLS/PSK on the transport (OQ-LAN-3, pending the security review). Each is a named follow-on, not a gap.
 
+### ✅ Security gate RESULT (2026-07-26) — LAN-4 remains blocked, on 8 items
+
+The gate below RAN: `/security-review` + `/pentester`, full findings in
+[`../_review/2026-07-26-lan-p2p-security-gate.md`](../_review/2026-07-26-lan-p2p-security-gate.md).
+Headline: **the sealed-envelope pipeline holds** (content confidentiality and
+integrity are not breakable from this transport, exactly as §4.1 claims) — but
+the mitigations §4 leans on were **specified and never built**, and the
+admission principal is the wrong key.
+
+- **Mutual auth (T4, §4.3) does not exist.** The client signs any nonce from any
+  peer and treats a bare `auth-ok` as admission, so a rogue host **relays** a
+  live nonce from the real host and is admitted **as the victim**, holding no
+  key material. This also invalidates OQ-LAN-3's premise: "challenge + E2EE is
+  sufficient" cannot hold while the challenge authenticates nobody to the client.
+- **The principal is wrong.** `account` is the *sovereign user key* (identical on
+  every device); the roster keys on the *per-device* key, in a different base64
+  variant. Devices are therefore indistinguishable and **per-device revocation is
+  structurally impossible** — OQ-LAN-7 must be re-posed to cover stale *revokes*,
+  not just stale *adds*.
+- **Two findings were live in shipped code**, not LAN-gated: the challenge was a
+  **signing oracle for the sovereign user key** (a node-chosen nonce could be
+  `canonicalAddDeviceBytes`, returning a forged add-device roster record — fixed,
+  shell #309), and **revocation is enforced nowhere** (`isDeviceRevoked` is
+  optional-chained with zero non-test producers).
+- **The admitted peer is unbounded**: unauthenticated `rotate` hijacks any
+  routing key, subscription is unauthorized, and the host has no auth deadline,
+  connection cap, rate limit or payload cap (500 never-authenticating sockets
+  were held with zero reaping).
+
+Tracked as plan rung **LAN-2b**, which now gates LAN-4 and LAN-9. Original gate
+text follows.
+
 ### ⚠️ Security gate (blocking) — the real listener is NOT shippable from the build pass
 
 LAN-1/LAN-2/LAN-6 landed as the **localhost / in-process proof only**. Opening a **network-reachable** listening socket (LAN-4's real bind + LAN-9's durable tail) is the shell's first inbound socket and **MUST pass a dedicated `/security-review` + `/pentester`** over the `connect → challenge → verify-roster → admit → subscribe → route` path (per CLAUDE.md continuous-audit; mirrors the ROT-4 / presence-transport gate) **before any bind to a real external interface**. `lan-relay-host.ts` deliberately implements no external-socket `listen()`; the in-process `webSocketCtor()` is all that exists until the review clears.
