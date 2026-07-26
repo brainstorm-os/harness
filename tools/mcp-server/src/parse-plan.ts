@@ -73,6 +73,38 @@ const GOAL_RE = /^Goal:\s*(.+\S)\s*$/;
 // Exported so the `plan-coverage` no-drop guard recognises iteration bullets
 // with the exact same grammar the parser uses.
 export const BULLET_RE = /^\s*-\s+([✅🟡◑⚪❌])\s+(\S.*)$/u;
+
+/**
+ * A bullet that LOOKS like a status line but leads with an icon outside the
+ * Legend's `✅ 🟡 ◑ ⚪ ❌`. `BULLET_RE` skips these SILENTLY, which means the
+ * iteration vanishes from every projection — the vault's Tasks app, the
+ * at-a-glance table, the stage rollups — with no error anywhere.
+ *
+ * That is not hypothetical. Two bullets used `⛔` (a plausible-looking "blocked"
+ * icon that is not in the Legend): `8.T` since 2026-05-23 and `LAN-4b` added
+ * 2026-07-26. Both were invisible to the seeder for as long as they existed, and
+ * the second one is what surfaced the class — the owner reported "no new tasks
+ * appear and old tasks are not being closed."
+ *
+ * So: detect it and make it loud. `plan-unknown-status-icons.test.ts` asserts the
+ * live plan has none, which turns "silently dropped forever" into a failed test
+ * the moment someone invents an icon.
+ */
+export type UnknownStatusIconBullet = { line: number; icon: string; text: string };
+
+/** Leading non-ASCII glyph on a `- ` bullet that is NOT a Legend status icon.
+ *  Deliberately narrow: it only fires when the glyph sits exactly where a status
+ *  icon belongs, so prose bullets starting with a word are untouched. */
+export function findUnknownStatusIcons(source: string): UnknownStatusIconBullet[] {
+	const out: UnknownStatusIconBullet[] = [];
+	source.split("\n").forEach((line, index) => {
+		if (BULLET_RE.test(line)) return;
+		const m = /^\s*-\s+(\p{Extended_Pictographic}(?:\uFE0F)?)\s+(\S.*)$/u.exec(line);
+		if (!m) return;
+		out.push({ line: index + 1, icon: m[1] ?? "", text: (m[2] ?? "").slice(0, 80) });
+	});
+	return out;
+}
 /** Lead iteration code at the start of a bullet's text. Handles
  *  `SH-1..SH-10` → `SH-1`, `0.1–0.10` → `0.1`, `9.3.5.N-notes`,
  *  `B6.4a(a)` → `B6.4a`, `9.10(a)` → `9.10`, `9.10a` → `9.10a` (the
@@ -84,7 +116,7 @@ export const BULLET_RE = /^\s*-\s+([✅🟡◑⚪❌])\s+(\S.*)$/u;
  *  plan-side bullet. A second branch catches the letter/word-suffixed
  *  track ids (`NAPI-P`, `Public-source`) the digit-suffix list can't. */
 const LEAD_ID_RE =
-	/^(Agent-Teams-\d+[a-z]?|KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|Asset-B\d+[a-z]?|POLISH-(?:[A-Z]+-)?\d+[a-z]?|DS-[A-Za-z]+(?:-[A-Za-z]+)*-\d+[a-z]?|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|Mktg|Launch|Lock|IE|AS|SYNC|MCP|DND|MOB|P2P|LAN|Props)-\d+[a-z]?|(?:NAPI|Public)-[A-Za-z][\w-]*|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
+	/^(Agent-Teams-\d+[a-z]?|KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|Asset-B\d+[a-z]?|POLISH-(?:[A-Z]+-)?\d+[a-z]?|DS-[A-Za-z]+(?:-[A-Za-z]+)*-\d+[a-z]?|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|Mktg|Launch|Lock|IE|AS|SYNC|MCP|DND|MOB|P2P|LAN|Props|Video)-\d+[a-z]?|(?:NAPI|Public)-[A-Za-z][\w-]*|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
 
 function iconToStatus(icon: string): IterationStatus {
 	switch (icon) {
