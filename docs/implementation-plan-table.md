@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-24 — **plan + table actualised against `main`.** The table is now REGENERATED from the plan (`bun tools/gen-open-iterations.ts`), which is why the count moved: **80 open — GA 46 · v2 34** (the old 47 counted four rungs the plan already marked ✅ — including a superseded bundled `Agent-11c/11d/11e` bullet, now removed — and missed the LAN ladder entirely). Corrections this pass: **`Mailbox-5` ✅** — all four `MailProtocol`s build a real driver (shell #241); what's left is manual live-account verification + the separate `Mailbox-9` registration, neither of which is code. **`Agent-Teams-1` 🟡** — 1a + 1b landed (shell #276/#277). **`LAN-*` filed as a divergence** — the track-C wedge shipped in shell #264 with its own rung ids and no plan rung to see it: LAN-1/2/6 ✅ as the *localhost proof*, LAN-3/4/5/7/8/9 open, with the real external-socket bind **withheld behind a mandatory security review** (the shell's first inbound socket). It is the concrete first slice of `P2P-1`/`P2P-2`, so that section is re-scoped rather than duplicated. Also this pass: **`Browser-8` ✅ complete** — read-only browsing (OQ-WV-5 resolved) + summarize-this-page over a new `AiTransformKind.Summarize` — and **`Net-3`** live-DOM feeder; earlier today the **`Agent-11` ladder completed** (11d + 11e) and **`IE-7`** Notion-API import shipped. Forward work is **release trains** to GA (`1.0.0`), then v2. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
+**Last updated:** 2026-07-27 — **table regenerated from the plan after the LAN batch merged** (`bun tools/gen-open-iterations.ts`): **79 open — GA 44 · v2 35**. The table had drifted three days: `LAN-3`/`LAN-4a`/`LAN-5`/`LAN-7` were already ✅ in the plan but still listed as pending, `NAPI-P` closed with #322 (so `NAPI-4` is what's actually open), and `LAN-2b` — the security gate that blocks the rest of the LAN ladder — was missing from the table entirely. Closed this pass: **`LAN-8` ✅** (shell #324 — backfill sends the state-vector diff, not the whole document) and **`LAN-4b` ✅** (shell #317 + #323 — the real external bind, carrying `<gates: packaging, pentest>` with passing rubric-bearing runs in the [ledger](_review/evaluations.jsonl); the pentest failed first with three blocking findings and passed on re-run). **`LAN-2b` (a)+(b) channel binding landed** (shell #313); its only remaining item is **(d) revocation, which is an owner decision** — the substantive fix re-keys real user data through ROT-3a. `LAN-9` is gated behind it. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (46)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (44)
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
 
@@ -48,12 +48,8 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `LAN-3` | discovery bootstrap: put the host's ws://<lan-ip>:<port> in the existing relayUrl slot at… | ⚪ pending |  |
-| `LAN-4` | transport selection + election in active-relay.ts (ActiveRelayKind.Lan) | ⚪ pending | below |
-| `LAN-5` | status UX: "Syncing on local network (no server)" vs "Syncing via relay" | ⚪ pending |  |
-| `LAN-7` | backfill trigger: automate the resync LAN-6 drives by hand (the blind host notifies exist… | ⚪ pending |  |
-| `LAN-8` | backfill efficiency: state-vector diff instead of the full-state snapshot. | ⚪ pending |  |
 | `LAN-9` | host-side durable tail for the both-peers-absent gap | ⚪ pending |  |
+| `LAN-2b` | close the security gate (NEW 2026-07-26, gates LAN-4/LAN-9). The gate found the load-bear… | ⚪ pending | (NEW 2026-07-26, gates LAN-4/LAN-9 |
 
 ### Product polish & dogfood hardening *(standing quality track, `POLISH-*`; owner-driven)*
 
@@ -85,7 +81,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `NAPI-P` | performance-bottleneck profiling sweep (gates NAPI-4 + any new native target). Goal: *con… | ⚪ pending |  |
+| `NAPI-4` | Graph force simulation engine: port apps/graph/src/render/force-layout.ts (Verlet + O(n²)… | ⚪ pending |  |
 
 ### Encrypted attachment sync
 
@@ -120,6 +116,12 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `7.14` | app notification badges (iOS-style unread counts on app icons) | 🟡 in flight |  |
 
+### Layouts & design system *(Stage 8 + shared fundamentals + covers/pickers)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `8.9` | post-v1 (re-scoped 2026-05-23): react-aria non-menu primitives (dialogs/comboboxes/popove… | ⚪ pending |  |
+
 ### Import, export & migration *(doc [45](platform/45-import-export.md)
 
 | ID | Task | Status | Gate |
@@ -134,11 +136,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `9.18.8` | Highlights & annotations on captured content + a per-bookmark annotation list. *(gated: n… | ⚪ pending | needs editor text-anchoring on the captured… |
 
-### Form-designer *(Stage 8.10)*
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-
 ### Mailbox *(group I)*
 
 | ID | Task | Status | Gate |
@@ -150,6 +147,12 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Browser-5` | clip-to-vault affordance landed *(2026-06-09, F-161)*: per-tab "Save to vault" button in… | ◑ preview-drop | Net-2 |
+
+### Agent app *(group I, Stage 11c)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `Agent-10` | the Notes seam (F-241 / platform/75-agent-notes-seam.md) | ⚪ pending |  |
 
 ### Agent teams & orchestration *(0.12.0 flagship
 
@@ -181,7 +184,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `Props-3` | Tasks: needs a host-row slot on <EntityPropertiesPanel> first (blocked, not mechanical).… | ⚪ pending | the SDK slot decision |
 | `Props-4` | Notes onto <EntityPropertiesPanel> | ⚪ pending | the picker decision |
 
-## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (34)
+## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (35)
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
 
@@ -227,6 +230,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `Support-1` | support desk + status page | ⚪ pending |  |
 | `BugTrack-1` | staff bug/crash/feedback triage | ◑ preview-drop |  |
 | `Ops-1` | web-property auth/email/webhooks/observability | ⚪ pending |  |
+| `Video-1` | Brainstorm YouTube video (owner goal, set 2026-07-18) | ⚪ pending |  |
 | `Launch-2` | Product Hunt launch, August 2026 (owner target set 2026-07-19). The quality gate is the r… | ⚪ pending | is the |
 
 ### Encrypted attachment sync
