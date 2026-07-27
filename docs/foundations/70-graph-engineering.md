@@ -144,18 +144,23 @@ A verdict with no rubric is rejected by the checker. That is invariant 3, and it
 is the one that would have caught the premature "both gates passed" claim —
 because there was no rubric to write down, since nothing had been run yet.
 
-**It has already earned its keep once.** Declaring `<gates: security-review>` on
-`11b.18` to smoke-test the checker made it fail with `no-evaluation` — and that
-was correct: a reviewer had flagged the Entity-step expression-evaluation surface
-as needing its own security pass, and it never happened. The marker was removed
-(claiming a gate you haven't run is the thing this prevents) and the owed review
-is now recorded on the rung. The ratchet found a real gap on its first run,
-before it had a single passing record in it.
+**It has already earned its keep, and then closed the loop.** Declaring
+`<gates: security-review>` on `11b.18` to smoke-test the checker made it fail
+with `no-evaluation` — correctly: a reviewer had flagged the Entity-step
+expression-evaluation surface as needing its own security pass, and it never
+happened. The marker came off (claiming a gate you haven't run is the thing this
+prevents) and the owed review went on the rung as residue.
 
-**Current state: zero rungs declare gates.** That is the honest starting point
-for an opt-in ratchet — `LAN-2b` has both a security-review and a pentest on
-record but is still ⚪, so it cannot carry the marker yet; `LAN-4b` gets it when
-its listener merges and the rung flips to ✅.
+That review [then ran](../_review/2026-07-27-entity-step-expressions.md), on
+2026-07-27, and found a privilege escalation in shipped code: a workflow could
+rewrite its own `capabilities` sheet and inherit the whole automations app
+ceiling. The marker is now back on `11b.18` with a passing record behind it.
+
+That is the full arc the slice was built for — **the ratchet found a real gap
+before it had a single passing record in it, the gap turned out to be a live
+vulnerability, and the same marker now certifies the fix.** Note the honest
+shape: the checker did not find the bug. It found the *missing evidence*, which
+is all a structural gate can ever do, and that was enough to get a human to look.
 
 ## Limitations to keep in view
 
