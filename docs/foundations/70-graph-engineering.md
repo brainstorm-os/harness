@@ -93,9 +93,30 @@ Two design choices worth keeping:
   tried, it failed, we fixed it, it passed" is the useful shape; a ledger that
   only shows successes is a marketing document.
 
-**Slice 2 — squash-survivable lineage.** Record pre-squash commit ids as an edge
-at merge time, so an orphaned commit is detectable instead of being found by
-accident. Directly targets the #313 failure.
+**Slice 2 — squash-survivable lineage. ✅ SHIPPED.**
+`tools/check-orphaned-commits.mjs` (logic in
+`tools/mcp-server/src/tools/orphaned-commit-check.ts`, `bun run check:lineage`)
+reports branches carrying commits their merged PR could not have included —
+the #313 failure, detected instead of stumbled over.
+
+The design turned on one correction, and it is the transferable part:
+
+- **The signal that survives a squash is TIME, not topology.** The plan above
+  said "record pre-squash commit ids as an edge at merge time" — that needs a
+  merge-time hook nobody will install. A commit dated after the PR merged
+  *cannot* have been in the squash; that is arithmetic, needs no cooperation
+  from the merge, and holds however history was rewritten.
+- **Content diffing does not work here, and fails in the flattering
+  direction.** `git diff main...branch` measures from the merge-base, so it is
+  non-empty for every squash-merged branch in the repo. The first draft used it
+  and its first live run "found" a branch that was fine. A check whose failure
+  mode is a confident false alarm is worse than no check.
+- **Two tiers, because late work is often re-landed.** If main has since touched
+  the same files, the commit was probably superseded — say so quietly. If it has
+  not, nothing could have re-landed it and the work exists nowhere else. Across
+  80 merged PRs the live run reports exactly two branches, both correctly tiered;
+  a lineage check that cried wolf would be ignored within a week, and then the
+  slice is worthless.
 
 **Slice 3 — typed `DEPENDS_ON` between rungs.** `gates` / `blocked-by-decision`
 / `stacked-on`, so "what is genuinely unblocked" is a query. LAN-4a sat
