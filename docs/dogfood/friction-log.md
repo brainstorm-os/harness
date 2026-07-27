@@ -985,7 +985,7 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
 
 ### F-301 — Several apps hand-roll full-pane empty states instead of `<EmptyState>`
 
-- **session:** 362-journal-first-char (empty-state audit)   **kind:** design   **app:** files/database/tasks/whiteboard/calendar/journal   **status:** PARTIAL (Files + Calendar done, branch `fix/empty-state-consistency-f301`)
+- **session:** 362-journal-first-char (empty-state audit)   **kind:** design   **app:** files/database/tasks/whiteboard/calendar/journal   **status:** ✅ done (2026-07-27 — the last deferral was stale; see the close-out below)
 - **what happened:** a shared `<EmptyState>` Hero exists (`@brainstorm/sdk/empty-state`),
   but several full-pane empties are hand-rolled: Files `.content-empty`
   (`content-list.tsx:361` — glyph+title+body+CTA, duplicates the Hero; note it doubles as
@@ -1011,6 +1011,19 @@ by hand). Menus + empty-states have real debt (F-300, F-301).
   empty (`app.tsx`) deferred to avoid conflicting with the F-299 branch (PR #22).
 - **NEW SDK primitive (PR #29):** `createEmptyState()` (DOM twin of `<EmptyState>`) — use it
   for any future imperative-DOM empty instead of hand-building `.bs-empty-state` markup.
+- **CLOSED 2026-07-27 (verified by reading the code, not the note).** The one item still
+  listed as outstanding — "Journal empty (`app.tsx`) deferred to avoid conflicting with the
+  F-299 branch" — is stale twice over: that branch merged long ago, and the markup it points
+  at is not a full-pane Hero to begin with. Journal has two empties, and both are the
+  *compact hint* shape this entry already reclassified as acceptable for Whiteboard's
+  nav/layers lists and the Calendar sidebar: `.journal__empty` (`app.tsx:1803`) is a bare
+  `<p>` inside the entry body — `align-items: flex-start`, faint text, no glyph, no CTA —
+  shown when a past day has no entry, and `.journal__overview-empty` (`app.tsx:1518`) is a
+  single small faint line inside an overview list. Converting either to a Hero would be a
+  regression, not a fix: a centred glyph+title+CTA block inside the entry body would read as
+  a full-pane empty for a *pane that is not empty*. Nothing remains; the `<EmptyState>` /
+  `createEmptyState()` pair plus the zero-baseline `tools/check-bespoke-empty-cta.mjs` gate
+  (which deliberately passes `<p>`-only hints) is what holds the line from here.
 
 ## Session 361 — property-editing consistency audit (2026-06-29)
 
