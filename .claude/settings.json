@@ -1,17 +1,3 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/tools/claude-rebuild-on-edit.sh",
-            "async": true,
-            "statusMessage": "Rebuilding affected package..."
-          }
-        ]
-      }
-    ]
-  }
+  "_note": "No PostToolUse rebuild hook, deliberately. One used to point at tools/claude-rebuild-on-edit.sh — a script that does not exist in this repo — with async:true, so for ~2 months every edit fired a hook that failed silently and rebuilt nothing. Nothing actually depended on it: tools/mcp-server/package.json sets both `main` and `bin` to src/index.ts, so the server always runs from SOURCE, and its dist/ is vestigial gitignored build output with no loader anywhere. If rebuild-on-edit is wanted again, add the script FIRST, and drop async so a failure is visible instead of silent."
 }
