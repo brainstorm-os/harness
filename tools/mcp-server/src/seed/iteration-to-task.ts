@@ -218,6 +218,25 @@ export function mapPlanToTasksApp(
 		// historical sub-steps with no home is exactly the catch-all noise the
 		// SH-39 restructure removes.
 		if (!project) continue;
+		// A REJECTED rung (Legend `❌`) is a decision NOT to do something — SH-11
+		// "rejected (overreach)", Clip-1 "dropped from the plan", Props-1/2
+		// "rejected, premise false". It is not work, so it does not belong on a
+		// work list. It was worse than merely present: `completedAt` comes from
+		// the implementation LOG, which only records shipped work, so a rejected
+		// rung had none and rendered as OPEN — and `priorityForStatus` mapped it
+		// to `critical`, making five abandoned ideas the most urgent-looking
+		// items in the seeded vault.
+		//
+		// They stay in `entities.iterations` for the notes / graph / project
+		// projections, where "we considered this and said no" is useful history.
+		// Their status still feeds the project rollup below, so a project
+		// containing one is not silently mis-summarised.
+		if (it.status === REJECTED_STATUS) {
+			const rejected = statusesByProject.get(project.id) ?? [];
+			rejected.push(it.status);
+			statusesByProject.set(project.id, rejected);
+			continue;
+		}
 		const projectId = project.id;
 		const sectionId = it.section ? ensureSection(project, it.section).id : null;
 		const arr = statusesByProject.get(projectId) ?? [];
@@ -261,17 +280,22 @@ function rollupStatus(statuses: readonly string[]): string {
 	return "pending";
 }
 
+/** The parser's name for Legend `❌`. Historically "reverted"; the Legend calls
+ *  it **rejected**, and both readings mean "not open work". */
+export const REJECTED_STATUS = "reverted";
+
 function priorityForStatus(status: string): SeedTaskRow["priority"] {
 	switch (status) {
 		case "partial":
 			return "high";
 		case "pending":
 			return "medium";
-		case "reverted":
-			return "critical";
 		case "done":
 			return "none";
 		default:
+			// Deliberately no `critical` case. Nothing earns top priority merely
+			// from its status — the one that used to, `reverted`, is now filtered
+			// out above precisely because it is not work.
 			return "none";
 	}
 }
