@@ -27,6 +27,13 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-466 — collab session 001 no longer converges over the in-process relay
+- **session:** collab-011-asset-relay-loop (2026-07-28)   **kind:** bug   **app:** collab harness / sync   **status:** open
+- **what happened:** while closing the Asset-B4 relay-loop gate, regression-running the collab suite showed `001-mira-marcus-share` (in-process `launch-relay` transport) failing `awaitConverged` — Marcus logs `[dev:collab] receive failed: envelope-pipeline: no DEK for entity ent_hub_brief` repeatedly, i.e. the inbox `WrapBootstrap` never installs before the Update frames arrive.
+- **what I expected:** the whole collab suite green.
+- **evidence:** tests/dogfood/.sessions/collab-001-mira-marcus-share/marcus.console.log (`no DEK for entity`); reproduced twice.
+- **triage:** _(open. NOT an Asset-B4 regression: reproduced identically against a stashed origin/main baseline build in the same worktree environment; `003` (durable node) and the new `011` are green there. Suspect the in-process relay's inbox-channel delivery vs the durable node's — the wrap rides `inboxChannelFor(userPub)`, which only the production LiveSyncEngine subscribes.)_
+
 ### F-465 — half my Today list is junk from your own tests
 - **session:** 915-northbound-business-state (2026-07-27)   **kind:** bug   **app:** Tasks / Contacts (vault data)   **status:** _(open — F-424(b) residue, now measured)_
 - **what I was trying to do:** open Tasks and see what I owe today.

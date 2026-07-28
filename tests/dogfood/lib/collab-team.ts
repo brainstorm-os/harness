@@ -41,6 +41,17 @@ import { type Speaker, postToTeamChat } from "./team-chat";
  *  this `AccessRole` from the lib instead. Keep the values in sync with the enum. */
 export const AccessRole = { Owner: "owner", Editor: "editor", Viewer: "viewer" } as const;
 export type AccessRole = (typeof AccessRole)[keyof typeof AccessRole];
+/** Runtime mirror of `CollabAssetSource` (../shell/.../collab/collab-dev-bridge.ts),
+ *  same no-value-import rule as `AccessRole` above. Where a materialised asset's
+ *  bytes came from — the lazy-fetch observable the 011 spec asserts. */
+export const CollabAssetSource = { LocalBlob: "local-blob", RelayFetch: "relay-fetch" } as const;
+export type CollabAssetSource = (typeof CollabAssetSource)[keyof typeof CollabAssetSource];
+
+export type CollabAssetStatus = {
+	hasRow: boolean;
+	hasLocalBytes: boolean;
+	manifestPresent: boolean;
+};
 import type {
 	CollabAccessView,
 	CollabIdentity,
@@ -119,6 +130,18 @@ type CollabDevApi = {
 	presenceRemotePeers: (
 		entityId: string,
 	) => Promise<{ clientId: number; state: Record<string, unknown> }[]>;
+	bindAsset: (
+		entityId: string,
+		bytesB64: string,
+		mime: string,
+		propertyKey: string,
+	) => Promise<{ assetId: string; url: string }>;
+	assetStatus: (entityId: string, assetId: string) => Promise<CollabAssetStatus>;
+	materializeAsset: (
+		entityId: string,
+		assetId: string,
+	) => Promise<{ bytesB64: string; mime: string; source: CollabAssetSource } | null>;
+	readAssetLocal: (assetId: string) => Promise<{ bytesB64: string; mime: string } | null>;
 };
 
 type CollabWindow = {
@@ -179,6 +202,27 @@ export type CollabShell = {
 	presenceRemotePeers: (
 		entityId: string,
 	) => Promise<{ clientId: number; state: Record<string, unknown> }[]>;
+	/** Asset-B4 — mint an encrypted asset from `bytes` and bind it to the entity
+	 *  through the production reconcile/upload paths (see the bridge verb). */
+	bindAsset: (
+		entityId: string,
+		bytes: Uint8Array,
+		mime: string,
+		propertyKey: string,
+	) => Promise<{ assetId: string; url: string }>;
+	/** Row/blob/manifest observability for one (entity, asset) pair. */
+	assetStatus: (entityId: string, assetId: string) => Promise<CollabAssetStatus>;
+	/** Poll until the chunk manifest lands on the entity doc — the marker
+	 *  `uploadBoundAsset` installs only after every chunk is on the node. */
+	awaitAssetUploaded: (entityId: string, assetId: string, timeoutMs?: number) => Promise<void>;
+	/** Asset-B4 — materialise the asset's bytes ON ACCESS (reconstruct → local
+	 *  blob, else lazy fetch off the durable node). `source` says which. */
+	materializeAsset: (
+		entityId: string,
+		assetId: string,
+	) => Promise<{ bytes: Buffer; mime: string; source: CollabAssetSource } | null>;
+	/** The asset's bytes from the shell's LOCAL store only (never the wire). */
+	readAssetLocal: (assetId: string) => Promise<{ bytes: Buffer; mime: string } | null>;
 	stateVectorHex: (entityId: string) => Promise<string>;
 	shot: (label: string) => Promise<string>;
 	note: (line: string) => void;
@@ -336,6 +380,32 @@ export async function launchCollabShell(
 			await collab("publishPresence", entityId, appId, state);
 		},
 		presenceRemotePeers: (entityId) => collab("presenceRemotePeers", entityId),
+		// Asset bytes cross the evaluate boundary as base64 (a raw Uint8Array
+		// would JSON-serialize lossily), decoded back to Buffers here.
+		bindAsset: (entityId, bytes, mime, propertyKey) =>
+			collab("bindAsset", entityId, Buffer.from(bytes).toString("base64"), mime, propertyKey),
+		assetStatus: (entityId, assetId) => collab("assetStatus", entityId, assetId),
+		awaitAssetUploaded: async (entityId, assetId, timeoutMs = 30_000) => {
+			const deadline = Date.now() + timeoutMs;
+			while (Date.now() < deadline) {
+				const status = await collab("assetStatus", entityId, assetId);
+				if (status.manifestPresent) return;
+				await new Promise((r) => setTimeout(r, 250));
+			}
+			throw new Error(
+				`collab-team: asset ${assetId} not uploaded (no manifest on ${entityId}) within ${timeoutMs}ms`,
+			);
+		},
+		materializeAsset: async (entityId, assetId) => {
+			const got = await collab("materializeAsset", entityId, assetId);
+			return got
+				? { bytes: Buffer.from(got.bytesB64, "base64"), mime: got.mime, source: got.source }
+				: null;
+		},
+		readAssetLocal: async (assetId) => {
+			const got = await collab("readAssetLocal", assetId);
+			return got ? { bytes: Buffer.from(got.bytesB64, "base64"), mime: got.mime } : null;
+		},
 		// State vectors cross the evaluate boundary as a hex string (a raw
 		// Uint8Array would be JSON-serialized into a lossy {0:..,1:..} object).
 		stateVectorHex: (entityId) =>
