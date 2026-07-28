@@ -67,7 +67,7 @@ Regenerated against `implementation-plan-table.md` ground truth, **2026-07-24** 
 | 15 | `11.0b` | Tantivy `BenchEngine` comparison vs the FTS5 baseline (measurement only) | GA polish | Tantivy NAPI binding | ⚪ |
 | 16 | `6.11` | Window-manager post-v1 tail | GA polish | none | ⚪ |
 | 17 | `Connector-7` | Mailbox as the reference connector — proves the contract end-to-end | 0.10.0/0.11.0 | `Mailbox-2` | ⚪ |
-| 18 | `Connector-6` | Webhook-in connectors (network ingress) | — | `Net-1` + `11b.8` ✅ | ⚪ |
+| 18 | `Connector-6` | Webhook-in connectors (network ingress) — code landed 2026-07-28 (shell #352, loopback-only doorbell → `connectors.sync`); ✅ on security-review + pentest pass | — | `Net-1` + `11b.8` ✅ | 🟡 |
 | 19 | `Mailbox-9` | Official Google/Microsoft OAuth client registration — **org/process task, weeks-to-months of external lead time; start early** | 🔴 GA | external | ⚪ |
 | 20 | `LAN-3` | LAN discovery bootstrap — host address in the existing `relayUrl` slot at pair time | infra line | none | ⚪ |
 | 21 | `LAN-4` | LAN transport selection + election (`ActiveRelayKind.Lan`) | infra line | **🔴 security review of the inbound-socket path** | ⚪ |

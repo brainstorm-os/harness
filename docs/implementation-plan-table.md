@@ -158,7 +158,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Connector-6` | webhook-in connectors (network ingress) | ⚪ pending | Net-1 + 11b.8 |
+| `Connector-6` | webhook-in connectors (network ingress) — code landed 2026-07-28 (shell #352); loopback-only, doorbell → `connectors.sync`; ✅ on security-review + pentest pass | 🟡 in flight | Net-1 ✅ + 11b.8 ✅ |
 | `Connector-7` | Mailbox as the reference connector (proves the contract end-to-end on the socket-exceptio… | ⚪ pending | Mailbox-2 |
 
 ### Object read-only lock (fleet, cross-app)
