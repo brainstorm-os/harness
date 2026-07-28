@@ -27,6 +27,19 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-468 — Help → "Report on GitHub" does nothing
+- **session:** owner dogfood (2026-07-28)   **kind:** bug   **app:** shell / help + open ladder   **status:** ✅ fixed (shell #349)
+- **what happened:** clicking the Help header's "Report on GitHub" button produced no visible reaction — no window, no prompt, no error.
+- **what I expected:** the GitHub issue-template page to open (or at least be asked how to open it).
+- **evidence:** real-shell Playwright probe: on a clean vault the chain works (the "Open outside the vault?" consent prompt appears), but every *refusal* outcome — previously-denied consent, cancelled picker, no opener — resolves to an explained `{handled:false, message}` the fire-and-forget `window.open` path **discarded**. One "Never for this kind"/cancel and the button is permanently, silently dead. Doc-57's "never a silent no-op" invariant stopped one hop short of the user.
+- **triage:** _(✅ fixed shell #349 — Help + billing dispatch through a shared `renderer/ui/open-external.ts` that surfaces refusals as a toast; new real-shell e2e regression spec `help-report-github.spec.ts`. Probe also caught a literal `{signature}` rendering in the consent prompt's reason line — missing interpolation arg, fixed in the same PR. Residue: main-side routed organic links (`wireDashboardLinkRouting` / app tab views) still discard results — needs a main→renderer surface, follow-up.)_
+
+### F-467 — feedback dialog's "Enable sending" button is ugly
+- **session:** owner dogfood (2026-07-28)   **kind:** design   **app:** shell / feedback dialog   **status:** ✅ fixed (shell #349)
+- **what happened:** the opt-in banner's Enable-sending button is a glaring solid-white pill (the `Neutral` inverse-surface hero face on a dark theme) dropped mid-sentence inside the banner paragraph, wrapping the line around a 36px control.
+- **what I expected:** a banner action that sits with the banner — subtle, aligned, on the theme.
+- **triage:** _(✅ fixed shell #349 — banner is now a flex row (`.feedback-dialog__banner--action`, text + right-aligned action), button switched to the theme-accent `Glass` variant; screenshot-verified light theme in the built shell, variant is theme-aware for dark.)_
+
 ### F-466 — collab session 001 no longer converges over the in-process relay
 - **session:** collab-011-asset-relay-loop (2026-07-28)   **kind:** bug   **app:** collab harness / sync   **status:** open
 - **what happened:** while closing the Asset-B4 relay-loop gate, regression-running the collab suite showed `001-mira-marcus-share` (in-process `launch-relay` transport) failing `awaitConverged` — Marcus logs `[dev:collab] receive failed: envelope-pipeline: no DEK for entity ent_hub_brief` repeatedly, i.e. the inbox `WrapBootstrap` never installs before the Update frames arrive.
