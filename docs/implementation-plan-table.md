@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-28 (second pass) — **`15d` + `12.15` ✅** (shell #343 merged — the 8 remaining apps' es/de/fr/it/pt packs, 9,095 strings; all 20 first-party apps ship the pack mechanism; residue documented in the 15d bullet: SDK `DEFAULT_*_LABELS` chrome + database `view-settings.ts` module-scope labels). Table regenerated: **74 open — GA 39 · v2 35**. Earlier today: **three closes** (`bun tools/gen-open-iterations.ts` re-run): **76 open — GA 41 · v2 35**. **`Asset-B4` ✅** (shell #341 + harness #133 — the last gate, the live 2-device relay-loop proof: `011-asset-relay-loop.spec.ts` shows A binds → chunks upload on bind → B materialises lazily on first access, byte-identical; surfaced pre-existing **F-466**: collab spec 001 fails `awaitConverged` on an unmodified main baseline — receiver `no DEK for entity`). **`IE-10e` ✅** (shell #340 — Anytype full kind-routing: Task/Bookmark layouts mint native `Task/v1`/`Bookmark/v1` instead of Note twins). **`IE-11` ✅** (shell #340 — export joins the background pattern: `transfer-run-store` generalisation, yields/progress/abort in `exportVaultBundle`, outcome toasts; residue: live-progress dashboard indicator, needs design). `Asset-B4b` (eager thumbnail tier) is now **unblocked** — its gate was Asset-B4. Also in review: **shell #343** — the 8 remaining `15d` apps (incl. journal, missing from the earlier "~6" count) get full es/de/fr/it/pt packs (9,095 translated strings); on its merge all 20 first-party apps ship the pack mechanism and `15d` closes. Carry-over from 2026-07-27: `LAN-2b` remaining item is **(d) revocation, an owner decision** (re-keys real user data through ROT-3a); `LAN-9` gated behind it. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
+**Last updated:** 2026-07-28 (third pass — wave-1 merged) — **`Lock-3` ✅** (shell #346 — LockButton/EditableSync dedicated tests, failing-first lock-bypass fixes in calendar drag/bulk/delete + tasks board-drag, SDK `<Icon>` aria-hidden fix), **`Browser-5` ✅** (shell #347 — reader mode + `WebViewMethod.Capture` wired through the Net-2 core with fail-closed `web.capture` enforcement), **`7.14` ✅** (shell #348 — single-owner dock-badge aggregator + Chat/Agent/Automations consumers + running-strip badge), **F-467/F-468 fixed** (shell #349 — feedback-banner polish; open-ladder refusals now surface as a toast + `{signature}` interpolation fix), **F-466 fixed** (shell #350 — the LAN batch's address-inferred admission classification swallowed pre-open inbox subscriptions on any loopback/private relay, dropping share-time WrapBootstraps; LAN trust is now explicit `syncRelay.lan` config and the admission gate holds post-open announces too). **`IE-10` bullet actualised ✅** (shipped v0.5.0, never flipped). Table regenerated: **70 open — GA 35 · v2 35**. In flight (wave 2): `Asset-B4b` · `Connector-6` · `Connector-7` · `Props-3/4`. Prior passes: **`15d` + `12.15` ✅** (shell #343 merged — the 8 remaining apps' es/de/fr/it/pt packs, 9,095 strings; all 20 first-party apps ship the pack mechanism; residue documented in the 15d bullet: SDK `DEFAULT_*_LABELS` chrome + database `view-settings.ts` module-scope labels). Table regenerated: **74 open — GA 39 · v2 35**. Earlier today: **three closes** (`bun tools/gen-open-iterations.ts` re-run): **76 open — GA 41 · v2 35**. **`Asset-B4` ✅** (shell #341 + harness #133 — the last gate, the live 2-device relay-loop proof: `011-asset-relay-loop.spec.ts` shows A binds → chunks upload on bind → B materialises lazily on first access, byte-identical; surfaced pre-existing **F-466**: collab spec 001 fails `awaitConverged` on an unmodified main baseline — receiver `no DEK for entity`). **`IE-10e` ✅** (shell #340 — Anytype full kind-routing: Task/Bookmark layouts mint native `Task/v1`/`Bookmark/v1` instead of Note twins). **`IE-11` ✅** (shell #340 — export joins the background pattern: `transfer-run-store` generalisation, yields/progress/abort in `exportVaultBundle`, outcome toasts; residue: live-progress dashboard indicator, needs design). `Asset-B4b` (eager thumbnail tier) is now **unblocked** — its gate was Asset-B4. Also in review: **shell #343** — the 8 remaining `15d` apps (incl. journal, missing from the earlier "~6" count) get full es/de/fr/it/pt packs (9,095 translated strings); on its merge all 20 first-party apps ship the pack mechanism and `15d` closes. Carry-over from 2026-07-27: `LAN-2b` remaining item is **(d) revocation, an owner decision** (re-keys real user data through ROT-3a); `LAN-9` gated behind it. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (39)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (35)
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
 
@@ -102,23 +102,11 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `6.11` | (post-v1) | ⚪ pending |  |
 
-### Intents, widgets, tray & notifications *(Stage 7b)*
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `7.14` | app notification badges (iOS-style unread counts on app icons) | 🟡 in flight |  |
-
 ### Layouts & design system *(Stage 8 + shared fundamentals + covers/pickers)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `8.9` | post-v1 (re-scoped 2026-05-23): react-aria non-menu primitives (dialogs/comboboxes/popove… | ⚪ pending |  |
-
-### Import, export & migration *(doc [45](platform/45-import-export.md)
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `IE-10` | Anytype import (design platform/72-anytype-import.md): the highest-fidelity third-party s… | ⚪ pending | a real Anytype JSON export fixture (the des… |
 
 ### Bookmarks *(9.18)*
 
@@ -131,12 +119,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `Mailbox-9` | official Google OAuth client registration (pre-release, org/process task | ⚪ pending | for |
-
-### Web Browser *(group I)*
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `Browser-5` | clip-to-vault affordance landed *(2026-06-09, F-161)*: per-tab "Save to vault" button in… | ◑ preview-drop | Net-2 |
 
 ### Agent app *(group I, Stage 11c)*
 
@@ -160,12 +142,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `Connector-6` | webhook-in connectors (network ingress) | ⚪ pending | Net-1 + 11b.8 |
 | `Connector-7` | Mailbox as the reference connector (proves the contract end-to-end on the socket-exceptio… | ⚪ pending | Mailbox-2 |
-
-### Object read-only lock (fleet, cross-app)
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `Lock-3` | retro-fill the workflow bar *(partly paid by shell PR #18 lock-rollout-fixes/5ffda45, 202… | ⚪ pending | none (cleanup |
 
 ### Properties-panel management (fleet, cross-app)
 
