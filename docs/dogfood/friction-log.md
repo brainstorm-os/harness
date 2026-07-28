@@ -27,6 +27,30 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-465 — half my Today list is junk from your own tests
+- **session:** 915-northbound-business-state (2026-07-27)   **kind:** bug   **app:** Tasks / Contacts (vault data)   **status:** _(open — F-424(b) residue, now measured)_
+- **what I was trying to do:** open Tasks and see what I owe today.
+- **what happened:** **5 of the 11 overdue items are test residue** — `DeleteMe task 26658`, and *four* copies of `Ship pricing page` with random number suffixes (`35757`, `63574`, `25859`, `36941`). The real work — "Send Vertex Labs the Q3 proposal", "Issue #8 — final edit pass" — is buried among them, and the whole list is stamped red OVERDUE. Contacts has the same problem: `Page Probe E510658 (Advisor)` and `Probe Z144741 (renamed)` sit among my six real people.
+- **what I expected:** my vault to contain my data. If a probe writes rows, it cleans them up.
+- **evidence:** `tests/dogfood/.sessions/915-northbound-business-state/03-04-tasks-open.png` (5/11), `05-06-contacts-open.png` (2 probe contacts).
+- **triage:** _(open. This is F-424(b) — "residue sweep still open" — with the extent finally counted rather than described: it is not a cosmetic tail, it is ~45% of the owner's Today view. Two halves: (1) sweep the existing rows, which needs the per-owning-app delete path since the renderer `vaultEntities` surface has no delete; (2) stop new residue at the source — the probe specs that mint `DeleteMe task <rand>` / `Ship pricing page <rand>` / `Probe <rand>` rows should either write to a scratch vault or delete what they create. (2) matters more: sweeping without it just resets the clock.)_
+
+### F-464 — a contact's avatar shows "P(" as their initials
+- **session:** 915-northbound-business-state (2026-07-27)   **kind:** bug   **app:** Contacts   **status:** _(open)_
+- **what I was trying to do:** scan the contact list.
+- **what happened:** the row for `Probe Z144741 (renamed)` shows a **`P(`** avatar — it took the `(` of "(renamed)" as an initial.
+- **what I expected:** initials to be letters. Any name whose second word starts with punctuation — `Dana (Northbound)`, `Lee (ex-Acme)`, `O'Brien` — hits this.
+- **evidence:** `tests/dogfood/.sessions/915-northbound-business-state/05-06-contacts-open.png`
+- **triage:** _(open — the initials derivation takes the first character of each of the first two whitespace-separated words without requiring it to be a letter. Small, but it is on every avatar in the app and the same helper probably backs other entity avatars. Fix in the shared helper, not in Contacts.)_
+
+### F-463 — the automations template gallery shows raw key names, on the business templates
+- **session:** 915-northbound-business-state (2026-07-27)   **kind:** bug   **app:** Automations   **status:** ✅ done (2026-07-27, shell #329)
+- **what I was trying to do:** set up a business workflow — I have no automations yet, so the app offered me its templates.
+- **what happened:** two of the six cards read `template.triage-new-email.name` / `template.triage-new-email.desc` / `template.triage-new-email.trigger` and `template.email-follow-up-nudge.*` instead of words. The other four were fine. The two broken ones are the *business* ones — email triage and follow-up — i.e. the ones I actually came for.
+- **what I expected:** template cards to have names.
+- **evidence:** `tests/dogfood/.sessions/915-northbound-business-state/01-01-automations-open.png`
+- **triage / resolution (2026-07-27, shell #329):** real, in every locale, for two releases. The view builds its keys dynamically — ``t(`template.${template.id}.name` as AutomationsI18nKey)`` — so the template literal hid the key from `check-app-i18n.mjs` (it only sees literal arguments) and the `as` cast suppressed the type error. **Two safety nets, blinded by the same two lines.** Underneath is a duplication: `templates.ts` carries English `name`/`description`/`triggerSummary` inline *and* the catalog carries the translated copies, so one side can be populated while the other is forgotten. Fixed with the 36 missing entries (2 templates × 3 keys × 6 locales) plus a zero-baseline `check-template-i18n.mjs`. The gate caught a locale I had missed by hand (`es.json`) on its first run. **It also exposed two CI gaps**: `verify` ran `lint:apps` not `lint`, so `biome check .` never ran in CI at all, and the two newest ratchets were wired into `lint` only — meaning CI ran neither. Restructured so there is one list and CI runs it.
+
 ### F-462 — the widget Size menu doesn't mark my current size (and can't)
 - **session:** 913b verification pass (2026-07-26)   **kind:** design   **app:** Shell (dashboard widget ⋯ menu)   **status:** ✅ done (2026-07-26, shell #300 — verified in the real app)
 - **what I was trying to do:** check which size a dashboard widget is currently set to, from the same ⋯ → Size menu I use to change it.
