@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-07-27 — **table regenerated from the plan after the LAN batch merged** (`bun tools/gen-open-iterations.ts`): **79 open — GA 44 · v2 35**. The table had drifted three days: `LAN-3`/`LAN-4a`/`LAN-5`/`LAN-7` were already ✅ in the plan but still listed as pending, `NAPI-P` closed with #322 (so `NAPI-4` is what's actually open), and `LAN-2b` — the security gate that blocks the rest of the LAN ladder — was missing from the table entirely. Closed this pass: **`LAN-8` ✅** (shell #324 — backfill sends the state-vector diff, not the whole document) and **`LAN-4b` ✅** (shell #317 + #323 — the real external bind, carrying `<gates: packaging, pentest>` with passing rubric-bearing runs in the [ledger](_review/evaluations.jsonl); the pentest failed first with three blocking findings and passed on re-run). **`LAN-2b` (a)+(b) channel binding landed** (shell #313); its only remaining item is **(d) revocation, which is an owner decision** — the substantive fix re-keys real user data through ROT-3a. `LAN-9` is gated behind it. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
+**Last updated:** 2026-07-28 — **three closes** (`bun tools/gen-open-iterations.ts` re-run): **76 open — GA 41 · v2 35**. **`Asset-B4` ✅** (shell #341 + harness #133 — the last gate, the live 2-device relay-loop proof: `011-asset-relay-loop.spec.ts` shows A binds → chunks upload on bind → B materialises lazily on first access, byte-identical; surfaced pre-existing **F-466**: collab spec 001 fails `awaitConverged` on an unmodified main baseline — receiver `no DEK for entity`). **`IE-10e` ✅** (shell #340 — Anytype full kind-routing: Task/Bookmark layouts mint native `Task/v1`/`Bookmark/v1` instead of Note twins). **`IE-11` ✅** (shell #340 — export joins the background pattern: `transfer-run-store` generalisation, yields/progress/abort in `exportVaultBundle`, outcome toasts; residue: live-progress dashboard indicator, needs design). `Asset-B4b` (eager thumbnail tier) is now **unblocked** — its gate was Asset-B4. Also in review: **shell #343** — the 8 remaining `15d` apps (incl. journal, missing from the earlier "~6" count) get full es/de/fr/it/pt packs (9,095 translated strings); on its merge all 20 first-party apps ship the pack mechanism and `15d` closes. Carry-over from 2026-07-27: `LAN-2b` remaining item is **(d) revocation, an owner decision** (re-keys real user data through ROT-3a); `LAN-9` gated behind it. 🎉 Public beta shipped 2026-06-29 (`v0.1.5`).
 
 Per-iteration history + test counts live in [implementation-log.md](implementation-log.md) + git. Regenerate the tables below after any status change with `bun tools/gen-open-iterations.ts`.
 
@@ -33,7 +33,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (44)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (41)
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
 
@@ -87,7 +87,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Asset-B4` | lazy fetch + eager thumbnail tier: materialise bytes on access (not eagerly on restore);… | 🟡 in flight | Asset-B3 ✅ |
 | `Asset-B4b` | eager thumbnail tier *(split from Asset-B4, 2026-07-03)*: a small always-synced tier (thu… | ⚪ pending | Asset-B4 |
 
 ### Mobile companion *(design-only track
@@ -126,8 +125,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `IE-10e` | Anytype fidelity v2: source-map binding · layout routing · media widths (owner reports 20… | 🟡 in flight |  |
-| `IE-11` | background import/export runs (owner call 2026-07-18: "import/export should be a backgrou… | 🟡 in flight |  |
 | `IE-10` | Anytype import (design platform/72-anytype-import.md): the highest-fidelity third-party s… | ⚪ pending | a real Anytype JSON export fixture (the des… |
 
 ### Bookmarks *(9.18)*
