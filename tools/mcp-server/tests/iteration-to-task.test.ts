@@ -307,3 +307,58 @@ describe("task notes — full body, not the 480-char summary clip", () => {
 		expect(tasks.find((t) => t.name.startsWith("9.99 "))?.notes).toBe("just a summary");
 	});
 });
+
+describe("rejected rungs (Legend ❌) are not open work", () => {
+	// Reported from the seeded vault: `SH-11 — … — rejected (overreach…)` showed
+	// up in the Infrastructure project as an OPEN task with CRITICAL priority —
+	// the most urgent-looking item in the list. Two things combined: `completedAt`
+	// comes from the implementation log, which only records shipped work, so a
+	// rejected rung has none and renders open; and `priorityForStatus` mapped
+	// "reverted" to `critical`.
+	//
+	// All five of the plan's ❌ rungs are decisions NOT to do something —
+	// SH-11 "overreach", Clip-1 "dropped from the plan", Props-1/2 "premise
+	// false", 8.T reverted at user request. None is work.
+	const rejected = iter({
+		id: "SH-11",
+		code: "SH-11",
+		title: "shell-side dev-repo service — rejected (overreach)",
+		status: "reverted",
+		domain: "Infrastructure",
+		section: "Ops",
+		completedAt: null,
+	});
+	const pending = iter({
+		id: "Ops-1",
+		code: "Ops-1",
+		title: "web-property plumbing",
+		status: "pending",
+		domain: "Infrastructure",
+		section: "Ops",
+	});
+
+	it("does not emit a task for a rejected rung", () => {
+		const { tasks } = mapPlanToTasksApp([rejected, pending]);
+		expect(tasks.map((t) => t.iterationId)).toEqual(["Ops-1"]);
+	});
+
+	it("emits NOTHING at critical priority, whatever the statuses", () => {
+		// The old mapping made abandoned ideas outrank real work. Nothing should
+		// reach the top priority band merely from its status.
+		const { tasks } = mapPlanToTasksApp([rejected, pending]);
+		expect(tasks.some((t) => t.priority === "critical")).toBe(false);
+	});
+
+	it("still counts the rejected status in the project rollup", () => {
+		// Filtering it from the TASK list must not silently mis-summarise the
+		// project it belonged to — the status still feeds the rollup.
+		const { projects } = mapPlanToTasksApp([rejected, pending]);
+		const project = projects.find((p) => p.name.toLowerCase().includes("infrastructure"));
+		expect(project).toBeDefined();
+	});
+
+	it("keeps a rejected rung out even when it is the project's only member", () => {
+		const { tasks } = mapPlanToTasksApp([rejected]);
+		expect(tasks).toEqual([]);
+	});
+});
