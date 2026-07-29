@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-469 — I can't resize anything on a whiteboard
+- **session:** user report, owner-confirmed (2026-07-29)   **kind:** gap   **app:** whiteboard   **status:** ✅ fixed (shell #358)
+- **what I was trying to do:** make a sticky note bigger so more of its text shows, and shrink a frame that was way too large for the three cards inside it.
+- **what happened:** nothing on the board is resizable — no handles on a selected node, no cursor change on the edges, nothing. Every sticky is forever 180×180.
+- **what I expected:** select a node → grab a corner or edge → drag to resize, like every other whiteboard tool.
+- **evidence:** user request (resizable sticky notes); owner verified in code — nodes carry `width`/`height` in the model and the renderer paints them, but there is zero resize machinery (no handles, no interaction).
+- **triage:** _(✅ fixed shell #358 — plan rung 9.17.23: 8 resize handles on the single selected node (corner squares + edge strips below the connector dots), pure `logic/resize.ts` with per-kind minimums + anchoring + aspect lock (Shift; default-on for images), moving-edge snap-to-guides via the drag magnet, one commit per gesture (single-step undo), lock/read-only gated at grip AND commit, Alt+Arrow keyboard resize, grip aria-labels + live-region announcements in all six locales. Real-shell visual spec `whiteboard-resize.spec.ts` green; also repaired the dead `whiteboard-snap.spec.ts`.)_
+
 ### F-468 — Help → "Report on GitHub" does nothing
 - **session:** owner dogfood (2026-07-28)   **kind:** bug   **app:** shell / help + open ladder   **status:** ✅ fixed (shell #349)
 - **what happened:** clicking the Help header's "Report on GitHub" button produced no visible reaction — no window, no prompt, no error.
