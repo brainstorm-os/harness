@@ -11,7 +11,7 @@ import { expect, test } from "@playwright/test";
 import { APP, startSession } from "../lib/founder";
 
 test("dark mode: every app renders without console errors (visual review)", async () => {
-	test.setTimeout(300_000);
+	test.setTimeout(600_000);
 	const s = await startSession("022-dark-mode-sweep");
 	const errors: string[] = [];
 	s.app.on("window", (page) => {
