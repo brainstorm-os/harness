@@ -116,7 +116,7 @@ export function findUnknownStatusIcons(source: string): UnknownStatusIconBullet[
  *  plan-side bullet. A second branch catches the letter/word-suffixed
  *  track ids (`NAPI-P`, `Public-source`) the digit-suffix list can't. */
 const LEAD_ID_RE =
-	/^(Agent-Teams-\d+[a-z]?|KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|Asset-B\d+[a-z]?|POLISH-(?:[A-Z]+-)?\d+[a-z]?|DS-[A-Za-z]+(?:-[A-Za-z]+)*-\d+[a-z]?|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|Mktg|Launch|Lock|IE|AS|SYNC|MCP|DND|MOB|P2P|LAN|Props|Video)-\d+[a-z]?|(?:NAPI|Public)-[A-Za-z][\w-]*|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
+	/^(Agent-Teams-\d+[a-z]?|KBN-(?:\d+[a-z]?|[A-Z]-[A-Za-z]+(?:-[A-Za-z]+)*)|Collab-C\d+[a-z]?(?:-[A-Za-z]+)*|Connector-SEC\d+|Asset-B\d+[a-z]?|POLISH-(?:[A-Z]+-)?\d+[a-z]?|DS-[A-Za-z]+(?:-[A-Za-z]+)*-\d+[a-z]?|(?:Help|OpenRes|Net|NAPI|Feedback|Welcome|DocsHub|Browser|Mailbox|Connector|AppForge|Agent|Clip|Chats|Community|Automation|Site|Account|Billing|DevPortal|Catalog|Support|BugTrack|Ops|Mktg|Launch|Lock|IE|AS|SYNC|MCP|DND|MOB|P2P|LAN|Props|Video)-\d+[a-z]?|(?:NAPI|Public)-[A-Za-z][\w-]*|SH-\d+|VP-\d+|B\d+(?:\.[\w-]+)*[a-z]?|\d+[a-z]?(?:\.[\w-]+)*)/;
 
 function iconToStatus(icon: string): IterationStatus {
 	switch (icon) {
