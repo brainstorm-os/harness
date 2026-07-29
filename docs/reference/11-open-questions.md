@@ -3168,37 +3168,48 @@ Opened by the bookmark favicon/cover work — the first consumer of a synced, en
 - **Tentative leaning:** `process` with `kind` in v1 (keeps the namespace closed); revisit `generate` only if source-less generation becomes a common, distinct surface.
 - **Blocking?:** No — namespace additions are shell releases; `process` is sufficient for v1.
 
-### In-place actions — fragments, return channel, proposals (added in 78)
+#### OQ-AS-6 … OQ-AS-10 — fragment targets, return channel, proposals  *[SUPERSEDED 2026-07-29 by OQ-TOOL-1..6 below]*
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md) (the doc that raised them, then replaced them).
+- **What they asked:** fragment-anchor durability + what a contributor may see (OQ-AS-6); who authorizes a fragment leaving the host (OQ-AS-7); whether approval is always required (OQ-AS-8); inline-toolbar restraint numbers (OQ-AS-9); shared trace substrate with [77](../platform/77-agent-observability.md) (OQ-AS-10).
+- **Why superseded:** filed against the fragment-target design (plan `AS-5..AS-11`, closed ❌ the same day). Under the app-tools model a tool receives *values*, never a location, so the anchor question (OQ-AS-6) dissolves rather than being answered. The rest carry over renamed: OQ-AS-7→**OQ-TOOL-5** (authorization/friction), OQ-AS-8→**OQ-TOOL-5**, OQ-AS-9→ the `AS-4` anti-rot policy reused unchanged by `Tool-7`, OQ-AS-10→**OQ-TOOL-6** verbatim.
 
-#### OQ-AS-6 — Fragment anchor durability and what a contributor sees
-- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [31-linking-protocol.md](../platform/31-linking-protocol.md), [09-security-and-sandbox.md](../security/09-security-and-sandbox.md).
-- **Question:** How does a fragment stay addressable across a slow round trip, and how much of it may the contributor see? A text anchor must survive concurrent edits (the user keeps typing while a rewrite is in flight, and Yjs merges a peer's edits underneath). Separately: does the contributor receive plain text, markdown, or a structured slice — and does it ever learn *where* the fragment sits?
-- **Tentative leaning:** anchors are a Yjs `RelativePosition` pair ([31](../platform/31-linking-protocol.md)) held **shell-side against the request id and never sent to the contributor**; the contributor receives only `{ kind, contentKind, mime, byteLength }` plus bounded markdown/text. Resolution failure (range deleted while in flight) refuses the proposal rather than landing it near-miss. Non-text fragments (image, cell, shape) anchor on the host's own stable id for that unit.
-- **Blocking?:** Yes — blocks `AS-5`. The anchor shape is the whole security story ("the contributor cannot aim a write") and is not cheap to change after the SDK types ship.
+### App tools — installed apps as typed tool providers (added in 78)
 
-#### OQ-AS-7 — Who authorizes a fragment leaving the host
-- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [09-security-and-sandbox.md](../security/09-security-and-sandbox.md).
-- **Question:** Sending a paragraph of the user's journal to another installed app is an in-vault data movement across a sandbox boundary. Is the user's menu gesture sufficient authorization, or does the **host** also need a capability (`intents.request:<verb>`) — and is the contributor's `intents.fulfill:<verb>` a separate grant from `intents.handle:<verb>`, or an implication of it?
-- **Tentative leaning:** both — the gesture *and* two explicit grants. `intents.request:<verb>` on the host, `intents.fulfill:<verb>` on the contributor, neither in `DEFAULT_APP_CAPABILITIES`. `fulfill` stays distinct from `handle` because returning content that will be offered into another app's document is strictly stronger than receiving a dispatch, and install review should show it as its own line.
-- **Blocking?:** Yes — blocks `AS-6`. It determines the capability strings, and capability strings are a compatibility surface (a rename after third-party apps declare them is a breaking change).
+#### OQ-TOOL-1 — Argument schema language: `PropertyDef` or JSON Schema?
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md), [64-mcp-integrations.md](../platform/64-mcp-integrations.md), [05-data-and-blocks-protocol.md](../data/05-data-and-blocks-protocol.md).
+- **Question:** A tool's inputs need a type description. JSON Schema is what MCP and every LLM tool-calling API speak — but the repo has **no JSON-Schema validator** (no `ajv`); the two places inline schemas are read only *distill* them (`propertiesFromSchema`, `extractFieldsFromTypeSchema`) and nothing ever validates a value against one. `PropertyDef` is the one typed-value system with a real validator (`validatePropertyDef` / `validateValue`) that the broker already re-runs defense-in-depth.
+- **Tentative leaning:** declare in `PropertyDef`, project to JSON Schema for the model. This buys argument validation **at the broker before the call reaches the provider** — which MCP's deliberately-opaque `inputSchema` cannot do — without adding a schema-validator dependency. Cost: `ValueType` is 6 types, so genuinely nested/structured arguments are not expressible in v1.
+- **Blocking?:** Yes — blocks `Tool-3`. It determines the manifest wire format, which is a compatibility surface once third-party apps declare tools.
 
-#### OQ-AS-8 — Is approval always required?
-- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [75-agent-notes-seam.md](../platform/75-agent-notes-seam.md).
-- **Question:** Every returned fragment is a proposal a human approves. Should a *trusted* (first-party / catalog-signed) contributor ever auto-apply — or is a per-action "always apply results from this app" opt-in acceptable? Approving each "Translate" on a 40-paragraph document is a real friction cost.
-- **Tentative leaning:** always approve in v1 — the propose-not-persist posture of OQ-ANS-4 is what makes it safe to let an arbitrary app rewrite a journal, and weakening it before the surface has dogfood miles inverts the risk. Revisit with a per-(app, action) opt-in, never a blanket trusted-tier bypass. Batch approval of one multi-fragment run is the friction fix to try first.
-- **Blocking?:** No — v1 ships always-approve; any bypass is strictly additive.
+#### OQ-TOOL-2 — Do app tools subsume intent-derived agent tools, or coexist?
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md), [62-agent-harness.md](../platform/62-agent-harness.md), [55-agent-app.md](../apps/55-agent-app.md).
+- **Question:** The harness projects granted *intents* into tools today (addressed by verb, no input schema, colliding). Once apps declare real tools, do the intent-derived ones stay as a second source forever, get deprecated onto tools, or remain only for the genuinely routing-shaped verbs (`open`, `quick-look`)?
+- **Tentative leaning:** coexist in v1 (the intent tools are shipped and working, and `open` is genuinely a routing verb whose handler the caller should *not* choose); revisit deprecating the rest once a few apps have declared real tools. Two sources means two projections to keep honest, so this should not stay indefinite.
+- **Blocking?:** Yes for `Tool-6` — the projection has to decide dedupe/precedence when an app exposes both an `insert` intent and an `insert` tool.
 
-#### OQ-AS-9 — Inline-toolbar restraint
-- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [63-action-surface.md](../platform/63-action-surface.md).
-- **Question:** The editor inline toolbar appears on every text selection and already carries B/I/U/S/code/colour/link/comment. What is the contributed-action budget there — inline count, overflow behaviour, and does a sideloaded contribution appear at all?
-- **Tentative leaning:** harder than AS-4's ~3/group — 1–2 inline behind the existing overflow ⋯, sideloaded **never** inline on this surface (only under "More…"), tuned in dogfood. This is the surface most at risk of the junk-drawer failure mode because it is the most frequently seen.
-- **Blocking?:** No — a tuning constant on top of the shipped AS-4 policy.
+#### OQ-TOOL-3 — May a tool call launch a headless provider?
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md), [12-shell-architecture.md](../shell/12-shell-architecture.md), [09-security-and-sandbox.md](../security/09-security-and-sandbox.md).
+- **Question:** Calling a tool on an app that isn't running requires starting its renderer. Does the shell launch it **invisibly** (fast, no window churn — the machinery exists: `createWidgetSurface` already mounts a real app renderer invisibly with identity registered), or must a visible window appear (honest, but a menu action that pops a window is bad UX), or does the call simply fail when the provider is cold?
+- **Tentative leaning:** invisible launch, but **only for `effect: "pure"` tools** and with the run surfaced in the activity chip — an app silently executing in the background is exactly the thing the observability track ([77](../platform/77-agent-observability.md)) exists to make legible. Cold-launch cost and the current dashboard-mount-point dependency both need measuring first.
+- **Blocking?:** No — v1 may require a running provider and refuse cold with a named reason; headless is the post-v1 half of `Tool-8`.
 
-#### OQ-AS-10 — Shared trace substrate with 77, or separate?
-- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [77-agent-observability.md](../platform/77-agent-observability.md).
-- **Question:** An in-place action is "app X read a fragment of the user's content and proposed a change to app Y" — exactly the shape [77](../platform/77-agent-observability.md) records for the agent. Does `agent_runs`/`agent_events` generalize to any contributing app, or does the action surface get its own ledger?
-- **Tentative leaning:** generalize 77's substrate rather than fork one — the surfaces (activity query, denial rows, live chip) are the same and two ledgers means two retention policies and two places to look. Likely a rename of the record's principal column from "agent" to "actor" when `Agent-12a` lands, which is cheaper before it ships than after.
-- **Blocking?:** No for `AS-10`'s UX, but it should be decided **before** `Agent-12a` writes the schema — otherwise the generalization is a migration.
+#### OQ-TOOL-4 — May a sideloaded provider's tool text reach the model at all?
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md), [64-mcp-integrations.md](../platform/64-mcp-integrations.md), [32-store-verification.md](../apps/32-store-verification.md).
+- **Question:** A tool's `name`/`description` is author-controlled text injected into the agent's prompt — the MCP "untrusted descriptions" vector, now from an *installed app*. `AS-3` quarantines sideloaded contributions in *menus* (under "More…"), but the model has no "More…" — a description is either in the prompt or not.
+- **Tentative leaning:** a sideloaded app's tools are callable from menus (user-initiated, visible) but **excluded from the model's tool list until promoted**, because a menu quarantine has no prompt analogue. Catalog-signed and first-party project normally, still sanitized + length-capped + rug-pull-fingerprinted.
+- **Blocking?:** No for `Tool-5`'s hardening work, but the answer determines what `Tool-6` projects.
+
+#### OQ-TOOL-5 — Effect-driven auto-run, or always confirm?
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md), [64-mcp-integrations.md](../platform/64-mcp-integrations.md), [55-agent-app.md](../apps/55-agent-app.md).
+- **Question:** `decideToolFriction` already maps a tool to `AutoRun | Confirm`. Which declared effects may auto-run, and does the answer differ per consumer (a menu click is already a user gesture; an agent-initiated call is not)?
+- **Tentative leaning:** `pure` auto-runs everywhere; `reads-vault` auto-runs from a menu (the click is the gesture) but confirms when agent-initiated; `proposes-write` always ends in a human approve gesture by construction; `external` follows the egress rules. A provider's declared effect is a friction input, never a boundary — a provider can lie, exactly as MCP's `readOnlyHint` can.
+- **Blocking?:** No — v1 can confirm everything and relax with dogfood evidence.
+
+#### OQ-TOOL-6 — Shared trace substrate with 77?
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md), [77-agent-observability.md](../platform/77-agent-observability.md).
+- **Question:** A tool call is "app X ran Y for app Z with outcome W" — the same row shape [77](../platform/77-agent-observability.md) records for the agent. Does `agent_runs`/`agent_events` generalize to any calling principal, or does the tool layer get its own ledger?
+- **Tentative leaning:** generalize rather than fork — the surfaces (activity query, denial rows, live chip) are identical, and two ledgers means two retention policies and two places to look. Likely a rename of the record's principal column from "agent" to "actor".
+- **Blocking?:** No for `Tool-8`'s UX, but it should be decided **before** `Agent-12a` writes the schema — afterwards it is a migration.
 
 #### OQ-ID-1 — Human-facing user identity for collaboration  *[RESOLVED in design — see [16-identity-orgs-encryption.md §Self-asserted display profile](../security/16-identity-orgs-encryption.md#self-asserted-display-profile-the-human-facing-identity); implementation gated as plan **Collab-C6**]*
 - **Where:** [16-identity-orgs-encryption.md](../security/16-identity-orgs-encryption.md), Collaboration layer in [implementation-plan.md](../implementation-plan.md).
