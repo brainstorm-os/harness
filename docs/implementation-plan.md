@@ -735,6 +735,14 @@ Goal: privileged shell storefront per [apps/47-marketplace.md](apps/47-marketpla
 
 - ✅ 14.17/14.18 — content-kind registry + `MarketplaceService` + IPC + 5-panel overlay (Discover/Browse/Library/Updates/Sources) + theme activation + app uninstall (converge on `DashboardStore`/`apps:uninstall`). Deviations tracked: Discover mirrors Browse, Updates empty, `marketplace.open` deep-link not yet routed. **The empty Updates panel + the absent `ListingSource.Catalog` producer are closed by the catalog iterations 14.31–14.33** (`CatalogClient` + `InstallEngine` + update engine), designed in [apps/59-app-lifecycle-and-catalog.md](apps/59-app-lifecycle-and-catalog.md).
 
+### AppForge — apps built inside Brainstorm become real apps *(`AppForge-*`; sideload install path, OQ position in [foundations/49-self-hosting.md](foundations/49-self-hosting.md))*
+
+Goal: close the loop from "app authored inside (or next to) Brainstorm" to "installed, launchable app" — user-chosen bundles flow through the same `AppInstaller` trust chokepoint as catalog installs, quarantined as unsigned/local rather than blocked (v1 advisory signature policy). This is the install half the flagship "build an app inside Brainstorm" video needs.
+
+- ✅ AppForge-1 — **install from a local folder or `.brainstorm` file** (shell #364). New `apps:install-from-folder` / `apps:install-from-file` IPC (privileged: dashboard-sender-gated fail-closed, typed `SideloadInstallResult`, `InstallOrigin.LocalFile` provenance, dashboard icon pinned like catalog installs) + Marketplace toolbar "Install from…" menu + unsigned-advisory surfaced in listings/detail. Hostile-input hardening: manifest size-bound + fail-closed validator, archive size-bound before read, decompression-expansion bound (`unpackBundle maxOutputBytes`, gzip-bomb defense), tar zip-slip guard exercised from the install call site. Packaged-path fixes ride along: marketplace first-party resolution via `process.resourcesPath/apps` when `app.isPackaged` (was an asar-relative walk that doesn't exist), and `reinstallFirstPartyApp` never spawns `vite build` in a packaged shell (`prebuiltOnly` installs the extraResources bundle with `bootstrap-cache` provenance).
+- ⚪ AppForge-2 — **install-from-vault**: an app bundle living *in the vault* (e.g. authored with the code-editor, packed as a `CodeFile`/asset object) installs directly without a dialog round-trip through the OS filesystem. Gated on AppForge-1's install seam.
+- 🟡 AppForge-3 — in flight in a parallel worktree (tracked by its owning session; rung reserved here so the id doesn't race).
+
 ## Global search UI *(Stage 9.22, lexical half of Stage 11)*
 
 Goal: vault-wide FTS5 search broker service + shell/app surfaces. Chosen over multi-segment FTS to dodge FTS-on-Windows failure modes; single-writer in shell main; rebuildable.
