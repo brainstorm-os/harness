@@ -3168,6 +3168,11 @@ Opened by the bookmark favicon/cover work — the first consumer of a synced, en
 - **Tentative leaning:** `process` with `kind` in v1 (keeps the namespace closed); revisit `generate` only if source-less generation becomes a common, distinct surface.
 - **Blocking?:** No — namespace additions are shell releases; `process` is sufficient for v1.
 
+#### OQ-AS-6 … OQ-AS-10 — fragment targets, return channel, proposals  *[SUPERSEDED 2026-07-29 by OQ-TOOL-1..6 below]*
+- **Where:** [78-app-tools.md](../platform/78-app-tools.md) (the doc that raised them, then replaced them).
+- **What they asked:** fragment-anchor durability + what a contributor may see (OQ-AS-6); who authorizes a fragment leaving the host (OQ-AS-7); whether approval is always required (OQ-AS-8); inline-toolbar restraint numbers (OQ-AS-9); shared trace substrate with [77](../platform/77-agent-observability.md) (OQ-AS-10).
+- **Why superseded:** filed against the fragment-target design (plan `AS-5..AS-11`, closed ❌ the same day). Under the app-tools model a tool receives *values*, never a location, so the anchor question (OQ-AS-6) dissolves rather than being answered. The rest carry over renamed: OQ-AS-7→**OQ-TOOL-5** (authorization/friction), OQ-AS-8→**OQ-TOOL-5**, OQ-AS-9→ the `AS-4` anti-rot policy reused unchanged by `Tool-7`, OQ-AS-10→**OQ-TOOL-6** verbatim.
+
 ### App tools — installed apps as typed tool providers (added in 78)
 
 #### OQ-TOOL-1 — Argument schema language: `PropertyDef` or JSON Schema?
