@@ -3168,6 +3168,38 @@ Opened by the bookmark favicon/cover work — the first consumer of a synced, en
 - **Tentative leaning:** `process` with `kind` in v1 (keeps the namespace closed); revisit `generate` only if source-less generation becomes a common, distinct surface.
 - **Blocking?:** No — namespace additions are shell releases; `process` is sufficient for v1.
 
+### In-place actions — fragments, return channel, proposals (added in 78)
+
+#### OQ-AS-6 — Fragment anchor durability and what a contributor sees
+- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [31-linking-protocol.md](../platform/31-linking-protocol.md), [09-security-and-sandbox.md](../security/09-security-and-sandbox.md).
+- **Question:** How does a fragment stay addressable across a slow round trip, and how much of it may the contributor see? A text anchor must survive concurrent edits (the user keeps typing while a rewrite is in flight, and Yjs merges a peer's edits underneath). Separately: does the contributor receive plain text, markdown, or a structured slice — and does it ever learn *where* the fragment sits?
+- **Tentative leaning:** anchors are a Yjs `RelativePosition` pair ([31](../platform/31-linking-protocol.md)) held **shell-side against the request id and never sent to the contributor**; the contributor receives only `{ kind, contentKind, mime, byteLength }` plus bounded markdown/text. Resolution failure (range deleted while in flight) refuses the proposal rather than landing it near-miss. Non-text fragments (image, cell, shape) anchor on the host's own stable id for that unit.
+- **Blocking?:** Yes — blocks `AS-5`. The anchor shape is the whole security story ("the contributor cannot aim a write") and is not cheap to change after the SDK types ship.
+
+#### OQ-AS-7 — Who authorizes a fragment leaving the host
+- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [09-security-and-sandbox.md](../security/09-security-and-sandbox.md).
+- **Question:** Sending a paragraph of the user's journal to another installed app is an in-vault data movement across a sandbox boundary. Is the user's menu gesture sufficient authorization, or does the **host** also need a capability (`intents.request:<verb>`) — and is the contributor's `intents.fulfill:<verb>` a separate grant from `intents.handle:<verb>`, or an implication of it?
+- **Tentative leaning:** both — the gesture *and* two explicit grants. `intents.request:<verb>` on the host, `intents.fulfill:<verb>` on the contributor, neither in `DEFAULT_APP_CAPABILITIES`. `fulfill` stays distinct from `handle` because returning content that will be offered into another app's document is strictly stronger than receiving a dispatch, and install review should show it as its own line.
+- **Blocking?:** Yes — blocks `AS-6`. It determines the capability strings, and capability strings are a compatibility surface (a rename after third-party apps declare them is a breaking change).
+
+#### OQ-AS-8 — Is approval always required?
+- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [75-agent-notes-seam.md](../platform/75-agent-notes-seam.md).
+- **Question:** Every returned fragment is a proposal a human approves. Should a *trusted* (first-party / catalog-signed) contributor ever auto-apply — or is a per-action "always apply results from this app" opt-in acceptable? Approving each "Translate" on a 40-paragraph document is a real friction cost.
+- **Tentative leaning:** always approve in v1 — the propose-not-persist posture of OQ-ANS-4 is what makes it safe to let an arbitrary app rewrite a journal, and weakening it before the surface has dogfood miles inverts the risk. Revisit with a per-(app, action) opt-in, never a blanket trusted-tier bypass. Batch approval of one multi-fragment run is the friction fix to try first.
+- **Blocking?:** No — v1 ships always-approve; any bypass is strictly additive.
+
+#### OQ-AS-9 — Inline-toolbar restraint
+- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [63-action-surface.md](../platform/63-action-surface.md).
+- **Question:** The editor inline toolbar appears on every text selection and already carries B/I/U/S/code/colour/link/comment. What is the contributed-action budget there — inline count, overflow behaviour, and does a sideloaded contribution appear at all?
+- **Tentative leaning:** harder than AS-4's ~3/group — 1–2 inline behind the existing overflow ⋯, sideloaded **never** inline on this surface (only under "More…"), tuned in dogfood. This is the surface most at risk of the junk-drawer failure mode because it is the most frequently seen.
+- **Blocking?:** No — a tuning constant on top of the shipped AS-4 policy.
+
+#### OQ-AS-10 — Shared trace substrate with 77, or separate?
+- **Where:** [78-in-place-actions.md](../platform/78-in-place-actions.md), [77-agent-observability.md](../platform/77-agent-observability.md).
+- **Question:** An in-place action is "app X read a fragment of the user's content and proposed a change to app Y" — exactly the shape [77](../platform/77-agent-observability.md) records for the agent. Does `agent_runs`/`agent_events` generalize to any contributing app, or does the action surface get its own ledger?
+- **Tentative leaning:** generalize 77's substrate rather than fork one — the surfaces (activity query, denial rows, live chip) are the same and two ledgers means two retention policies and two places to look. Likely a rename of the record's principal column from "agent" to "actor" when `Agent-12a` lands, which is cheaper before it ships than after.
+- **Blocking?:** No for `AS-10`'s UX, but it should be decided **before** `Agent-12a` writes the schema — otherwise the generalization is a migration.
+
 #### OQ-ID-1 — Human-facing user identity for collaboration  *[RESOLVED in design — see [16-identity-orgs-encryption.md §Self-asserted display profile](../security/16-identity-orgs-encryption.md#self-asserted-display-profile-the-human-facing-identity); implementation gated as plan **Collab-C6**]*
 - **Where:** [16-identity-orgs-encryption.md](../security/16-identity-orgs-encryption.md), Collaboration layer in [implementation-plan.md](../implementation-plan.md).
 - **Question:** The vault owns a *cryptographic* identity (sovereign Ed25519 + per-device X25519) but **zero human-facing identity** — no display name, avatar, or handle. A collaborator is a 32-byte pubkey. The collaboration/communication layer (share dialogs, member lists, presence cursors, `createdBy` attribution, future messaging) needs a recognizable identity. How is one introduced without breaking the v1 "no accounts, no server" line?
