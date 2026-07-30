@@ -20,12 +20,14 @@ per post, never more.
 
 ## Option A — the two-files hook (recommended)
 
-An app in Brainstorm is two files.
+A Brainstorm app can be as small as two files.
 
 manifest.json says what it's allowed to touch. index.html talks to your vault.
-No bundler, no npm install, no terminal — in this video both files are written
-in Brainstorm's own code editor and installed straight out of the vault. Ninety
-seconds later it's a live, sandboxed app reading real data.
+No bundler, no npm install, no terminal required — in this video both files are
+written in Brainstorm's own code editor and installed straight out of the
+vault. Ninety seconds later it's a live, sandboxed app reading real data.
+(Real bundles grow from there — assets, workers, full React apps — on the same
+contract.)
 
 Or skip the typing: the agent drafts the same two files. Nothing lands in your
 vault until you approve — and however the code got written, the installed app
@@ -62,7 +64,7 @@ Full version with chapters on YouTube: <youtube-link>
 
 The long-form write-up — the app model, what the agent actually sees of your
 vault, and why the permission ledger doesn't care who wrote the code:
-getbrainstorm.online/blog/an-app-is-two-files
+getbrainstorm.online/blog/an-app-can-be-two-files
 
 The shell is source-available (AGPL) on GitHub, and the whole thing runs local —
 your keys, no cloud required.
