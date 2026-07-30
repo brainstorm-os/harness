@@ -19,7 +19,7 @@ slugs to tell which is which.
 
 ## Go-forward rule (the fix for the divergence)
 
-1. **A new dogfood session takes the next integer: `908`.** Never reuse an
+1. **A new dogfood session takes the next integer: `918`.** Never reuse an
    existing number for an unrelated session.
 2. **A single themed sweep may group multiple specs under one reserved number** using
    `NNN-<topic>-<facet>.spec.ts` naming (the `228` pattern). Reserve the number once.
@@ -27,10 +27,10 @@ slugs to tell which is which.
 
 ## Manifest
 
-- **Total spec files:** 437
-- **Distinct session numbers:** 315
-- **Highest number:** 907 → **next session = 908**
-- **Numbers shared by >1 spec (`×N`):** 58
+- **Total spec files:** 463
+- **Distinct session numbers:** 325
+- **Highest number:** 917 → **next session = 918**
+- **Numbers shared by >1 spec (`×N`):** 63
 
 | Session | Spec file(s) |
 | ------- | ------------ |
@@ -45,7 +45,7 @@ slugs to tell which is which.
 | 009 | `009-mira-workday.spec.ts` |
 | 010 | `010-tidy-vault.spec.ts` |
 | 011 ×2 | `011-files-universal-browser-check.spec.ts`<br>`011-mira-builds-crm.spec.ts` |
-| 012 ×2 | `012-all-apps-smoke.spec.ts`<br>`012-mira-expands.spec.ts` |
+| 012 ×8 | `012-all-apps-smoke.spec.ts`<br>`012-mira-expands.spec.ts`<br>`012b-corrupt-event-forensics.spec.ts`<br>`012c-stunde27-title-probe.spec.ts`<br>`012d-files-view-menu-probe.spec.ts`<br>`012e-residue-dump.spec.ts`<br>`012f-menu-css-iterate.spec.ts`<br>`012g-residue-repair.spec.ts` |
 | 013 ×2 | `013-files-cross-app.spec.ts`<br>`013-probe.spec.ts` |
 | 014 ×2 | `014-bookmark-add.spec.ts`<br>`014-notes-deep.spec.ts` |
 | 015 ×2 | `015-name-client.spec.ts`<br>`015-shell-dashboard.spec.ts` |
@@ -346,10 +346,19 @@ slugs to tell which is which.
 | 902 | `902-notes-all-blocks.spec.ts` |
 | 903 | `903-recent-ship-sweep.spec.ts` |
 | 904 | `904-anytype-import-wizard.spec.ts` |
-| 012 ×6 | `012b-corrupt-event-forensics.spec.ts`<br>`012c-stunde27-title-probe.spec.ts`<br>`012d-files-view-menu-probe.spec.ts`<br>`012e-residue-dump.spec.ts`<br>`012f-menu-css-iterate.spec.ts`<br>`012g-residue-repair.spec.ts` |
 | 905 ×3 | `905-anytype-files-deep-verify.spec.ts`<br>`905b-anytype-fresh-copy-probe.spec.ts`<br>`905c-files-thumbnail-probe.spec.ts` |
 | 906 ×5 | `906-northbound-v050-team-tour.spec.ts`<br>`906b-v050-tour-followups.spec.ts`<br>`906c-journal-tasks-embed-probe.spec.ts`<br>`906d-slash-parity-probe.spec.ts`<br>`906e-journal-cleanup.spec.ts` |
 | 907 ×25 | `907-rebuild-people-cadence.spec.ts`<br>`907b-rebuild-crm.spec.ts`<br>`907c-crm-columns.spec.ts`<br>`907d-crm-columns-add.spec.ts`<br>`907e-crm-columns-insert.spec.ts`<br>`907f-crm-fill-values.spec.ts`<br>`907g-crm-deal-values.spec.ts`<br>`907h-crm-deal-final.spec.ts`<br>`907i-crm-deal-inspector.spec.ts`<br>`907j-crm-deal-verified.spec.ts`<br>`907k-dedupe-property-refill.spec.ts`<br>`907l-deal-per-row.spec.ts`<br>`907m-deal-object-window.spec.ts`<br>`907n-crm-repair.spec.ts`<br>`907o-deal-fresh-boot.spec.ts`<br>`907p-rebuild-hq.spec.ts`<br>`907q-hq-embeds.spec.ts`<br>`907r-hq-fixup.spec.ts`<br>`907s-hq-inspect.spec.ts`<br>`907t-hq-title-embeds.spec.ts`<br>`907u-hq-rebuild-final.spec.ts`<br>`907v-hq-embeds-scoped.spec.ts`<br>`907w-hq-minimal.spec.ts`<br>`907x-hq-verify.spec.ts`<br>`907y-hq-fill.spec.ts` |
+| 908 | `908-marcus-mailbox-design-review.spec.ts` |
+| 909 ×2 | `909-marcus-bookmarks-design-review.spec.ts`<br>`909b-bookmark-card-open-probe.spec.ts` |
+| 910 | `910-marcus-code-editor-design-review.spec.ts` |
+| 911 | `911-marcus-journal-books-preview-chat.spec.ts` |
+| 912 ×3 | `912-mira-calendar-deep.spec.ts`<br>`912-notes-vid1-dryrun.spec.ts`<br>`912b-calendar-view-anchor-repro.spec.ts` |
+| 913 ×3 | `913-f417-inspector-target-verify.spec.ts`<br>`913b-f461-menu-f405-slash.spec.ts`<br>`913p-polish-cal-chip-probe.spec.ts` |
+| 914 ×4 | `914-f422-calendar-titles.spec.ts`<br>`914b-f422-locate-objects.spec.ts`<br>`914c-api-probe.spec.ts`<br>`914e-f422-classify.spec.ts` |
+| 915 | `915-northbound-business-state.spec.ts` |
+| 916 ×2 | `916-polish-0111-hunt-verify.spec.ts`<br>`916b-cal-chip-probe.spec.ts` |
+| 917 | `917-menu-check.spec.ts` |
 
 ### Unparsed (non-conforming filenames)
 
