@@ -653,8 +653,19 @@ test("capture VID-build-apps reel", async () => {
 	console.log(`[vid-build-apps] icon cells at payoff: ${(await iconCells()).join(" ")}`);
 	// Hers, reopened off camera for the closing shot — its board re-runs the
 	// staggered rise-in on load, which is the motion the last beat rides.
+	//
+	// The reload is not decoration. A relaunch can hand back the SAME window
+	// still carrying the walls beat's `refused — …` line, which would put a red
+	// error in the episode's closing frame — the exact thing this restructure
+	// exists to remove. It happened in the dry run, so the state is asserted
+	// clean rather than assumed.
 	const closer = await s.openApp(CLIENT_PULSE_APP_ID);
 	watch(closer, "client-pulse (payoff)");
+	await closer.reload().catch(() => undefined);
+	await closer.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
+	const closingProbe = (await closer.locator("#probe-out").textContent().catch(() => "")) ?? "";
+	console.log(`[vid-build-apps] closing shot probe line: ${JSON.stringify(closingProbe)}`);
+	expect(closingProbe.trim(), "the closing shot must not carry the refusal line").toBe("");
 
 	let bothTiles = false;
 	await s.scene("11-payoff", async () => {
@@ -667,10 +678,12 @@ test("capture VID-build-apps reel", async () => {
 		console.log(`[vid-build-apps] payoff tiles — Client Pulse: ${hers}, Hello: ${its}`);
 		await beat(s.dashboard, 500);
 		// The app she wrote, one last time: the reel lands on it WORKING rather
-		// than refused.
+		// than refused. Reloaded ON camera so the staggered rise-in plays into
+		// the closing frame instead of having finished off it.
 		await s.film(closer);
+		await closer.reload().catch(() => undefined);
 		await closer.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
-		await beat(closer, 400);
+		await beat(closer, 500);
 		await glideTo(closer, 640, 300, 700);
 		await beat(closer, 1200);
 	});
