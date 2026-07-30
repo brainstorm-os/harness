@@ -1,0 +1,8 @@
+node_modules/
+*.log
+*.pid
+bun.lock
+package.json
+tsconfig.json
+index.ts
+CLAUDE.md
