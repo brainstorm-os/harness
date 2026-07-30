@@ -1,4 +1,4 @@
-# X / Twitter — the blog
+# X / Twitter: the blog
 
 Announcing the blog at [getbrainstorm.online/blog](https://getbrainstorm.online/blog).
 First person singular, plain, no drama. **No em-dashes** (owner rule, 2026-07-30):
@@ -13,7 +13,7 @@ the tic is the rhetorical pause, so swapping in a hyphen does not count.
 ## What is actually true (keep the copy inside this)
 
 - One reverse-chronological feed at `/blog`, grouped by month: **34 entries** at
-  launch — 2 essays, 4 capability articles, 29 releases, 3 videos.
+  launch: 2 essays, 4 capability articles, 29 releases, 3 videos.
 - Filter chips (Everything / Articles / Releases / Videos), CSS-only, work with
   JavaScript disabled.
 - RSS at `/blog/rss.xml`, all entries.
@@ -23,7 +23,7 @@ the tic is the rhetorical pause, so swapping in a hyphen does not count.
   is no tag browsing or tag filtering.** Do not claim "browse by tag" until that
   ships.
 
-## Option A — the writing angle (recommended)
+## Option A: the writing angle (recommended)
 
 There is a blog on getbrainstorm.online now.
 
@@ -34,7 +34,7 @@ I rewrote every post by hand before publishing. No em-dashes, no "it's not X, it
 no dramatic one-line paragraphs. If you have been reading AI-written developer blogs
 lately you know the tics I mean, and stripping them out was most of the work.
 
-## Option B — the capability angle
+## Option B: the capability angle
 
 New on getbrainstorm.online: a blog.
 
@@ -45,7 +45,7 @@ The posts are about what you can actually do: attachments that follow your vault
 machines, mail accounts that start workflows, an agent that drafts objects you approve
 before anything is saved, and how an app in Brainstorm can be two files.
 
-## Option C — short
+## Option C: short
 
 Brainstorm has a blog now: getbrainstorm.online/blog
 
