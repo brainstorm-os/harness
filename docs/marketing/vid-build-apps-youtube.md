@@ -38,8 +38,8 @@ What's in the video:
 0:00 An OS that runs the apps you write
 0:10 The manifest — one capability line
 0:20 The page — reading real vault data
-0:35 Install, and what it's allowed to do
-0:46 It runs — her real clients
+0:36 Install, and what it's allowed to do
+0:47 It runs — her real clients
 1:04 Or let the agent write it
 1:19 Both apps in the grid
 
@@ -91,15 +91,15 @@ The seven timestamps in the description double as chapters (each ≥10s, first a
 chapter start still matches a cumulative scene time and stays ≥10s apart.
 
 Scene cumulative starts: `00-slide-hook` 0:00 · `01-the-gap` 0:05 ·
-`02-manifest` 0:10 · `03-page` 0:20 · `04-install-from-vault` 0:29 ·
-`05-consent` 0:35 · `06-installed` 0:41 · `07-launch` 0:46 · `08-walls` 0:53 ·
+`02-manifest` 0:10 · `03-page` 0:20 · `04-install-from-vault` 0:30 ·
+`05-consent` 0:36 · `06-installed` 0:42 · `07-launch` 0:47 · `08-walls` 0:54 ·
 `09-agent-drafts` 1:04 · `10-agent-approve` 1:12 · `11-payoff` 1:19 ·
 `12-title` 1:27 (total 1:32).
 
 `00-slide-hook` is 5s rather than the 3.0s its line needs precisely so the first
-chapter clears the 10s minimum; `04-install-from-vault` (0:29) and `08-walls`
-(0:53) are deliberately NOT chapter markers because they sit <10s from their
-neighbours — the 0:35 and 0:46 chapters cover them.
+chapter clears the 10s minimum; `04-install-from-vault` (0:30) and `08-walls`
+(0:54) are deliberately NOT chapter markers because they sit <10s from their
+neighbours — the 0:36 and 0:47 chapters cover them.
 
 ## Pinned comment (optional)
 

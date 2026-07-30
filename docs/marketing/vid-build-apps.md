@@ -79,14 +79,14 @@ floor is only for scenes whose last frame is a hold worth freezing on.
 | # | id | secs | speed | beat | on screen |
 |---|----|------|-------|------|-----------|
 | 0 | `00-slide-hook` | 5 | — | slide | "It runs the apps you write" |
-| 1 | `01-the-gap` | 5 | auto | S1 | Dashboard/app grid; Mira scans it — nothing does client pulse |
+| 1 | `01-the-gap` | 5 | **1.2** | S1 | Dashboard/app grid; Mira scans it — nothing does client pulse |
 | 2 | `02-manifest` | 10 | auto | S2 | Code editor: new file `client-pulse/manifest.json`, typed — id, name, version, `sdk`, `entry`, and one capability line (`entities.read:brainstorm/Project/v1`). Hold on the capability line |
-| 3 | `03-page` | 9 | auto (~1.5×) | S3 | New file `client-pulse/index.html`; the skeleton and the `window.brainstorm` query typed, then the finished file revealed in one motion |
-| 4 | `04-install-from-vault` | 6 | **1.3** | S4 | Marketplace → **Install from…** → **From vault code files…** → picker lists the **Client Pulse** candidate found in the vault |
+| 3 | `03-page` | 10 | auto (~1.4×) | S3 | New file `client-pulse/index.html`; the skeleton and the `window.brainstorm` query typed, then the finished file revealed in one motion |
+| 4 | `04-install-from-vault` | 6 | auto | S4 | Marketplace → **Install from…** → **From vault code files…** → picker lists the **Client Pulse** candidate found in the vault |
 | 5 | `05-consent` | 6 | auto | S5 | The install sheet: name · id · version · **requested capabilities** · unsigned advisory. Confirm |
-| 6 | `06-installed` | 5 | **1.2** | S6 | Success toast → marketplace dismissed **in the beat** → the grid, cursor landing on the new **Client Pulse** tile |
+| 6 | `06-installed` | 5 | **1.25** | S6 | Success toast → marketplace dismissed **in the beat** → the grid, cursor landing on the new **Client Pulse** tile |
 | 7 | `07-launch` | 7 | auto | S7 | Open it — summary strip + real Northbound clients, cards rising in, in its own window |
-| 8 | `08-walls` | 11 | auto | S8 | **The consent sheet recalled** via the vault picker's *Install* → sheet → *Cancel* (what she actually agreed to) — *not* the Settings grants popover; then, in the app, **both probes**: the granted read succeeds in green, `vaultEntities.list()` comes back refused in red, in the broker's own words |
+| 8 | `08-walls` | 10 | auto | S8 | **The consent sheet recalled** via the vault picker's *Install* → sheet → *Cancel* (what she actually agreed to) — *not* the Settings grants popover; then, in the app, **both probes**: the granted read succeeds in green, `vaultEntities.list()` comes back refused in red, in the broker's own words |
 | 9 | `09-agent-drafts` | 8 | auto | S9 | Agent app: *"Build me a small hello app I can install."* → two staged cards (`manifest.json`, `index.html`) with code previews |
 | 10 | `10-agent-approve` | 7 | auto (~1.9×) | S10 | Approve both → files land in the vault → same install path → same consent sheet |
 | 11 | `11-payoff` | 8 | auto | S11 | The grid carrying **both** new tiles, then Client Pulse opened one last time — its cards painting in |
@@ -96,7 +96,10 @@ Content 82s + 10s of slides = **1:32** as rendered (down from 1:45). Every
 budget carries ≥0.6s of headroom over its measured VO line — a scene's budget is
 a hard ceiling on its narration (`atrim=0:seconds`), so `promo:vo:build-apps`
 prints `<line>s / <budget>s` per scene and must be re-run after any wording
-change.
+change. The budgets above are fitted to a real capture (every scene lands
+1.05–1.95×, none truncated, none with more than a beat of held tail); refit them
+against a fresh one if the drivers change, and **never against a run recorded
+while `build:apps` is running** — that inflates every clip 30–60%.
 
 ### Why the walls beat is scene 08, and the episode ends on the grid
 

@@ -117,9 +117,13 @@ test("capture VID-build-apps reel", async () => {
 	 *  cost here is the CDP round trip, not `paceMs`: at one character per
 	 *  insert this measured ~46 ms/char, so the 510-char page skeleton alone ran
 	 *  36s of clip against a 9s budget — past the renderer's 3× cap, i.e. a
-	 *  truncated scene. Short runs cut the round trips proportionally and are
-	 *  indistinguishable on camera once the scene compresses. The bytes are
-	 *  identical either way. */
+	 *  truncated scene. Short runs cut the round trips proportionally; the bytes
+	 *  are identical either way.
+	 *
+	 *  The lever to tune it by is the ON-SCREEN character rate, which is
+	 *  (captured chars/sec × the scene's playback speed). Runs of 2 put the page
+	 *  skeleton at roughly 100 chars/sec on screen — brisk, still legibly
+	 *  materialising. Runs of 3 measured ~145, which reads as a blur. */
 	const typeSource = async (
 		page: Page,
 		text: string,
@@ -359,7 +363,7 @@ test("capture VID-build-apps reel", async () => {
 	await s.scene("03-page", async () => {
 		await s.film(code);
 		await newCodeFile(code, CLIENT_PULSE_INDEX_PATH);
-		await typeSource(code, CLIENT_PULSE_INDEX_HTML_ON_CAMERA, 9, 3);
+		await typeSource(code, CLIENT_PULSE_INDEX_HTML_ON_CAMERA, 9, 2);
 		await beat(code, 500);
 		// Reveal the finished page in one motion (markup first, styling after —
 		// every line typed above is in these bytes verbatim).
@@ -685,7 +689,9 @@ test("capture VID-build-apps reel", async () => {
 		await closer.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
 		await beat(closer, 500);
 		await glideTo(closer, 640, 300, 700);
-		await beat(closer, 1200);
+		await beat(closer, 800);
+		await glideTo(closer, 430, 520, 700);
+		await beat(closer, 1000);
 	});
 
 	// Asserted outside the scene, like the `06-installed` reveal: the closing

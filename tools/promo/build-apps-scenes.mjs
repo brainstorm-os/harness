@@ -20,10 +20,12 @@
  *     per scene to `dur / (seconds - 0.2)` (cap 3×) so the whole captured
  *     action always fits. A hand-set floor above what the clip needs buys a
  *     frozen tail — which is only ever right when the clip's LAST frame is a
- *     deliberate hold. Only TWO scenes set a floor below — the vault picker and
- *     the tile reveal — and both were measured against a real capture; a
- *     third (`09-agent-drafts`) had one until the clip showed the driver
- *     already ends on the hold, so the floor was pure freeze.
+ *     deliberate hold. Only TWO scenes set a floor below — the opening grid scan
+ *     and the tile reveal — and both are measured against a real capture.
+ *     Two others carried one until a capture showed the driver already fills
+ *     the budget, which makes a floor pure freeze. **Never fit a floor to a
+ *     clip recorded while something else is building**: the first dry run ran
+ *     alongside `build:apps` and every clip came out 30-60% long.
  *
  *  ── Ordering: why the refusal is scene 08, not the last thing you see ───
  *
@@ -51,6 +53,9 @@ export const SCENES = [
 	},
 	{
 		id: "01-the-gap",
+		// Floor: the scan is travel and the clip ends parked on the grid, which
+		// is a fine frame to sit on. Measured clip 4.8s.
+		speed: 1.2,
 		seconds: 5,
 		vo: "Mira wants a client pulse board. Nothing built in does it — she writes one.",
 		caption: "The gap",
@@ -63,15 +68,18 @@ export const SCENES = [
 	},
 	{
 		id: "03-page",
-		seconds: 9,
+		// 10: the skeleton is 510 characters and the driver types it in 2-char
+		// runs (~14s of clip), which lands ~1.4× — fast, confident typing rather
+		// than the blur a 9s budget produced.
+		seconds: 10,
 		vo: "And a page. It asks the vault for her clients and draws them. Real data — no export, no build step.",
 		caption: "The page",
 	},
 	{
 		id: "04-install-from-vault",
-		// Floor: the picker is reached through a button and a menu row — travel,
-		// not content. Compress the travel; the frozen tail is the candidate list.
-		speed: 1.3,
+		// No floor: measured at 6.8s the driver already fills the budget (~1.2×).
+		// The 1.3 floor this carried was fitted to a clip inflated by a
+		// concurrent app build and would have bought 0.8s of freeze.
 		seconds: 6,
 		vo: "She installs it straight from the vault. No folder, no zip, no terminal.",
 		caption: "Install from the vault",
@@ -88,8 +96,9 @@ export const SCENES = [
 	{
 		id: "06-installed",
 		// Floor: the toast and the marketplace dismissal are travel; the last
-		// frame — the new tile under the cursor — is the beat. Freeze on it.
-		speed: 1.2,
+		// frame — the new tile under the cursor — is the beat, so freezing on it
+		// is the point. Measured clip 3.8s → ~3s of travel, then the tile holds.
+		speed: 1.25,
 		seconds: 5,
 		vo: "And there it is. A real app, in her grid.",
 		caption: "Installed",
@@ -102,10 +111,10 @@ export const SCENES = [
 	},
 	{
 		id: "08-walls",
-		// 11: the beat carries a 2.2s hold on the consent sheet AND both probes,
-		// and the measured clip is ~16s — at 10 it compressed 2.1× and the sheet
-		// flicked past in under a second.
-		seconds: 11,
+		// 10 once the app window is opened between scenes instead of inside this
+		// one: that alone took the clip from 20.8s to 10.8s, so the 2.2s hold on
+		// the consent sheet now plays at ~1× instead of flicking past.
+		seconds: 10,
 		vo: "Here's the quiet part: untrusted code, behind the same walls as everything else. It gets what she granted — ask for more, and the broker says no.",
 		caption: "Same walls as everything else",
 	},
