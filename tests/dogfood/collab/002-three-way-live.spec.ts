@@ -110,13 +110,29 @@ test("Mira shares the north-star brief with Marcus + Priya; all three co-edit li
 		// Mira revokes Marcus — append-only audit, forward-only access. Priya keeps editing.
 		mira.chat("Marcus is rolling off the brief — revoking his access; Priya stays on.");
 		expect(await mira.revoke(ENTITY_ID, marcusId?.userPubB64 ?? "")).toBe(true);
-		await team.awaitConverged(ENTITY_ID, everyone);
+
+		// F-286 rotate-on-revoke: the revoke mints DEK' and re-wraps it for the
+		// SURVIVORS only, so from here the three shells must NOT converge as a
+		// group - that is the guarantee, not a failure. Mira and Priya keep
+		// converging; Marcus is cryptographically cut off from everything new.
+		await team.awaitConverged(ENTITY_ID, [mira, priya], 12_000);
 
 		const afterRevoke = await priya.access(ENTITY_ID);
 		expect(afterRevoke.find((m) => m.member === marcusId?.userPubB64)?.active).toBe(false);
 		expect(afterRevoke.find((m) => m.member === priyaId?.userPubB64)?.active).toBe(true);
+		// The forward-secrecy assertion, from the survivor's side: an edit made
+		// AFTER the revoke reaches Priya and never reaches Marcus.
+		await mira.editText(ENTITY_ID, "[mira: post-revoke - launch copy locked] ");
+		await team.awaitConverged(ENTITY_ID, [mira, priya], 12_000);
+		const postRevoke = await mira.readText(ENTITY_ID);
+		expect(await priya.readText(ENTITY_ID), "the survivor keeps reading").toBe(postRevoke);
+		expect(
+			await marcus.readText(ENTITY_ID),
+			"the revoked member cannot read post-revoke content",
+		).not.toContain("post-revoke - launch copy locked");
+
 		mira.note(
-			"Shared a brief with two teammates, all three co-edited to convergence through the relay, and revoked one cleanly. Multi-user collaboration works end to end through the sync service.",
+			"Shared a brief with two teammates, all three co-edited to convergence through the relay, then revoked one. The survivor keeps converging; the revoked member is cut off from every later edit (F-286 rotate-on-revoke, proven on real shells).",
 		);
 		await mira.shot("after-revoke");
 	} finally {

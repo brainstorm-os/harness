@@ -38,7 +38,7 @@ import type { RestoreSummary } from "../../../packages/shell/src/preload/index";
 import {
 	SelectiveSyncMode,
 	type SelectiveSyncPolicy,
-} from "../../../packages/shell/src/shared/selective-sync-types";
+} from "../../../packages/protocol/src/selective-sync-types";
 import {
 	AccessRole,
 	COLLAB_DATA_ROOT,

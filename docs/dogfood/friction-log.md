@@ -27,6 +27,30 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-470 - I shared a note with a teammate and nothing ever reached them
+- **session:** collab-009-channel-cascade   **kind:** bug   **app:** shell (sync)   **status:** done
+- **what I was trying to do:** share a chat channel with Marcus so he could read the conversation.
+- **what happened:** Marcus's shell received the key for the channel and then dropped every frame that followed. Nothing appeared on his side, ever. His main-process log: `[live-sync] receive failed for ent_chan_general: envelope-pipeline: sender ... is not an authorized writer of ent_chan_general`.
+- **what I expected:** the channel and its messages to show up, the way sharing has always worked in the demos.
+- **evidence:** `tests/dogfood/.sessions/collab-009-channel-cascade/marcus.console.log`
+- **triage (developer, 2026-07-31):** real, and worse than it looked - the F-288 Viewer-write gate resolved the sender against the receiver's LOCAL access record, and a first-time member has no local doc, so the owner was denied by the very frame that carried the record. Permanent deadlock on every cross-user share. It hid because every green collab spec receives through the ungated dev-bridge receiver and every unit test stubbed the predicate. Fixed by `authorizesAsShareBootstrap` (bootstrap only when the local doc has NO record, and only for a signature-verified active Editor+ in the incoming state) plus a self-key short-circuit for paired devices / restore. `009` now gets the channel + a message through; the residual is F-471.
+
+### F-471 - one message of the shared channel still never arrives
+- **session:** collab-009-channel-cascade   **kind:** bug   **app:** shell (sync)   **status:** open
+- **what I was trying to do:** share a channel that already had two messages in it.
+- **what happened:** after F-470 was fixed, the channel and the first message converge on Marcus's shell but `ent_msg_followup` never does - deterministically, every run. The relay audit shows the wrap forwarded to him and no update frame after it.
+- **what I expected:** sharing a channel gives a teammate the whole conversation.
+- **evidence:** `tests/dogfood/.sessions/collab-009-channel-cascade/relay-audit.log`
+- **triage (developer, 2026-07-31):** the initial-state gap on the cross-user inbox path - the owner emits a child's full state right after that child's wrap, but the receiver only subscribes the child's channel once the wrap resolves, so a forward-only relay drops whatever lands in the gap. Design 71 §flow-1 nominates the durable node's snapshot+tail backfill to close it, but the production node **ignores the Collab-C5 `route` inbox override**, so pointing the spec at the node is strictly worse (no wrap reaches the receiver at all - measured). Needs either the node fanning by `route ?? entityId` or a receiver-initiated state request after subscribe. Own rung; spec `009` deliberately stays red until it holds.
+
+### F-472 - two shells on a shared note never see each other's presence
+- **session:** collab-010-presence-live   **kind:** bug   **app:** shell (presence)   **status:** open
+- **what I was trying to do:** see who else is on the note I just shared.
+- **what happened:** both shells publish presence (the relay audit shows awareness frames in both directions) but each fails to open the other's: `xchacha20poly1305: open failed: aead::Error`. Neither sees anyone.
+- **what I expected:** an avatar for the other person, the way the presence stack shows it.
+- **evidence:** `tests/dogfood/.sessions/collab-010-presence-live/marcus.console.log`
+- **triage (developer, 2026-07-31):** they hold different DEKs. The dogfood's `installShareReceiver` creates the receiver's row with `dek_id IS NULL` before the share lands, the boot `retroWrapNullDeks` pass then mints a LOCAL DEK for it (marcus logs `wrapped 9 entities` where every other shell logs 8), and `installEntityDek`'s monotonic rule then rejects the owner's v1 wrap as not-strictly-newer. The trigger is dev-bridge-shaped - production's `installWrap` creates the row and its DEK together - but the hazard is real: any null-DEK row awaiting a wrap becomes permanently un-shareable. The fix touches DEK version semantics on a security-critical path, so it is its own rung rather than a drive-by. Presence itself is wired and covered by `presence-scenario.test.ts` + the PRES-4 gate.
+
 ### F-469 — I can't resize anything on a whiteboard
 - **session:** user report, owner-confirmed (2026-07-29)   **kind:** gap   **app:** whiteboard   **status:** ✅ fixed (shell #358)
 - **what I was trying to do:** make a sticky note bigger so more of its text shows, and shrink a frame that was way too large for the three cards inside it.
