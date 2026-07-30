@@ -26,6 +26,43 @@
  *
  * Driven through the production surfaces (`pairing:*`, `sync-status:*`), not a
  * test-only bridge, so a green run is evidence about the shipped product.
+ *
+ * ---
+ *
+ * **STATUS: red at phase 4, and the reason is a harness-fidelity gap rather
+ * than a product defect. Read this before touching it.**
+ *
+ * As of the first run (2026-07-31) phases 1 to 3 all work: the shells pair, the
+ * relay stops, the desktop binds a real private address
+ * (`ws://192.168.2.50:55698`, not loopback), the laptop's dial coordinator
+ * selects it (`[lan-dial] target ws://192.168.2.50:55698 (manual)`), and the
+ * transport engages. It is then refused and falls back to the relay path
+ * (`[lan-dial] no peer — relay`).
+ *
+ * The cause is the topology this harness builds. `startCollabTeam` gives each
+ * persona **its own vault**, because it was written for two different *users*.
+ * Two of one user's *devices* share ONE vault, which is how `meta.devices`
+ * converges: the source records the target, the target records itself, and the
+ * vault-properties document carries each to the other. With two separate
+ * vaults that document never syncs, so after pairing the laptop's roster holds
+ * only the laptop. The channel-bound handshake then does exactly what it
+ * should — the client cannot find the host in `listActive()`, cannot verify its
+ * proof, and refuses. Fail-closed, working as designed, on a roster that this
+ * harness never let converge.
+ *
+ * Closing it needs a two-DEVICE harness primitive rather than a two-USER one:
+ * create the vault once, copy the directory to the second user-data dir, and
+ * have the second shell open the copy so both sides genuinely share the vault
+ * (`vaults.list()` reads a per-userData registry, so this also needs a way to
+ * register an existing vault path). That is real work in `collab-team.ts` and
+ * it is the honest next step for this spec.
+ *
+ * The one thing the run DID catch as a product bug is fixed: the joining device
+ * adopted the durable node's `127.0.0.1` address from the pairing payload as a
+ * LAN peer, because the payload's single URL slot holds the relay's address
+ * whenever a relay is configured. `parseLanPeerAddress(url, {allowLoopback:
+ * false})` on the pairing path now refuses it, with a regression test in
+ * `lan-dial-coordinator.test.ts`.
  */
 
 import { mkdtempSync, rmSync } from "node:fs";
