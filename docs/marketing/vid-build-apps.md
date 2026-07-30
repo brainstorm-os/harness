@@ -81,11 +81,13 @@ render-side cards with no captured clip.
 | 7 | `07-launch` | 9 | S5 | Open it — the app renders real Northbound clients in its own window |
 | 8 | `08-agent-drafts` | 12 | S6 | Agent app: *"Build me a client pulse board."* → two staged cards (`manifest.json`, `index.html`) with code previews |
 | 9 | `09-agent-approve` | 10 | S6 | Approve both → files land in the vault → same install path → same app |
-| 10 | `10-walls` | 9 | S7 | **The consent sheet recalled** (what she actually agreed to: one requested capability + unsigned advisory) — *not* the Settings grants popover; then, in the app itself, an ungranted attempt refused — `vaultEntities.list()` needs `entities.read:*`, which it was never given, and the broker's own message renders |
+| 10 | `10-walls` | 11 | S7 | **The consent sheet recalled** via the vault picker's *Install* → sheet → *Cancel* (what she actually agreed to: one requested capability + unsigned advisory) — *not* the Settings grants popover; then, in the app itself, an ungranted attempt refused — `vaultEntities.list()` needs `entities.read:*`, which it was never given, and the broker's own message renders |
 | 11 | `11-title` | 5 | slide | Logo + getbrainstorm.online |
 
-Content ≈ 93s + 10s of slides ≈ **1:43** before per-scene speed compression;
-budget `speed` on `02`/`03` (typing) and `08` (agent turn) to land ~2:00.
+Content ≈ 95s + 10s of slides = **1:45** as rendered. `render.mjs` derives each
+scene's speed from its captured clip, so no scene sets `speed` by hand — but a
+scene's budget is also a hard ceiling on its VO (`atrim=0:seconds`), which is why
+`10-walls` is 11s: the S7 line reads 10.0s and a 9s budget cut it mid-sentence.
 
 ### Why the capability is scoped, not `entities.read:*`
 
@@ -114,7 +116,17 @@ So S7 recalls the **install consent sheet** instead — the one requested
 capability and the unsigned advisory, i.e. exactly what the user agreed to — and
 keeps the refusal. Same claim, no asterisk, no product change. The grants
 popover is not wrong and is not being hidden; it is simply the wrong surface for
-this sentence. *(A follow-up worth filing on its own merits: the grants popover
+this sentence.
+
+*How it is driven (nothing staged):* the scene re-opens Marketplace → **Install
+from…** → **From vault code files…** off camera, then on camera clicks *Install*
+on the same **Client Pulse** candidate — which renders the real
+`install-from-vault` consent sheet, verbatim (*"Version 1.0.0 ·
+studio.northbound.client-pulse. Capabilities requested:
+entities.read:brainstorm/Project/v1. This app comes from your vault's code files
+and is unsigned — only install apps you trust."*) — holds on it, and dismisses
+with **Cancel**. It is a recall of the shipped sheet, not a second install and
+not a mock. *(A follow-up worth filing on its own merits: the grants popover
 does not distinguish shell-baseline capabilities from app-requested ones, which
 is confusing outside the video too.)*
 
