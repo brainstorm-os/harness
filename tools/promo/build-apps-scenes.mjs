@@ -124,7 +124,7 @@ export const SCENES = [
 		id: "11-payoff",
 		seconds: 8,
 		vo: "Two apps that didn't exist this morning. One she wrote, one she asked for — both in the grid, both behind the same walls.",
-		caption: "Apps she wrote, running",
+		caption: "Two new apps in the grid",
 	},
 	{
 		id: "12-title",
