@@ -5,7 +5,7 @@ An episode of the app-showcase series (`VID-*` in
 story — **Brainstorm runs apps you wrote inside it.** You write an app's files in
 the code editor (or let the agent draft them), install them straight from the
 vault, and it's a live, sandboxed, capability-gated app in your grid, reading
-your real data. Target length **~2:00**.
+your real data. Target length **1:30–1:50**; the shipped cut is **1:32**.
 
 The differentiator: it's an **OS for your knowledge that extends itself**, and
 the app you just wrote is held by the *same* sandbox + capability ledger as every
@@ -41,78 +41,126 @@ clients with a status dot, reading the vault through `entities.read`. It must be
 genuinely working code that genuinely installs; if the app on camera doesn't run,
 the episode doesn't ship.
 
-## Voiceover script (~2:00)
+## Voiceover script (1:32 as rendered)
 
-> **[S0 slide]** Brainstorm is an operating system for your knowledge. The apps
-> it runs are just apps — including the ones you write yourself.
-> **[S1]** Mira wants something the built-in apps don't do: a pulse board for her
-> clients, her way. So she writes one.
-> **[S2]** An app here is two files. A manifest that says what it is and what it's
-> allowed to touch — and a page.
-> **[S3]** The page asks the vault for her clients and draws them. Real data, no
-> copy, no export. She's writing it in the code editor, in the same vault the app
-> will read.
-> **[S4]** Now she installs it. From the vault, directly — no folder, no zip, no
-> terminal. Brainstorm shows her exactly what she's about to run, and what it
-> asked for.
-> **[S5]** And there it is. A real app in her grid, in its own sandbox, showing
-> her actual clients.
-> **[S6]** Or she doesn't write it at all. She asks the agent — and it drafts the
-> files, the same way it drafts a note. She reads them, approves them, installs.
-> **[S7]** Here's the quiet part: this is untrusted code — hers, or the agent's —
-> and it lives behind the same walls as everything else. It sees what she granted
-> it, and nothing else. Ask for more, and it's refused.
-> **[S8 slide]** A knowledge OS that runs the apps you write. getbrainstorm.online
+> **[S0 slide]** An OS for your knowledge — that runs the apps you write.
+> **[S1]** Mira wants a client pulse board. Nothing built in does it — she writes
+> one.
+> **[S2]** An app here is two files. A manifest that says what it is — and exactly
+> what it may touch. One line: read her projects. Nothing else.
+> **[S3]** And a page. It asks the vault for her clients and draws them. Real data
+> — no export, no build step.
+> **[S4]** Now she installs it — straight from the vault. No folder, no zip, no
+> terminal.
+> **[S5]** Brainstorm shows her exactly what she's about to run, and what it asked
+> for.
+> **[S6]** And there it is. A real app, in her grid.
+> **[S7]** Its own window, its own sandbox — showing her actual clients. Typed to
+> installed in about a minute.
+> **[S8]** Here's the quiet part: untrusted code, behind the same walls as
+> everything else. It gets what she granted — ask for more, and the broker says
+> no.
+> **[S9]** Or she doesn't write it at all. She asks the agent, and it drafts the
+> files — code she can read before anything is saved.
+> **[S10]** She approves them, they land in the vault as real files, and install
+> the same way.
+> **[S11]** Two apps that didn't exist this morning. One she wrote, one she asked
+> for — both in the grid, both behind the same walls.
+> **[S12 slide]** An OS for your knowledge that runs the apps you write.
+> getbrainstorm.online
 
 ## Scene table
 
 Ids map 1:1 to `tools/promo/build-apps-scenes.mjs`; `slide` entries are
-render-side cards with no captured clip.
+render-side cards with no captured clip. `speed` is a *floor* — `render.mjs`
+raises it per scene so the whole captured action fits the budget; a hand-set
+floor is only for scenes whose last frame is a hold worth freezing on.
 
-| # | id | secs | beat | on screen |
-|---|----|------|------|-----------|
-| 0 | `00-slide-hook` | 5 | slide | "It runs the apps you write" over the dashboard |
-| 1 | `01-the-gap` | 6 | S1 | Dashboard/app grid; Mira scans it — nothing does client pulse |
-| 2 | `02-manifest` | 12 | S2 | Code editor: new file `client-pulse/manifest.json`, typed — id, name, version, `sdk`, `entry`, and one capability line (`entities.read:brainstorm/Project/v1`). Hold on the capability line |
-| 3 | `03-page` | 14 | S3 | New file `client-pulse/index.html`; the page's real body typed/revealed — `window.brainstorm` call, a list, a status dot |
-| 4 | `04-install-from-vault` | 8 | S4 | Marketplace → **Install from…** → **From vault code files…** → picker lists the **Client Pulse** candidate found in the vault |
-| 5 | `05-consent` | 7 | S4 | The install sheet: name · id · version · **requested capabilities** · unsigned advisory. Confirm |
-| 6 | `06-installed` | 6 | S5 | Success toast → the app grid, the new **Client Pulse** icon appearing |
-| 7 | `07-launch` | 9 | S5 | Open it — the app renders real Northbound clients in its own window |
-| 8 | `08-agent-drafts` | 12 | S6 | Agent app: *"Build me a client pulse board."* → two staged cards (`manifest.json`, `index.html`) with code previews |
-| 9 | `09-agent-approve` | 10 | S6 | Approve both → files land in the vault → same install path → same app |
-| 10 | `10-walls` | 11 | S7 | **The consent sheet recalled** via the vault picker's *Install* → sheet → *Cancel* (what she actually agreed to: one requested capability + unsigned advisory) — *not* the Settings grants popover; then, in the app itself, an ungranted attempt refused — `vaultEntities.list()` needs `entities.read:*`, which it was never given, and the broker's own message renders |
-| 11 | `11-title` | 5 | slide | Logo + getbrainstorm.online |
+| # | id | secs | speed | beat | on screen |
+|---|----|------|-------|------|-----------|
+| 0 | `00-slide-hook` | 5 | — | slide | "It runs the apps you write" |
+| 1 | `01-the-gap` | 5 | auto | S1 | Dashboard/app grid; Mira scans it — nothing does client pulse |
+| 2 | `02-manifest` | 10 | auto | S2 | Code editor: new file `client-pulse/manifest.json`, typed — id, name, version, `sdk`, `entry`, and one capability line (`entities.read:brainstorm/Project/v1`). Hold on the capability line |
+| 3 | `03-page` | 9 | auto (~1.5×) | S3 | New file `client-pulse/index.html`; the skeleton and the `window.brainstorm` query typed, then the finished file revealed in one motion |
+| 4 | `04-install-from-vault` | 6 | **1.3** | S4 | Marketplace → **Install from…** → **From vault code files…** → picker lists the **Client Pulse** candidate found in the vault |
+| 5 | `05-consent` | 6 | auto | S5 | The install sheet: name · id · version · **requested capabilities** · unsigned advisory. Confirm |
+| 6 | `06-installed` | 5 | **1.2** | S6 | Success toast → marketplace dismissed **in the beat** → the grid, cursor landing on the new **Client Pulse** tile |
+| 7 | `07-launch` | 7 | auto | S7 | Open it — summary strip + real Northbound clients, cards rising in, in its own window |
+| 8 | `08-walls` | 10 | auto | S8 | **The consent sheet recalled** via the vault picker's *Install* → sheet → *Cancel* (what she actually agreed to) — *not* the Settings grants popover; then, in the app, **both probes**: the granted read succeeds in green, `vaultEntities.list()` comes back refused in red, in the broker's own words |
+| 9 | `09-agent-drafts` | 9 | **1.2** | S9 | Agent app: *"Build me a small hello app I can install."* → two staged cards (`manifest.json`, `index.html`) with code previews |
+| 10 | `10-agent-approve` | 7 | auto (~1.9×) | S10 | Approve both → files land in the vault → same install path → same consent sheet |
+| 11 | `11-payoff` | 8 | auto | S11 | The grid carrying **both** new tiles, then Client Pulse opened one last time — its cards painting in |
+| 12 | `12-title` | 5 | — | slide | Logo + getbrainstorm.online |
 
-Content ≈ 95s + 10s of slides = **1:45** as rendered. `render.mjs` derives each
-scene's speed from its captured clip, so no scene sets `speed` by hand — but a
-scene's budget is also a hard ceiling on its VO (`atrim=0:seconds`), which is why
-`10-walls` is 11s: the S7 line reads 10.0s and a 9s budget cut it mid-sentence.
+Content 82s + 10s of slides = **1:32** as rendered (down from 1:45). Every
+budget carries ≥0.6s of headroom over its measured VO line — a scene's budget is
+a hard ceiling on its narration (`atrim=0:seconds`), so `promo:vo:build-apps`
+prints `<line>s / <budget>s` per scene and must be re-run after any wording
+change.
+
+### Why the walls beat is scene 08, and the episode ends on the grid
+
+*(pacing pass 2026-07-30, after the owner watched the 1:45 cut.)* The first cut
+ran … agent → walls → title, so the **last content frame of the episode was a
+small red `refused — …` line** under a mostly-empty white page. It is the
+strongest proof in the reel and it is completely honest — but as an *ending* it
+reads "the app crashed", which is the opposite of the claim the hook makes.
+
+Three changes, no product change and nothing dropped:
+
+1. **The refusal moved to scene 08**, one beat after the app has just read her
+   clients. Same app, same window, one call inside the grant and one outside it
+   — the contrast is at its most legible there, and it no longer has to carry
+   the ending.
+2. **The app runs both probes**, granted and ungranted, side by side (green ✓
+   and red ✕). A lone red line reads as a failure; a pair reads as a boundary.
+3. **A new closing scene `11-payoff`** — the grid carrying both tiles that were
+   not there at the top of the episode, then Client Pulse opened one last time
+   with its cards animating in. Affirmative, and it pays off "it runs the apps
+   you write" with a picture rather than a sentence.
+
+### Why the demo app was restyled
+
+The same pass rebuilt the Client Pulse page (`tests/dogfood/promo/client-pulse-source.ts`)
+because it occupied the top third of a 16:9 window and left a large empty white
+area under it for two whole scenes — `07-launch` alone was 9s of a near-static
+frame (its clip was 981 KB against ~15 MB for the moving scenes). It is still a
+genuine two-file, no-build app reading `entities.read:brainstorm/Project/v1` and
+nothing else; what changed is ordinary app code:
+
+- the page owns the viewport (`min-height: 100vh` column, board `flex: 1` with
+  stretching grid rows, walls panel pinned to the bottom edge);
+- a three-tile summary strip (clients · active · next milestone) derived from the
+  **same** granted query — no second capability, no invented data;
+- cards rise in with a staggered delay and light up on hover. This is not only
+  cosmetic: the capture records through the CDP screencast, which emits frames
+  **on paint**, so a page that never repaints yields almost no footage and
+  `render.mjs` then clones its last frame out to the scene budget.
 
 ### Why the capability is scoped, not `entities.read:*`
 
 The earlier draft put `entities.read:*` on the manifest's one capability line.
 The shipped app asks for **`entities.read:brainstorm/Project/v1`** instead, and
-that is a better episode, not a smaller one: a wildcard read makes S7's "it sees
-what she granted it, and nothing else" an assertion, while a scoped read makes it
-**demonstrable**. The board renders the vault's real client projects, and the same
-app asking for the whole vault (`vaultEntities.list()`, which statically requires
+that is a better episode, not a smaller one: a wildcard read makes S8's "it gets
+what she granted" an assertion, while a scoped read makes it **demonstrable**.
+The board renders the vault's real client projects, and the same app asking for
+the whole vault (`vaultEntities.list()`, which statically requires
 `entities.read:*`) comes back refused — from the broker, in the broker's own
 words, with no staging:
 
 > refused — studio.northbound.client-pulse lacks capability for vault-entities.list
 
-### Why S7 shows the consent sheet, not the grants popover
+### Why the walls beat shows the consent sheet, not the grants popover
 
-*(owner decision 2026-07-30, after the second capture.)* The first cut of scene 10
-opened **Settings → Security → Capability grants**, which truthfully lists **22**
-capabilities for Client Pulse — because every installed app receives a baseline
-set (`credentials.read:self`, `sharing.read`, `roster.read`, …) on top of what its
-manifest asked for. Accurate, but it reads as a contradiction under the VO *"It
-sees what she granted. Nothing more."*, and explaining the baseline mid-episode
+*(owner decision 2026-07-30, after the second capture.)* The first cut of this
+scene opened **Settings → Security → Capability grants**, which truthfully lists
+**22** capabilities for Client Pulse — because every installed app receives a
+baseline set (`credentials.read:self`, `sharing.read`, `roster.read`, …) on top
+of what its manifest asked for. Accurate, but it reads as a contradiction under
+the VO *"It gets what she granted."*, and explaining the baseline mid-episode
 costs more than the beat is worth.
 
-So S7 recalls the **install consent sheet** instead — the one requested
+So the scene recalls the **install consent sheet** instead — the one requested
 capability and the unsigned advisory, i.e. exactly what the user agreed to — and
 keeps the refusal. Same claim, no asterisk, no product change. The grants
 popover is not wrong and is not being hidden; it is simply the wrong surface for
@@ -130,8 +178,8 @@ not a mock. *(A follow-up worth filing on its own merits: the grants popover
 does not distinguish shell-baseline capabilities from app-requested ones, which
 is confusing outside the video too.)*
 
-One further honesty note for S7: a capability denial is **silent** everywhere else
-in the product — it lands in `<vault>/logs/audit.log` as `ipc.denied` and has no
+One further honesty note: a capability denial is **silent** everywhere else in
+the product — it lands in `<vault>/logs/audit.log` as `ipc.denied` and has no
 UI. The refusal on camera is visible only because *the demo app itself* catches
 the rejected promise and prints it. That is a truthful thing for an app to do (any
 app can), but do not describe it as a shell-level warning, and do not stage a
@@ -139,19 +187,29 @@ app can), but do not describe it as a shell-level warning, and do not stage a
 
 ## Notes for the edit
 
-- **S4→S5 is the payoff.** The viewer watched those two files get typed; now the
+- **S4→S6 is the payoff.** The viewer watched those two files get typed; now the
   same bytes are an icon in the grid. Hold the icon reveal — that's the "wait, it
-  actually installed it" beat. Do not cut away early.
+  actually installed it" beat. `06-installed` dismisses the marketplace *inside*
+  the beat so the tile is genuinely on screen; the capture asserts it is, because
+  the first cut played that line over a list of apps that were already there.
 - **Do not show a terminal, `npm install`, or a `package.json` full of deps.**
   Not because it would look bad, but because it would be *false*: there is no
   build step in this path. The absence of a terminal is the feature.
 - **The consent sheet is not a speed bump, it's the product.** Let it breathe for
   a beat — capabilities and the unsigned advisory on screen are what make the
-  sandbox claim in S7 land later.
-- **S6 pairs with VID-agent.** Same propose→approve gesture, bigger artifact. If
+  sandbox claim in S8 land later. That hold is also why `05-consent` sets no
+  `speed` floor: a floor would compress the sheet and freeze the tail on the
+  marketplace behind it.
+- **S9 pairs with VID-agent.** Same propose→approve gesture, bigger artifact. If
   both episodes are out, cross-cut a half-second of the note-card next to the
   code-file card to make the parallel explicit.
-- **S7 sells safety without a lecture** — one grants sheet, one refusal, move on.
+- **S8 sells safety without a lecture** — one consent sheet, one granted call,
+  one refusal, move on. Never end the episode on it (see §Why the walls beat is
+  scene 08).
+- **Idle is not footage.** The recorder is the CDP screencast: it emits frames on
+  paint, and `render.mjs` clones the last frame out to the scene budget. A `beat`
+  on a settled surface is therefore a literal freeze, not a pause — hold only
+  where something is still moving or has just changed.
 - Say "install", never "compile" or "build" — the words have to match the model.
 
 ## What is real vs. scripted (state this if anyone asks)
