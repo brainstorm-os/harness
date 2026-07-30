@@ -101,6 +101,10 @@ chapter clears the 10s minimum; `04-install-from-vault` (0:30) and `08-walls`
 (0:54) are deliberately NOT chapter markers because they sit <10s from their
 neighbours — the 0:36 and 0:47 chapters cover them.
 
+Verified against the shipped cut (final capture 2026-07-30): every cumulative
+start above matches a cue start in `vid-build-apps.srt` and the rendered file is
+exactly 92s, so the seven timestamps in the description need no adjustment.
+
 ## Pinned comment (optional)
 
 > The app in this video is two files — a manifest and a page — written in
