@@ -12,6 +12,34 @@
  * the production `LiveSyncEngine` inbox path (the child wraps land on his inbox
  * → speculative pre-register → DEK install → state converges) — no per-message
  * receiver call, exactly as a real teammate would.
+ *
+ * ⚠️ KNOWN FAILURE, 2026-07-31 - this spec fails on `ent_msg_followup` and the
+ * failure is real, deterministic, and correctly located here.
+ *
+ * The F-288 bootstrap deadlock that used to break this at the very first entity
+ * is fixed (see `main/collab/share-bootstrap-authz.test.ts`); the channel and
+ * one of the two messages now converge. What remains is the **initial-state
+ * gap** on the cross-user inbox path: the owner emits a child's full state
+ * immediately after that child's `WrapBootstrap`, but the receiver only
+ * subscribes the child's own channel once the wrap has resolved, so a
+ * forward-only relay drops whatever falls in between. The relay audit shows it
+ * exactly - `ent_msg_followup` is forwarded its wrap and never an update, on
+ * every run.
+ *
+ * The mechanism design 71 §flow-1 nominates to close it is the durable node's
+ * snapshot+tail backfill on subscribe (`SYNC-0..5`). That cannot be used yet:
+ * the production node **ignores the Collab-C5 `route` inbox override** the
+ * shell's own relay server honours, so pointing this spec at the node is
+ * strictly worse - no wrap reaches the receiver at all and even the channel
+ * stops converging (measured). Closing this is one of:
+ *   (a) teach `../brainstorm-sync` to fan by `route ?? entityId` (already filed
+ *       on the `10.11` bullet as a small own PR), then run this against the
+ *       node like session 003; or
+ *   (b) give the receiver a state request after it subscribes, so the owner
+ *       need not guess when the subscription landed.
+ * Both are rungs of their own. Leaving this spec asserting the full guarantee
+ * is deliberate: it is the M1 keystone, and it should stay red until a team's
+ * whole channel really does arrive.
  */
 
 import { expect, test } from "@playwright/test";

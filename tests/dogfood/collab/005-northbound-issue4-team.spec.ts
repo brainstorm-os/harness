@@ -97,19 +97,28 @@ test("Northbound ships Issue #4: mixed roles, live Viewer, revoke + re-invite", 
 		// --- Revoke Marcus from the brief (append-only audit, forward-only). ---
 		mira.chat("Design's locked — taking Marcus off the brief for now.");
 		expect(await mira.revoke(BRIEF_ID, marcusId?.userPubB64 ?? "")).toBe(true);
-		await team.awaitConverged(BRIEF_ID, all);
+		// F-286 rotate-on-revoke re-keys the entity for the SURVIVORS, so the
+		// group no longer converges as a whole - only Mira and Priya do. Waiting
+		// on `all` here would be waiting for the guarantee to fail.
+		await team.awaitConverged(BRIEF_ID, [mira, priya], 12_000);
 		const afterRevoke = await mira.access(BRIEF_ID);
 		expect(afterRevoke.find((m) => m.member === marcusId?.userPubB64)?.active, "Marcus revoked").toBe(false);
 		expect(afterRevoke.find((m) => m.member === priyaId?.userPubB64)?.active, "Priya stays on").toBe(true);
 		await mira.shot("revoked");
 
-		// Forward-secrecy observation: Mira edits post-revoke; does Marcus still see it?
+		// Forward secrecy, asserted (not merely observed): Mira edits post-revoke.
+		// Priya converges on it; Marcus, whose device holds only the superseded
+		// DEK, must never decrypt it.
 		await mira.editText(BRIEF_ID, "[mira: final pass after Marcus rolled off] ");
-		await new Promise((r) => setTimeout(r, 2_000));
-		const marcusPostRevoke = await marcus.readText(BRIEF_ID).catch(() => "");
-		mira.note(
-			`Forward-secrecy probe: Marcus ${marcusPostRevoke.includes("final pass after Marcus") ? "STILL SEES post-revoke edits (FINDING)" : "does not see post-revoke edits (DEK rotation holds)"}.`,
+		await team.awaitConverged(BRIEF_ID, [mira, priya], 12_000);
+		expect(await priya.readText(BRIEF_ID), "the survivor keeps reading").toContain(
+			"final pass after Marcus",
 		);
+		const marcusPostRevoke = await marcus.readText(BRIEF_ID).catch(() => "");
+		expect(marcusPostRevoke, "the revoked member cannot read post-revoke content").not.toContain(
+			"final pass after Marcus",
+		);
+		mira.note("Forward-secrecy probe: Marcus does not see post-revoke edits (DEK rotation holds).");
 
 		// --- Re-invite: revoke is not a dead end (F-287 fixed — the access view
 		// now collapses to one CURRENT row per member, so the re-grant wins). ---
