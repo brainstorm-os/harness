@@ -84,7 +84,12 @@ export const SCENES = [
 	},
 	{
 		id: "10-walls",
-		seconds: 9,
+		// 11s, not the storyboard's original 9: the S7 line reads 10.0s and the
+		// renderer TRIMS a VO to its scene budget (`atrim=0:seconds`), so a 9s
+		// budget cut "…it sees what she granted. Nothing more." mid-sentence —
+		// the one line the whole scene exists to deliver. The captured clip is
+		// 11.0s, so 11 also plays it at ~1× instead of compressing it.
+		seconds: 11,
 		vo: "Here's the quiet part: this is untrusted code — hers, or the agent's — behind the same walls as everything else. It sees what she granted. Nothing more.",
 		caption: "Same walls as everything else",
 	},

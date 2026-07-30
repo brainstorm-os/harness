@@ -12,8 +12,8 @@
  * the run.
  *
  * What is REAL here: the app, its code, that it installs and runs, the consent
- * sheet, the capability grants, and the refusal. The ONE scripted element is
- * the model's output in the agent act, via the capture-only
+ * sheet (shown at install and recalled in S7), and the refusal. The ONE
+ * scripted element is the model's output in the agent act, via the capture-only
  * `BRAINSTORM_DEMO_AGENT=appforge` provider (`promo:capture:build-apps` sets
  * it) — the tray, the approval, and the entity writes are the genuine
  * pipeline, exactly as in `vid-agent-team`.
@@ -449,59 +449,55 @@ test("capture VID-build-apps reel", async () => {
 		}
 	});
 
-	// ── 10: THE WALLS — what it was granted, and what it is refused ────────
-	// Close every overlay the install act left up BEFORE the scene starts —
-	// clicking the header while a popover/marketplace is still mounted burns the
-	// whole beat waiting on a dialog that never opens (it did, first run).
+	// ── 10: THE WALLS — what she consented to, and what it is refused ──────
+	// The surface here is the INSTALL CONSENT SHEET, recalled — not Settings →
+	// Security → Capability grants. The grants popover truthfully lists the
+	// shell baseline every installed app receives *on top of* what its manifest
+	// asked for (~22 rows), which reads as a contradiction under this scene's
+	// VO ("it sees what she granted, nothing more"). The consent sheet shows
+	// exactly what the user agreed to: the one requested capability plus the
+	// unsigned advisory. See the storyboard, §"Why S7 shows the consent sheet,
+	// not the grants popover".
+	//
+	// Close every overlay the install act left up BEFORE the scene starts, then
+	// re-open the vault picker off camera so the beat opens on the candidate
+	// list and spends its seconds on the sheet itself.
 	for (let i = 0; i < 3; i++) {
 		await s.dashboard.keyboard.press("Escape").catch(() => undefined);
 		await s.dashboard.waitForTimeout(350);
 	}
-	const settingsDialog = s.dashboard.locator('[data-testid="settings"]');
-	for (let attempt = 0; attempt < 3; attempt++) {
-		if (await settingsDialog.isVisible().catch(() => false)) break;
-		const button = s.dashboard.getByRole("button", { name: "Settings" }).first();
-		if (await button.count().catch(() => 0)) await button.click().catch(() => undefined);
-		else await s.dashboard.keyboard.press(`${MOD}+,`).catch(() => undefined);
-		await settingsDialog.waitFor({ state: "visible", timeout: 4000 }).catch(() => undefined);
-	}
-	const settingsOpen = await settingsDialog.isVisible().catch(() => false);
-	console.log(`[vid-build-apps] settings opened: ${settingsOpen}`);
-	await s.dashboard
-		.locator(".settings__nav-item")
-		.filter({ hasText: "Security" })
-		.first()
-		.click()
-		.catch(() => undefined);
-	await s.dashboard.waitForTimeout(900);
-	const grantRow = s.dashboard
-		.locator('[data-testid="grants-panel"] .grants-panel__app')
-		.filter({ hasText: CLIENT_PULSE_APP_NAME })
-		.first();
-	await grantRow.scrollIntoViewIfNeeded().catch(() => undefined);
+	await openVaultInstaller();
+	const consentRow = vaultRow(CLIENT_PULSE_APP_NAME);
+	await consentRow.scrollIntoViewIfNeeded().catch(() => undefined);
+	console.log(`[vid-build-apps] consent recall row present: ${await consentRow.count().catch(() => 0)}`);
 
 	await s.scene("10-walls", async () => {
 		await s.film(s.dashboard);
+		await beat(s.dashboard, 600);
+		// What she actually consented to, in the shell's own words…
+		await glideClick(s.dashboard, consentRow.getByRole("button", { name: "Install" })).catch(
+			() => undefined,
+		);
+		const consentSheet = s.dashboard.locator('[data-testid="confirm-dialog"]');
+		await consentSheet.waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
+		const consent = await consentSheet
+			.locator(".confirm__body")
+			.first()
+			.textContent()
+			.catch(() => null);
+		console.log(`[vid-build-apps] consent sheet recalled: ${consent ?? "(none)"}`);
+		await beat(s.dashboard, 2200);
+		// Dismiss without installing — this is a recall of the sheet, not a
+		// second install.
+		await glideClick(
+			s.dashboard,
+			consentSheet.locator(".popover__footer button.button--neutral").first(),
+		).catch(() => undefined);
 		await beat(s.dashboard, 500);
-		// What the shell says it granted…
-		if (await grantRow.count().catch(() => 0)) {
-			await glideClick(s.dashboard, grantRow).catch(() => undefined);
-			await s.dashboard
-				.locator('[data-testid="grants-popover"]')
-				.waitFor({ state: "visible", timeout: 5000 })
-				.catch(() => undefined);
-			const granted = await s.dashboard
-				.locator('[data-testid="grants-popover"] .grants-panel__capability')
-				.allTextContents()
-				.catch(() => [] as string[]);
-			console.log(`[vid-build-apps] Client Pulse grants: ${JSON.stringify(granted)}`);
-			await beat(s.dashboard, 1800);
-		} else {
-			console.warn("[vid-build-apps] no grants row for Client Pulse");
-			await beat(s.dashboard, 1200);
+		for (let i = 0; i < 3; i++) {
+			await s.dashboard.keyboard.press("Escape").catch(() => undefined);
+			await s.dashboard.waitForTimeout(300);
 		}
-		await s.dashboard.keyboard.press("Escape").catch(() => undefined);
-		await s.dashboard.keyboard.press("Escape").catch(() => undefined);
 
 		// …and what it is refused: the app asks for the whole vault
 		// (`vaultEntities.list` statically requires `entities.read:*`, which it
