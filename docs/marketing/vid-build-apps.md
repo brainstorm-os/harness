@@ -80,8 +80,8 @@ floor is only for scenes whose last frame is a hold worth freezing on.
 |---|----|------|-------|------|-----------|
 | 0 | `00-slide-hook` | 5 | — | slide | "It runs the apps you write" |
 | 1 | `01-the-gap` | 5 | **1.2** | S1 | Dashboard/app grid; Mira scans it — nothing does client pulse |
-| 2 | `02-manifest` | 10 | auto | S2 | Code editor: new file `client-pulse/manifest.json`, typed — id, name, version, `sdk`, `entry`, and one capability line (`entities.read:brainstorm/Project/v1`). Hold on the capability line |
-| 3 | `03-page` | 10 | auto (~1.4×) | S3 | New file `client-pulse/index.html`; the skeleton and the `window.brainstorm` query typed, then the finished file revealed in one motion |
+| 2 | `02-manifest` | 10 | auto | S2 | Code editor: new file `client-pulse/manifest.json` — the FILES sidebar grows a **`client-pulse` folder node** with the file nested under it. Typed: id, name, version, `sdk`, `entry`, and one capability line (`entities.read:brainstorm/Project/v1`). Hold on the capability line |
+| 3 | `03-page` | 10 | auto (~1.4×) | S3 | New file `client-pulse/index.html` — the folder now holds **both** files. The skeleton and the `window.brainstorm` query typed, then the finished file revealed in one motion |
 | 4 | `04-install-from-vault` | 6 | auto | S4 | Marketplace → **Install from…** → **From vault code files…** → picker lists the **Client Pulse** candidate found in the vault |
 | 5 | `05-consent` | 6 | auto | S5 | The install sheet: name · id · version · **requested capabilities** · unsigned advisory. Confirm |
 | 6 | `06-installed` | 5 | **1.25** | S6 | Success toast → marketplace dismissed **in the beat** → the grid, cursor landing on the new **Client Pulse** tile |
@@ -93,7 +93,8 @@ floor is only for scenes whose last frame is a hold worth freezing on.
 | 12 | `12-title` | 5 | — | slide | Logo + getbrainstorm.online |
 
 Content 82s + 10s of slides = **1:32** as rendered (down from 1:45). Every
-budget carries ≥0.6s of headroom over its measured VO line — a scene's budget is
+budget carries ≥0.35s of headroom over its measured VO line (the tightest is
+`08-walls` at 9.62s / 10s) — a scene's budget is
 a hard ceiling on its narration (`atrim=0:seconds`), so `promo:vo:build-apps`
 prints `<line>s / <budget>s` per scene and must be re-run after any wording
 change. The budgets above are fitted to a real capture (every scene lands
@@ -121,6 +122,24 @@ Three changes, no product change and nothing dropped:
    not there at the top of the episode, then Client Pulse opened one last time
    with its cards animating in. Affirmative, and it pays off "it runs the apps
    you write" with a picture rather than a sentence.
+
+### The app takes shape as a folder (scenes 02–03)
+
+*(final capture 2026-07-30, against shell #372.)* The Code editor's FILES
+sidebar is now a **folder tree** (`9.7.12`, `apps/code-editor/src/logic/path-tree.ts`)
+— a folder is a shared `/`-prefix of the `CodeFile` paths that exist, and folders
+render expanded by default. The two files this episode types are
+`client-pulse/manifest.json` and `client-pulse/index.html`, so the sidebar grows
+a real **`client-pulse` folder node** the moment the first file is named, and the
+second file lands inside it.
+
+That is better storytelling than the flat list it replaces and it costs nothing:
+scene 02 shows the app coming into existence *as a thing with a shape*, scene 03
+shows it filling out, and scene 04's vault picker then reads
+"**Client Pulse** · client-pulse · 2 files" — the same folder, named back at the
+viewer by the installer. No driver change was needed (the rename popover takes a
+full path, and `.editor__file` / `[title="<path>"]` still address a file row), so
+this is a doc-of-record note rather than a script change.
 
 ### Why the demo app was restyled
 
