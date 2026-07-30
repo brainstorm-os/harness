@@ -10,11 +10,32 @@
  *
  *  Ids mirror `docs/marketing/vid-build-apps.md` §Scene table 1:1.
  *
- *  No scene sets `speed`: `render.mjs` derives the compression per scene from
- *  the captured clip's real duration (`dur / (seconds - 0.2)`, capped at 3×),
- *  so the typing scenes and the agent turn play back snappier without ever
- *  being truncated. A hand-set `speed` is a FLOOR, and a floor above what the
- *  clip needs just buys a frozen tail — the drivers pace the beats instead.
+ *  ── Two rules this table is built on ────────────────────────────────────
+ *
+ *  1. **`seconds` is a hard ceiling on the VO** (`render.mjs` does
+ *     `atrim=0:seconds`), so every budget below carries ≥0.6s of headroom
+ *     over its measured line. Re-run `promo:vo:build-apps` after ANY wording
+ *     change — it prints `<line>s / <budget>s` per scene and flags overruns.
+ *  2. **`speed` is a FLOOR, not the compression.** `render.mjs` raises it
+ *     per scene to `dur / (seconds - 0.2)` (cap 3×) so the whole captured
+ *     action always fits. A hand-set floor above what the clip needs buys a
+ *     frozen tail — which is only ever right when the clip's LAST frame is a
+ *     deliberate hold. Only TWO scenes set a floor below — the opening grid scan
+ *     and the tile reveal — and both are measured against a real capture.
+ *     Two others carried one until a capture showed the driver already fills
+ *     the budget, which makes a floor pure freeze. **Never fit a floor to a
+ *     clip recorded while something else is building**: the first dry run ran
+ *     alongside `build:apps` and every clip came out 30-60% long.
+ *
+ *  ── Ordering: why the refusal is scene 08, not the last thing you see ───
+ *
+ *  The first cut ran … agent → **walls** → title, so the final content frame
+ *  of the episode was a red `refused — …` line under a mostly-empty page. It
+ *  is the proof beat, but as an ENDING it reads "the app crashed". The
+ *  refusal now lands directly after `07-launch` — the app has just read her
+ *  clients, so watching the SAME app be told no is at its most legible right
+ *  there — and the episode closes on `11-payoff`: the grid carrying both new
+ *  apps, and the one she wrote running.
  *
  *    bun run promo:capture:build-apps
  *    bun run promo:vo:build-apps
@@ -24,79 +45,104 @@
 export const SCENES = [
 	{
 		id: "00-slide-hook",
+		// 5, not the 4 the 3.0s line needs: it buys the first chapter marker its
+		// 10s minimum (see `vid-build-apps-youtube.md` §Chapters note).
 		seconds: 5,
-		vo: "An operating system for your knowledge — that runs the apps you write yourself.",
+		vo: "An OS for your knowledge — that runs the apps you write.",
 		slide: { title: "It runs the apps you write", sub: "An OS for your knowledge" },
 	},
 	{
 		id: "01-the-gap",
-		seconds: 6,
-		vo: "Mira wants a pulse board for her clients. Nothing built in does it. So she writes one.",
+		// Floor: the scan is travel and the clip ends parked on the grid, which
+		// is a fine frame to sit on. Measured clip 4.8s.
+		speed: 1.2,
+		seconds: 5,
+		vo: "Mira wants a client pulse board. Nothing built in does it — she writes one.",
 		caption: "The gap",
 	},
 	{
 		id: "02-manifest",
-		seconds: 12,
-		vo: "An app here is two files. A manifest that says what it is — and exactly what it's allowed to touch. One line: read your entities. Nothing else.",
+		seconds: 10,
+		vo: "An app here is two files. A manifest that says what it is — and exactly what it may touch. One line: read her projects. Nothing else.",
 		caption: "The manifest",
 	},
 	{
 		id: "03-page",
-		seconds: 14,
-		vo: "And a page. It asks the vault for her clients and draws them. Real data — no copy, no export, no build step. She's writing it in the code editor, in the same vault the app will read.",
+		// 10: the skeleton is 510 characters and the driver types it in 2-char
+		// runs (~14s of clip), which lands ~1.4× — fast, confident typing rather
+		// than the blur a 9s budget produced.
+		seconds: 10,
+		vo: "And a page. It asks the vault for her clients and draws them. Real data — no export, no build step.",
 		caption: "The page",
 	},
 	{
 		id: "04-install-from-vault",
-		seconds: 8,
-		vo: "Now she installs it — straight from the vault. No folder, no zip, no terminal.",
+		// No floor: measured at 6.8s the driver already fills the budget (~1.2×).
+		// The 1.3 floor this carried was fitted to a clip inflated by a
+		// concurrent app build and would have bought 0.8s of freeze.
+		seconds: 6,
+		vo: "She installs it straight from the vault. No folder, no zip, no terminal.",
 		caption: "Install from the vault",
 	},
 	{
 		id: "05-consent",
-		seconds: 7,
+		// No floor: the hold that matters is MID-clip (the sheet), so a frozen
+		// tail here would sit on the marketplace behind it. The driver spends the
+		// scene's seconds on the sheet instead.
+		seconds: 6,
 		vo: "Brainstorm shows her exactly what she's about to run, and what it asked for.",
 		caption: "What it's allowed to do",
 	},
 	{
 		id: "06-installed",
-		seconds: 6,
+		// Floor: the toast and the marketplace dismissal are travel; the last
+		// frame — the new tile under the cursor — is the beat, so freezing on it
+		// is the point. Measured clip 3.8s → ~3s of travel, then the tile holds.
+		speed: 1.25,
+		seconds: 5,
 		vo: "And there it is. A real app, in her grid.",
 		caption: "Installed",
 	},
 	{
 		id: "07-launch",
-		seconds: 9,
-		vo: "Its own window, its own sandbox — showing her actual clients. From typed to installed, in about a minute.",
+		seconds: 7,
+		vo: "Its own window, its own sandbox — showing her actual clients. Typed to installed in about a minute.",
 		caption: "It runs",
 	},
 	{
-		id: "08-agent-drafts",
-		seconds: 12,
-		vo: "Or she doesn't write it at all. She asks the agent, and it drafts the files — the same way it drafts a note. Two staged cards, code she can read before anything is saved.",
-		caption: "Or let the agent write it",
-	},
-	{
-		id: "09-agent-approve",
+		id: "08-walls",
+		// 10 once the app window is opened between scenes instead of inside this
+		// one: that alone took the clip from 20.8s to 10.8s, so the 2.2s hold on
+		// the consent sheet now plays at ~1× instead of flicking past.
 		seconds: 10,
-		vo: "She reads them, approves them, and they land in the vault as real files. Same install path. Same app.",
-		caption: "Approve → install",
-	},
-	{
-		id: "10-walls",
-		// 11s, not the storyboard's original 9: the S7 line reads 10.0s and the
-		// renderer TRIMS a VO to its scene budget (`atrim=0:seconds`), so a 9s
-		// budget cut "…it sees what she granted. Nothing more." mid-sentence —
-		// the one line the whole scene exists to deliver. The captured clip is
-		// 11.0s, so 11 also plays it at ~1× instead of compressing it.
-		seconds: 11,
-		vo: "Here's the quiet part: this is untrusted code — hers, or the agent's — behind the same walls as everything else. It sees what she granted. Nothing more.",
+		vo: "Here's the quiet part: untrusted code, behind the same walls as everything else. It gets what she granted — ask for more, and the broker says no.",
 		caption: "Same walls as everything else",
 	},
 	{
-		id: "11-title",
+		id: "09-agent-drafts",
+		// No floor after all: the measured clip is 9.2s and already ENDS on a
+		// 1.2s hold on the second code card, so a floor only added freeze on top
+		// of a hold the driver already shot. 8 gives it ~1.2× instead.
+		seconds: 8,
+		vo: "Or she doesn't write it at all. She asks the agent, and it drafts the files — code she can read before anything is saved.",
+		caption: "Or let the agent write it",
+	},
+	{
+		id: "10-agent-approve",
+		seconds: 7,
+		vo: "She approves them, they land in the vault as real files, and install the same way.",
+		caption: "Approve → install",
+	},
+	{
+		id: "11-payoff",
+		seconds: 8,
+		vo: "Two apps that didn't exist this morning. One she wrote, one she asked for — both in the grid, both behind the same walls.",
+		caption: "Two new apps in the grid",
+	},
+	{
+		id: "12-title",
 		seconds: 5,
-		vo: "An OS for your knowledge, that runs the apps you write. getbrainstorm dot online.",
+		vo: "A knowledge OS that runs the apps you write. getbrainstorm dot online.",
 		titleCard: true,
 	},
 ];

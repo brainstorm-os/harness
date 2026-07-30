@@ -18,15 +18,44 @@
  *     page script runs, so no ready event is needed. Entity reads live at
  *     `window.brainstorm.services.entities.query(...)`.
  *   - The shell injects the design tokens (`--color-*`, `--space-*`,
- *     `--radius-*`) and the shared `.app-header` chrome into every app page,
- *     so a hand-written app inherits the product's look for free.
+ *     `--radius-*`, `--motion-*`) and the shared `.app-header` chrome into
+ *     every app page, so a hand-written app inherits the product's look for
+ *     free. Only tokens that exist in `packages/tokens` are referenced here —
+ *     a phantom `var(--nope)` renders through its fallback in one theme and
+ *     breaks silently in every other.
  *
  * The capability is deliberately NARROW — `entities.read:brainstorm/Project/v1`
- * and nothing else. That is what makes the episode's closing beat honest: the
+ * and nothing else. That is what makes the episode's walls beat honest: the
  * board renders the vault's real client projects, and the same app asking for
  * everything (`vaultEntities.list()`, which statically requires
  * `entities.read:*`) is refused by the broker, on camera, with the broker's own
  * message.
+ *
+ * ── Why the page looks the way it does (camera notes) ───────────────────────
+ *
+ * The first cut of this app was a short stack of cards on a page with no
+ * layout: it filled the top third of a 16:9 window and left a large empty
+ * white area under it for two whole scenes. Three things fix that, and all
+ * three are ordinary app code, not camera tricks:
+ *
+ *   1. **The page owns the viewport.** `body` is a `min-height: 100vh` column;
+ *      the board `flex: 1` with `grid-auto-rows: minmax(…, 1fr)` so the cards
+ *      stretch to fill whatever height is left, and the walls panel sits on
+ *      the bottom edge instead of floating mid-page.
+ *   2. **Real derived detail.** A three-tile summary strip (clients, active,
+ *      next milestone) computed from the SAME granted query — no second
+ *      capability, no invented data — gives the top of the frame something to
+ *      be.
+ *   3. **Motion.** Cards rise in with a staggered delay on load and light up
+ *      on hover. Beyond looking alive, this matters mechanically: the capture
+ *      records through the CDP screencast, which only emits frames ON PAINT —
+ *      a page that never repaints yields a fraction of a second of footage for
+ *      a nine-second scene.
+ *
+ * The walls panel deliberately runs BOTH probes side by side — the granted
+ * read (which succeeds, in green) and the ungranted one (which is refused, in
+ * red). Showing only the refusal made the episode's last frame read as a
+ * crash; showing the pair reads as what it is: the wall holding.
  */
 
 /** Vault-relative paths of the two CodeFile rows (the install root is the
@@ -55,12 +84,12 @@ export const CLIENT_PULSE_MANIFEST = `{
 }
 `;
 
-/** What gets typed keystroke-by-keystroke on camera in scene `03-page` —
- *  the page's skeleton and the one call the episode is about, then the render
- *  loop's opening lines. Typing the whole file would overrun the scene's
- *  14-second budget past the renderer's 3× compression cap, so the capture
- *  types this and then reveals the finished file in one motion (the way a
- *  person writes markup first and fills in the styling after).
+/** What gets typed keystroke-by-keystroke on camera in scene `03-page` — the
+ *  page's skeleton and the one call the episode is about. Typing the whole
+ *  file would overrun the scene's 9-second budget past the renderer's 3×
+ *  compression cap, so the capture types this and then reveals the finished
+ *  file in one motion (the way a person writes markup first and fills in the
+ *  styling after).
  *
  *  Every LINE here appears verbatim, in this order, inside
  *  `CLIENT_PULSE_INDEX_HTML` — `assertOnCameraIsSubsequence` pins that, so
@@ -83,12 +112,6 @@ export const CLIENT_PULSE_INDEX_HTML_ON_CAMERA = `<!doctype html>
       (function () {
         var api = window.brainstorm;
         var board = document.getElementById("board");
-
-        function dotClass(status) {
-          if (status === "done") return "dot dot--done";
-          if (status === "active") return "dot dot--active";
-          return "dot";
-        }
         api.services.entities
           .query({ type: "brainstorm/Project/v1", orderBy: [{ property: "name", direction: "asc" }] })
           .then(render)
@@ -126,7 +149,10 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
     <style>
       body {
         margin: 0;
-        font: 13px/1.5 system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font: 14px/1.5 system-ui, sans-serif;
         color: var(--color-text-primary);
         background: var(--color-background-primary);
       }
@@ -153,18 +179,60 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
         font-size: 11px;
         color: var(--color-text-tertiary);
       }
-      main {
+      .strip {
         display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: var(--space-3);
-        padding: var(--space-5);
+        padding: var(--space-5) var(--space-5) var(--space-3);
       }
-      .card {
-        display: grid;
-        gap: var(--space-1);
-        padding: var(--space-4);
+      .stat {
+        padding: var(--space-3) var(--space-4);
         border: 1px solid var(--color-border-subtle);
         border-radius: var(--radius-lg);
         background: var(--color-background-elevated);
+      }
+      .stat__value {
+        font-size: 26px;
+        font-weight: 600;
+        line-height: 1.15;
+      }
+      .stat__key {
+        font-size: 11px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--color-text-tertiary);
+      }
+      main {
+        flex: 1;
+        display: grid;
+        grid-auto-rows: minmax(84px, 1fr);
+        gap: var(--space-3);
+        padding: 0 var(--space-5) var(--space-4);
+      }
+      .card {
+        display: grid;
+        align-content: center;
+        gap: var(--space-1);
+        padding: var(--space-4) var(--space-5);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-lg);
+        background: var(--color-background-elevated);
+        transition:
+          border-color var(--motion-duration-fast) var(--motion-easing-standard),
+          background var(--motion-duration-fast) var(--motion-easing-standard);
+        opacity: 0;
+        transform: translateY(12px);
+        animation: rise 420ms var(--motion-easing-decelerated) forwards;
+      }
+      .card:hover {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface-raised);
+      }
+      @keyframes rise {
+        to {
+          opacity: 1;
+          transform: none;
+        }
       }
       .card__head {
         display: flex;
@@ -173,11 +241,20 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
       }
       .card__name {
         margin: 0;
-        font-size: 15px;
+        font-size: 17px;
         font-weight: 600;
+      }
+      .card__due {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+        white-space: nowrap;
       }
       .card__meta {
         margin: 0;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
         color: var(--color-text-tertiary);
       }
       .card__desc {
@@ -200,22 +277,52 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
       .walls {
         display: grid;
         gap: var(--space-2);
-        padding: var(--space-5);
+        padding: var(--space-4) var(--space-5) var(--space-5);
         border-top: 1px solid var(--color-border-subtle);
+        background: var(--color-background-elevated);
+      }
+      .walls__label {
+        margin: 0;
+        font-size: 11px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
         color: var(--color-text-tertiary);
       }
+      .walls__row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
       .walls button {
-        justify-self: start;
+        min-width: 250px;
         padding: var(--space-2) var(--space-3);
         border: 1px solid var(--color-border-default);
         border-radius: var(--radius-sm);
         background: var(--color-surface-default);
         color: var(--color-text-primary);
         font: inherit;
+        text-align: left;
         cursor: pointer;
+        transition: border-color var(--motion-duration-fast) var(--motion-easing-standard);
       }
-      .refused {
+      .walls button:hover {
+        border-color: var(--color-border-strong);
+      }
+      .out {
+        font-size: 13px;
+        color: var(--color-text-tertiary);
+      }
+      .out--granted {
+        color: var(--color-state-success);
+      }
+      .out--granted::before {
+        content: "✓ ";
+      }
+      .out--refused {
         color: var(--color-state-error);
+      }
+      .out--refused::before {
+        content: "✕ ";
       }
     </style>
   </head>
@@ -226,15 +333,24 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
       </div>
       <div class="app-header__right"><span id="granted"></span></div>
     </header>
+    <section class="strip" id="strip"></section>
     <main id="board"></main>
     <footer class="walls">
-      <button id="probe" type="button">Read everything in this vault</button>
-      <p id="probe-out"></p>
+      <p class="walls__label">What this app may ask the vault for</p>
+      <div class="walls__row">
+        <button id="probe-ok" type="button">Read her client projects</button>
+        <span class="out" id="probe-ok-out"></span>
+      </div>
+      <div class="walls__row">
+        <button id="probe" type="button">Read everything in this vault</button>
+        <span class="out" id="probe-out"></span>
+      </div>
     </footer>
     <script>
       (function () {
         var api = window.brainstorm;
         var board = document.getElementById("board");
+        var strip = document.getElementById("strip");
 
         var vaultGrants = api.capabilities.filter(function (cap) {
           return cap.indexOf("entities.") === 0;
@@ -248,12 +364,16 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
           return "dot";
         }
 
+        function days(at) {
+          return Math.round((at - Date.now()) / 86400000);
+        }
+
         function dueLabel(at) {
           if (typeof at !== "number") return "no milestone";
-          var days = Math.round((at - Date.now()) / 86400000);
-          if (days < 0) return "milestone passed";
-          if (days === 0) return "milestone today";
-          return "milestone in " + days + " days";
+          var d = days(at);
+          if (d < 0) return "milestone passed";
+          if (d === 0) return "milestone today";
+          return "milestone in " + d + " days";
         }
 
         function el(tag, className, text) {
@@ -263,22 +383,52 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
           return node;
         }
 
+        function stat(value, key) {
+          var tile = el("div", "stat");
+          tile.appendChild(el("div", "stat__value", value));
+          tile.appendChild(el("div", "stat__key", key));
+          return tile;
+        }
+
+        function summarise(rows) {
+          strip.textContent = "";
+          var active = rows.filter(function (row) {
+            return (row.properties || {}).statusKey === "active";
+          });
+          var due = rows
+            .map(function (row) {
+              return (row.properties || {}).milestoneAt;
+            })
+            .filter(function (at) {
+              return typeof at === "number" && days(at) >= 0;
+            })
+            .sort(function (a, b) {
+              return a - b;
+            });
+          strip.appendChild(stat(String(rows.length), "clients"));
+          strip.appendChild(stat(String(active.length), "active"));
+          strip.appendChild(
+            stat(due.length ? days(due[0]) + "d" : "—", "next milestone")
+          );
+        }
+
         function render(rows) {
           board.textContent = "";
+          summarise(rows);
           if (rows.length === 0) {
-            board.appendChild(el("p", "card__meta", "No client work in this vault yet."));
+            board.appendChild(el("p", "card__desc", "No client work in this vault yet."));
             return;
           }
-          rows.forEach(function (row) {
+          rows.forEach(function (row, index) {
             var p = row.properties || {};
             var card = el("article", "card");
+            card.style.animationDelay = index * 90 + "ms";
             var head = el("div", "card__head");
             head.appendChild(el("span", dotClass(p.statusKey)));
             head.appendChild(el("h2", "card__name", String(p.name || "Untitled")));
+            head.appendChild(el("span", "card__due", dueLabel(p.milestoneAt)));
             card.appendChild(head);
-            card.appendChild(
-              el("p", "card__meta", String(p.statusKey || "unknown") + " · " + dueLabel(p.milestoneAt))
-            );
+            card.appendChild(el("p", "card__meta", String(p.statusKey || "unknown")));
             if (typeof p.description === "string" && p.description.length > 0) {
               card.appendChild(el("p", "card__desc", p.description));
             }
@@ -290,22 +440,40 @@ export const CLIENT_PULSE_INDEX_HTML = `<!doctype html>
           .query({ type: "brainstorm/Project/v1", orderBy: [{ property: "name", direction: "asc" }] })
           .then(render)
           .catch(function (error) {
-            board.appendChild(el("p", "card__meta", "Could not read clients: " + error.message));
+            board.appendChild(el("p", "card__desc", "Could not read clients: " + error.message));
           });
 
-        var out = document.getElementById("probe-out");
-        document.getElementById("probe").addEventListener("click", function () {
-          out.className = "";
-          out.textContent = "asking…";
-          api.services.vaultEntities
-            .list()
-            .then(function (snapshot) {
-              out.textContent = "read " + snapshot.entities.length + " objects";
-            })
-            .catch(function (error) {
-              out.className = "refused";
-              out.textContent = "refused — " + error.message;
+        // The two probes are the same shape — one inside the granted scope,
+        // one outside it — so the wall is visible as a pair, not as an error.
+        function probe(buttonId, outId, run) {
+          var out = document.getElementById(outId);
+          document.getElementById(buttonId).addEventListener("click", function () {
+            out.className = "out";
+            out.textContent = "asking…";
+            run()
+              .then(function (text) {
+                out.className = "out out--granted";
+                out.textContent = text;
+              })
+              .catch(function (error) {
+                out.className = "out out--refused";
+                out.textContent = "refused — " + error.message;
+              });
+          });
+        }
+
+        probe("probe-ok", "probe-ok-out", function () {
+          return api.services.entities
+            .query({ type: "brainstorm/Project/v1" })
+            .then(function (rows) {
+              return "granted — read " + rows.length + " client projects";
             });
+        });
+
+        probe("probe", "probe-out", function () {
+          return api.services.vaultEntities.list().then(function (snapshot) {
+            return "read " + snapshot.entities.length + " objects";
+          });
         });
       })();
     </script>
