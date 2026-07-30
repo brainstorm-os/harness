@@ -81,7 +81,7 @@ render-side cards with no captured clip.
 | 7 | `07-launch` | 9 | S5 | Open it — the app renders real Northbound clients in its own window |
 | 8 | `08-agent-drafts` | 12 | S6 | Agent app: *"Build me a client pulse board."* → two staged cards (`manifest.json`, `index.html`) with code previews |
 | 9 | `09-agent-approve` | 10 | S6 | Approve both → files land in the vault → same install path → same app |
-| 10 | `10-walls` | 9 | S7 | The app's granted capabilities (Settings → Security → Capability grants); then, in the app itself, an ungranted attempt refused — `vaultEntities.list()` needs `entities.read:*`, which it was never given, and the broker's own message renders |
+| 10 | `10-walls` | 9 | S7 | **The consent sheet recalled** (what she actually agreed to: one requested capability + unsigned advisory) — *not* the Settings grants popover; then, in the app itself, an ungranted attempt refused — `vaultEntities.list()` needs `entities.read:*`, which it was never given, and the broker's own message renders |
 | 11 | `11-title` | 5 | slide | Logo + getbrainstorm.online |
 
 Content ≈ 93s + 10s of slides ≈ **1:43** before per-scene speed compression;
@@ -99,6 +99,24 @@ app asking for the whole vault (`vaultEntities.list()`, which statically require
 words, with no staging:
 
 > refused — studio.northbound.client-pulse lacks capability for vault-entities.list
+
+### Why S7 shows the consent sheet, not the grants popover
+
+*(owner decision 2026-07-30, after the second capture.)* The first cut of scene 10
+opened **Settings → Security → Capability grants**, which truthfully lists **22**
+capabilities for Client Pulse — because every installed app receives a baseline
+set (`credentials.read:self`, `sharing.read`, `roster.read`, …) on top of what its
+manifest asked for. Accurate, but it reads as a contradiction under the VO *"It
+sees what she granted. Nothing more."*, and explaining the baseline mid-episode
+costs more than the beat is worth.
+
+So S7 recalls the **install consent sheet** instead — the one requested
+capability and the unsigned advisory, i.e. exactly what the user agreed to — and
+keeps the refusal. Same claim, no asterisk, no product change. The grants
+popover is not wrong and is not being hidden; it is simply the wrong surface for
+this sentence. *(A follow-up worth filing on its own merits: the grants popover
+does not distinguish shell-baseline capabilities from app-requested ones, which
+is confusing outside the video too.)*
 
 One further honesty note for S7: a capability denial is **silent** everywhere else
 in the product — it lands in `<vault>/logs/audit.log` as `ipc.denied` and has no
