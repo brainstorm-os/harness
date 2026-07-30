@@ -21,7 +21,10 @@
     "promo:render:notes": "PROMO_SCENES=./notes-scenes.mjs PROMO_DIR=.promo-notes PROMO_OUT=vid-notes PROMO_MUSIC=tools/promo/assets/vid-notes-music.mp3 PROMO_VO_GAIN=2.7 PROMO_MUSIC_GAIN=0.32 node tools/promo/render.mjs",
     "promo:capture:agent": "(cd ../shell && bun run --filter @brainstorm-os/shell build) && BRAINSTORM_DEMO_AGENT=1 playwright test --config=playwright.promo.config.ts vid-agent-team",
     "promo:vo:agent": "PROMO_SCENES=./agent-team-scenes.mjs PROMO_DIR=.promo-agent node tools/promo/voiceover.mjs",
-    "promo:render:agent": "PROMO_SCENES=./agent-team-scenes.mjs PROMO_DIR=.promo-agent PROMO_OUT=vid-agent-team PROMO_MUSIC=tools/promo/assets/vid-notes-music.mp3 PROMO_VO_GAIN=2.7 PROMO_MUSIC_GAIN=0.32 node tools/promo/render.mjs"
+    "promo:render:agent": "PROMO_SCENES=./agent-team-scenes.mjs PROMO_DIR=.promo-agent PROMO_OUT=vid-agent-team PROMO_MUSIC=tools/promo/assets/vid-notes-music.mp3 PROMO_VO_GAIN=2.7 PROMO_MUSIC_GAIN=0.32 node tools/promo/render.mjs",
+    "promo:capture:build-apps": "(cd ../shell && bun run --filter @brainstorm-os/shell build) && BRAINSTORM_DEMO_AGENT=appforge playwright test --config=playwright.promo.config.ts vid-build-apps",
+    "promo:vo:build-apps": "PROMO_SCENES=./build-apps-scenes.mjs PROMO_DIR=.promo-build-apps node tools/promo/voiceover.mjs",
+    "promo:render:build-apps": "PROMO_SCENES=./build-apps-scenes.mjs PROMO_DIR=.promo-build-apps PROMO_OUT=vid-build-apps PROMO_MUSIC=tools/promo/assets/vid-notes-music.mp3 PROMO_VO_GAIN=2.7 PROMO_MUSIC_GAIN=0.32 node tools/promo/render.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
