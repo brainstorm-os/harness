@@ -219,7 +219,7 @@ app can), but do not describe it as a shell-level warning, and do not stage a
 | The two-file app, its code, and that it runs | **Real** — there is no build step to fake |
 | Install from vault code files, the consent sheet, capabilities, the sandbox | **Real** (`AppForge-1/2`) |
 | The agent staging code files, approve → entity writes → install | **Real** (`AppForge-3`) |
-| The agent's *model output* in S6 | **Scripted** (`BRAINSTORM_DEMO_AGENT=appforge`) — capture-only, so takes are deterministic |
+| The agent's *model output* in S9 | **Scripted** (`BRAINSTORM_DEMO_AGENT=appforge`) — capture-only, so takes are deterministic |
 | The vault contents | Synthetic Northbound Studio seed |
 
 ## Dependencies
