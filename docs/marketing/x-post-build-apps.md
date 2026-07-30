@@ -60,8 +60,15 @@ Free beta, Mac/Windows/Linux: getbrainstorm.online
 
 Full version with chapters on YouTube: <youtube-link>
 
+The long-form write-up — the app model, what the agent actually sees of your
+vault, and why the permission ledger doesn't care who wrote the code:
+getbrainstorm.online/blog/an-app-is-two-files
+
 The shell is source-available (AGPL) on GitHub, and the whole thing runs local —
 your keys, no cloud required.
+
+*(The article ships with site PR #65 — deploy the site to prod before posting
+the reply; `vercel deploy --prod` from site main, per the release memory.)*
 
 ---
 
