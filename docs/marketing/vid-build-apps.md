@@ -50,7 +50,7 @@ the episode doesn't ship.
 > what it may touch. One line: read her projects. Nothing else.
 > **[S3]** And a page. It asks the vault for her clients and draws them. Real data
 > — no export, no build step.
-> **[S4]** Now she installs it — straight from the vault. No folder, no zip, no
+> **[S4]** She installs it straight from the vault. No folder, no zip, no
 > terminal.
 > **[S5]** Brainstorm shows her exactly what she's about to run, and what it asked
 > for.
@@ -66,7 +66,7 @@ the episode doesn't ship.
 > the same way.
 > **[S11]** Two apps that didn't exist this morning. One she wrote, one she asked
 > for — both in the grid, both behind the same walls.
-> **[S12 slide]** An OS for your knowledge that runs the apps you write.
+> **[S12 slide]** A knowledge OS that runs the apps you write.
 > getbrainstorm.online
 
 ## Scene table
@@ -86,8 +86,8 @@ floor is only for scenes whose last frame is a hold worth freezing on.
 | 5 | `05-consent` | 6 | auto | S5 | The install sheet: name · id · version · **requested capabilities** · unsigned advisory. Confirm |
 | 6 | `06-installed` | 5 | **1.2** | S6 | Success toast → marketplace dismissed **in the beat** → the grid, cursor landing on the new **Client Pulse** tile |
 | 7 | `07-launch` | 7 | auto | S7 | Open it — summary strip + real Northbound clients, cards rising in, in its own window |
-| 8 | `08-walls` | 10 | auto | S8 | **The consent sheet recalled** via the vault picker's *Install* → sheet → *Cancel* (what she actually agreed to) — *not* the Settings grants popover; then, in the app, **both probes**: the granted read succeeds in green, `vaultEntities.list()` comes back refused in red, in the broker's own words |
-| 9 | `09-agent-drafts` | 9 | **1.2** | S9 | Agent app: *"Build me a small hello app I can install."* → two staged cards (`manifest.json`, `index.html`) with code previews |
+| 8 | `08-walls` | 11 | auto | S8 | **The consent sheet recalled** via the vault picker's *Install* → sheet → *Cancel* (what she actually agreed to) — *not* the Settings grants popover; then, in the app, **both probes**: the granted read succeeds in green, `vaultEntities.list()` comes back refused in red, in the broker's own words |
+| 9 | `09-agent-drafts` | 8 | auto | S9 | Agent app: *"Build me a small hello app I can install."* → two staged cards (`manifest.json`, `index.html`) with code previews |
 | 10 | `10-agent-approve` | 7 | auto (~1.9×) | S10 | Approve both → files land in the vault → same install path → same consent sheet |
 | 11 | `11-payoff` | 8 | auto | S11 | The grid carrying **both** new tiles, then Client Pulse opened one last time — its cards painting in |
 | 12 | `12-title` | 5 | — | slide | Logo + getbrainstorm.online |
@@ -210,6 +210,17 @@ app can), but do not describe it as a shell-level warning, and do not stage a
   paint, and `render.mjs` clones the last frame out to the scene budget. A `beat`
   on a settled surface is therefore a literal freeze, not a pause — hold only
   where something is still moving or has just changed.
+- **Stage surfaces between scenes, never inside one.** `s.scene` starts the
+  recorder before the driver runs, so an in-scene `openApp` records ~4s of the
+  previous, settled surface. Every app window this reel opens is opened in the
+  gap between two scenes, where the recorder is stopped and the wait is free.
+- **The marketplace remembers where it was left.** Dismiss it before clicking
+  bare wallpaper: a fixed number of Escapes is not enough against a
+  dialog + picker + marketplace stack, and the click then lands on an app card
+  and strands the marketplace on a detail page — which killed the agent act in
+  the first dry run and recorded 179s of a frozen detail page. `backToGrid`
+  gates the click on the overlay count being zero, and `openVaultInstaller`
+  walks *Back* if it finds no Install-from button.
 - Say "install", never "compile" or "build" — the words have to match the model.
 
 ## What is real vs. scripted (state this if anyone asks)

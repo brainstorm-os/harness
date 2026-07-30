@@ -40,7 +40,7 @@ What's in the video:
 0:20 The page — reading real vault data
 0:35 Install, and what it's allowed to do
 0:46 It runs — her real clients
-1:03 Or let the agent write it
+1:04 Or let the agent write it
 1:19 Both apps in the grid
 
 Why this matters:
@@ -93,7 +93,7 @@ chapter start still matches a cumulative scene time and stays ≥10s apart.
 Scene cumulative starts: `00-slide-hook` 0:00 · `01-the-gap` 0:05 ·
 `02-manifest` 0:10 · `03-page` 0:20 · `04-install-from-vault` 0:29 ·
 `05-consent` 0:35 · `06-installed` 0:41 · `07-launch` 0:46 · `08-walls` 0:53 ·
-`09-agent-drafts` 1:03 · `10-agent-approve` 1:12 · `11-payoff` 1:19 ·
+`09-agent-drafts` 1:04 · `10-agent-approve` 1:12 · `11-payoff` 1:19 ·
 `12-title` 1:27 (total 1:32).
 
 `00-slide-hook` is 5s rather than the 3.0s its line needs precisely so the first

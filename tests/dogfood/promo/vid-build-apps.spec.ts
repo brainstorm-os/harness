@@ -109,12 +109,25 @@ test("capture VID-build-apps reel", async () => {
 
 	// ── helpers ─────────────────────────────────────────────────────────────
 
-	/** Type into the Code editor's textarea one character at a time through
-	 *  `Input.insertText` — see the header note on why `keyboard.type` cannot
-	 *  be used here. Paces like a person; jitter keeps it off the metronome. */
-	const typeSource = async (page: Page, text: string, paceMs: number): Promise<void> => {
-		for (const ch of text) {
-			await page.keyboard.insertText(ch);
+	/** Type into the Code editor's textarea through `Input.insertText` — see the
+	 *  header note on why `keyboard.type` cannot be used here. Paces like a
+	 *  person; jitter keeps it off the metronome.
+	 *
+	 *  `runLength` is how many characters go per insert. It exists because the
+	 *  cost here is the CDP round trip, not `paceMs`: at one character per
+	 *  insert this measured ~46 ms/char, so the 510-char page skeleton alone ran
+	 *  36s of clip against a 9s budget — past the renderer's 3× cap, i.e. a
+	 *  truncated scene. Short runs cut the round trips proportionally and are
+	 *  indistinguishable on camera once the scene compresses. The bytes are
+	 *  identical either way. */
+	const typeSource = async (
+		page: Page,
+		text: string,
+		paceMs: number,
+		runLength = 1,
+	): Promise<void> => {
+		for (let i = 0; i < text.length; i += runLength) {
+			await page.keyboard.insertText(text.slice(i, i + runLength));
 			await page.waitForTimeout(paceMs + Math.random() * paceMs);
 		}
 	};
@@ -191,27 +204,67 @@ test("capture VID-build-apps reel", async () => {
 		await save(page);
 	};
 
+	const marketplace = () => s.dashboard.locator('[data-testid="marketplace"]');
+
+	/** Every modal surface this reel opens over the dashboard. `backToGrid`
+	 *  waits on this being empty — see the note there. */
+	const overlays = () =>
+		s.dashboard.locator(
+			'[data-testid="marketplace"], [data-testid="confirm-dialog"], [data-testid="install-from-vault-dialog"]',
+		);
+
+	/** Click a target only if it is actually there, and never spend more than
+	 *  `timeout` finding out. A bare `glideClick(...).catch()` on a missing
+	 *  element still burns Playwright's 30s locator timeout inside the take —
+	 *  three of them turned one scene into a 179s clip. */
+	const clickIfPresent = async (
+		page: Page,
+		target: ReturnType<Page["locator"]>,
+		timeout = 4000,
+	): Promise<boolean> => {
+		const there = await target
+			.waitFor({ state: "visible", timeout })
+			.then(() => true)
+			.catch(() => false);
+		if (!there) return false;
+		await glideClick(page, target).catch(() => undefined);
+		return true;
+	};
+
 	/** Dashboard → Marketplace → Install from… → From vault code files… */
 	const openVaultInstaller = async (): Promise<void> => {
-		const marketplace = s.dashboard.locator('[data-testid="marketplace"]');
-		if (!(await marketplace.count().catch(() => 0))) {
+		if (!(await marketplace().count().catch(() => 0))) {
 			const open = s.dashboard.getByRole("button", { name: "Open Marketplace" }).first();
-			if (await open.count().catch(() => 0)) await glideClick(s.dashboard, open).catch(() => undefined);
-			else await s.dashboard.keyboard.press(`${MOD}+Shift+p`).catch(() => undefined);
-			await marketplace.waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
+			if (!(await clickIfPresent(s.dashboard, open))) {
+				await s.dashboard.keyboard.press(`${MOD}+Shift+p`).catch(() => undefined);
+			}
+			await marketplace().waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
 		}
 		await beat(s.dashboard, 550);
 		const installFrom = s.dashboard
 			.locator('[data-testid="marketplace"] button.button')
 			.filter({ hasText: "Install from" })
 			.first();
-		await glideClick(s.dashboard, installFrom).catch(() => undefined);
+		// The marketplace remembers where it was left. If a previous scene
+		// stranded it on an app's detail page there is no Install-from button at
+		// all, and every later beat in this act dies with it — so walk Back once
+		// before giving up.
+		if (!(await clickIfPresent(s.dashboard, installFrom))) {
+			const back = s.dashboard
+				.locator('[data-testid="marketplace"] button')
+				.filter({ hasText: "Back" })
+				.first();
+			console.warn("[vid-build-apps] marketplace was not on Browse — walking Back");
+			await clickIfPresent(s.dashboard, back);
+			await beat(s.dashboard, 500);
+			await clickIfPresent(s.dashboard, installFrom);
+		}
 		await beat(s.dashboard, 650);
 		const fromVault = s.dashboard
 			.locator(".fm-menu .fm-row")
 			.filter({ hasText: "From vault code files" })
 			.first();
-		await glideClick(s.dashboard, fromVault).catch(() => undefined);
+		await clickIfPresent(s.dashboard, fromVault);
 		await s.dashboard
 			.locator('[data-testid="install-from-vault-dialog"]')
 			.waitFor({ state: "visible", timeout: 15_000 })
@@ -221,13 +274,23 @@ test("capture VID-build-apps reel", async () => {
 	/** Dismiss whatever overlay stack is up and land back on bare wallpaper. The
 	 *  reveal shots (`06-installed`, `11-payoff`) are shot on the grid, and an
 	 *  Escape alone returns focus to the marketplace button — whose tooltip then
-	 *  hangs open over the reveal. The wallpaper click drops it. */
+	 *  hangs open over the reveal, so a click on bare wallpaper drops it.
+	 *
+	 *  The click is gated on the overlays being GONE, and that gate is the whole
+	 *  point: a fixed three Escapes is not enough when the stack is
+	 *  dialog + picker + marketplace, and (700, 470) then lands on whatever app
+	 *  card sits under it. It opened Calendar's detail page, which stranded the
+	 *  marketplace for the rest of the run — the agent's app never installed and
+	 *  one scene recorded 179s of a frozen detail page. */
 	const backToGrid = async (): Promise<void> => {
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 6; i++) {
+			if ((await overlays().count().catch(() => 1)) === 0) break;
 			await s.dashboard.keyboard.press("Escape").catch(() => undefined);
 			await s.dashboard.waitForTimeout(250);
 		}
-		await s.dashboard.mouse.click(700, 470).catch(() => undefined);
+		const left = await overlays().count().catch(() => 1);
+		if (left === 0) await s.dashboard.mouse.click(700, 470).catch(() => undefined);
+		else console.warn(`[vid-build-apps] backToGrid: ${left} overlay(s) still up — skipped the click`);
 		await s.dashboard.waitForTimeout(300);
 	};
 
@@ -296,7 +359,7 @@ test("capture VID-build-apps reel", async () => {
 	await s.scene("03-page", async () => {
 		await s.film(code);
 		await newCodeFile(code, CLIENT_PULSE_INDEX_PATH);
-		await typeSource(code, CLIENT_PULSE_INDEX_HTML_ON_CAMERA, 9);
+		await typeSource(code, CLIENT_PULSE_INDEX_HTML_ON_CAMERA, 9, 3);
 		await beat(code, 500);
 		// Reveal the finished page in one motion (markup first, styling after —
 		// every line typed above is in these bytes verbatim).
@@ -377,10 +440,14 @@ test("capture VID-build-apps reel", async () => {
 	console.log(`[vid-build-apps] icon cells after install: ${(await iconCells()).join(" ")}`);
 
 	// ── 07: IT RUNS — its own window, its own sandbox, her real clients ────
-	let pulse: Page | null = null;
+	// Opened BETWEEN scenes, never inside one: `s.scene` starts the recorder
+	// before the driver runs, so an in-scene `openApp` records ~4s of the
+	// previous, settled surface — the renderer then pads that held frame out and
+	// it lands as dead air in the middle of the take.
+	const pulse = await s.openApp(CLIENT_PULSE_APP_ID);
+	watch(pulse, "client-pulse");
+
 	await s.scene("07-launch", async () => {
-		pulse = await s.openApp(CLIENT_PULSE_APP_ID);
-		watch(pulse, "client-pulse");
 		await s.film(pulse);
 		await pulse.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
 		await beat(pulse, 300);
@@ -400,14 +467,12 @@ test("capture VID-build-apps reel", async () => {
 		await beat(pulse, 400);
 	});
 
-	if (pulse) {
-		const names = await (pulse as Page)
-			.locator("#board .card__name")
-			.allTextContents()
-			.catch(() => [] as string[]);
-		console.log(`[vid-build-apps] Client Pulse rendered: ${JSON.stringify(names)}`);
-		expect(names.length, "Client Pulse must render seeded clients").toBeGreaterThan(0);
-	}
+	const rendered = await pulse
+		.locator("#board .card__name")
+		.allTextContents()
+		.catch(() => [] as string[]);
+	console.log(`[vid-build-apps] Client Pulse rendered: ${JSON.stringify(rendered)}`);
+	expect(rendered.length, "Client Pulse must render seeded clients").toBeGreaterThan(0);
 
 	// ── 08: THE WALLS — what she consented to, and what it is refused ──────
 	// Moved AHEAD of the agent act. It used to be the last content scene, so the
@@ -425,6 +490,11 @@ test("capture VID-build-apps reel", async () => {
 	// §"Why the walls beat shows the consent sheet, not the grants popover".
 	await s.closeAppWindows();
 	await backToGrid();
+	// Both surfaces this scene uses are staged off camera — the app window and
+	// the vault picker — so the take spends its seconds on the sheet and the
+	// probes rather than on a window opening.
+	const walls = await s.openApp(CLIENT_PULSE_APP_ID);
+	watch(walls, "client-pulse (walls)");
 	await openVaultInstaller();
 	const consentRow = vaultRow(CLIENT_PULSE_APP_NAME);
 	await consentRow.scrollIntoViewIfNeeded().catch(() => undefined);
@@ -447,7 +517,7 @@ test("capture VID-build-apps reel", async () => {
 			.textContent()
 			.catch(() => null);
 		console.log(`[vid-build-apps] consent sheet recalled: ${consent ?? "(none)"}`);
-		await beat(s.dashboard, 2000);
+		await beat(s.dashboard, 2200);
 		// Dismiss without installing — this is a recall of the sheet, not a
 		// second install.
 		await glideClick(
@@ -461,27 +531,26 @@ test("capture VID-build-apps reel", async () => {
 		// a broken app; next to the call that works it reads as the wall holding.
 		// `vaultEntities.list` statically requires `entities.read:*`, which this
 		// app was never granted, and the message on screen is the broker's own.
-		const app = await s.openApp(CLIENT_PULSE_APP_ID);
-		await s.film(app);
-		await beat(app, 400);
-		await glideClick(app, app.locator("#probe-ok")).catch(() => undefined);
-		await app
+		await s.film(walls);
+		await beat(walls, 400);
+		await glideClick(walls, walls.locator("#probe-ok")).catch(() => undefined);
+		await walls
 			.locator("#probe-ok-out.out--granted")
 			.waitFor({ state: "visible", timeout: 10_000 })
 			.catch(() => undefined);
-		const granted = await app.locator("#probe-ok-out").textContent().catch(() => null);
-		await beat(app, 800);
-		await glideClick(app, app.locator("#probe")).catch(() => undefined);
-		await app
+		const granted = await walls.locator("#probe-ok-out").textContent().catch(() => null);
+		await beat(walls, 800);
+		await glideClick(walls, walls.locator("#probe")).catch(() => undefined);
+		await walls
 			.locator("#probe-out.out--refused")
 			.waitFor({ state: "visible", timeout: 10_000 })
 			.catch(() => undefined);
-		const refusal = await app.locator("#probe-out").textContent().catch(() => null);
+		const refusal = await walls.locator("#probe-out").textContent().catch(() => null);
 		console.log(
 			`[vid-build-apps] granted: ${granted ?? "(none)"} | refused: ${refusal ?? "(none)"}`,
 		);
-		await glideTo(app, 640, 690, 600);
-		await beat(app, 1200);
+		await glideTo(walls, 640, 690, 600);
+		await beat(walls, 1200);
 	});
 
 	// ── 09: THE AGENT DRAFTS IT — two staged code-file cards ───────────────
@@ -582,24 +651,34 @@ test("capture VID-build-apps reel", async () => {
 		.catch(() => undefined);
 	await backToGrid();
 	console.log(`[vid-build-apps] icon cells at payoff: ${(await iconCells()).join(" ")}`);
+	// Hers, reopened off camera for the closing shot — its board re-runs the
+	// staggered rise-in on load, which is the motion the last beat rides.
+	const closer = await s.openApp(CLIENT_PULSE_APP_ID);
+	watch(closer, "client-pulse (payoff)");
 
+	let bothTiles = false;
 	await s.scene("11-payoff", async () => {
 		await s.film(s.dashboard);
 		await beat(s.dashboard, 400);
 		const hers = await glideToTile(CLIENT_PULSE_APP_NAME, 750);
 		await beat(s.dashboard, 350);
 		const its = await glideToTile(HELLO_APP_NAME, 750);
+		bothTiles = hers && its;
 		console.log(`[vid-build-apps] payoff tiles — Client Pulse: ${hers}, Hello: ${its}`);
 		await beat(s.dashboard, 500);
-		// Open hers one last time: the board's staggered rise-in is the closing
-		// motion, and it lands the reel on the app WORKING rather than refused.
-		const app = await s.openApp(CLIENT_PULSE_APP_ID);
-		await s.film(app);
-		await app.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
-		await beat(app, 400);
-		await glideTo(app, 640, 300, 700);
-		await beat(app, 1200);
+		// The app she wrote, one last time: the reel lands on it WORKING rather
+		// than refused.
+		await s.film(closer);
+		await closer.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
+		await beat(closer, 400);
+		await glideTo(closer, 640, 300, 700);
+		await beat(closer, 1200);
 	});
+
+	// Asserted outside the scene, like the `06-installed` reveal: the closing
+	// image is "two apps that weren't there this morning", so one missing tile
+	// means the agent act silently degraded and the take is not shippable.
+	expect(bothTiles, "both new tiles must be on the grid in 11-payoff").toBe(true);
 
 	await s.finish();
 	if (defects.length > 0) {

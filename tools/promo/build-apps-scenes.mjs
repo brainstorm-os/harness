@@ -20,9 +20,10 @@
  *     per scene to `dur / (seconds - 0.2)` (cap 3×) so the whole captured
  *     action always fits. A hand-set floor above what the clip needs buys a
  *     frozen tail — which is only ever right when the clip's LAST frame is a
- *     deliberate hold (a picker, a reveal, a card). Those three scenes set a
- *     floor below; everywhere else the driver paces the beat and the
- *     auto-derived factor does the work.
+ *     deliberate hold. Only TWO scenes set a floor below — the vault picker and
+ *     the tile reveal — and both were measured against a real capture; a
+ *     third (`09-agent-drafts`) had one until the clip showed the driver
+ *     already ends on the hold, so the floor was pure freeze.
  *
  *  ── Ordering: why the refusal is scene 08, not the last thing you see ───
  *
@@ -72,7 +73,7 @@ export const SCENES = [
 		// not content. Compress the travel; the frozen tail is the candidate list.
 		speed: 1.3,
 		seconds: 6,
-		vo: "Now she installs it — straight from the vault. No folder, no zip, no terminal.",
+		vo: "She installs it straight from the vault. No folder, no zip, no terminal.",
 		caption: "Install from the vault",
 	},
 	{
@@ -101,16 +102,19 @@ export const SCENES = [
 	},
 	{
 		id: "08-walls",
-		seconds: 10,
+		// 11: the beat carries a 2.2s hold on the consent sheet AND both probes,
+		// and the measured clip is ~16s — at 10 it compressed 2.1× and the sheet
+		// flicked past in under a second.
+		seconds: 11,
 		vo: "Here's the quiet part: untrusted code, behind the same walls as everything else. It gets what she granted — ask for more, and the broker says no.",
 		caption: "Same walls as everything else",
 	},
 	{
 		id: "09-agent-drafts",
-		// Floor: the composer type-in is travel; the last frame is the second
-		// staged code card, which is worth holding.
-		speed: 1.2,
-		seconds: 9,
+		// No floor after all: the measured clip is 9.2s and already ENDS on a
+		// 1.2s hold on the second code card, so a floor only added freeze on top
+		// of a hold the driver already shot. 8 gives it ~1.2× instead.
+		seconds: 8,
 		vo: "Or she doesn't write it at all. She asks the agent, and it drafts the files — code she can read before anything is saved.",
 		caption: "Or let the agent write it",
 	},
@@ -129,7 +133,7 @@ export const SCENES = [
 	{
 		id: "12-title",
 		seconds: 5,
-		vo: "An OS for your knowledge that runs the apps you write. getbrainstorm dot online.",
+		vo: "A knowledge OS that runs the apps you write. getbrainstorm dot online.",
 		titleCard: true,
 	},
 ];
