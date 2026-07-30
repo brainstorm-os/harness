@@ -122,7 +122,12 @@ test("capture VID-build-apps reel", async () => {
 	const buffer = (page: Page) => page.locator("textarea.editor__buffer").first();
 
 	/** New file → the inline rename popover the editor auto-arms → the path.
-	 *  Leaves the caret in the (empty) buffer, ready to type. */
+	 *  Leaves the caret in the (empty) buffer, ready to type.
+	 *
+	 *  The New button lives in the header right, next to the files-panel toggle,
+	 *  so clicking it parks the pointer where that toggle's tooltip opens — and
+	 *  "Hide files" then hangs over the opening second of the scene (it did, in
+	 *  the 1:45 cut). Glide into the buffer FIRST, then settle. */
 	const newCodeFile = async (page: Page, path: string): Promise<void> => {
 		await page
 			.locator("button.editor__file-new, button.editor__empty-new, button.editor__header-new")
@@ -137,8 +142,9 @@ test("capture VID-build-apps reel", async () => {
 			await beat(page, 250);
 			await page.keyboard.press("Enter").catch(() => undefined);
 		}
-		await beat(page, 500);
+		await glideTo(page, 520, 300, 400);
 		await buffer(page).click().catch(() => undefined);
+		await beat(page, 350);
 	};
 
 	const save = async (page: Page): Promise<void> => {
