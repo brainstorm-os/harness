@@ -41,10 +41,33 @@ function ffmpeg(args) {
 }
 
 // ── 1. per-scene normalised segments ─────────────────────────────────────
+//
+// Scenes are joined by a CROSS-DISSOLVE, not by fade-to-black → fade-from-black.
+// The old build faded every segment out to black and in from black and then
+// concatenated them, which put a genuinely black frame at all thirteen scene
+// boundaries — three frames of pure black on each cut. The owner caught the one
+// at 1:27 (payoff → title card, where a bright grid meets a dark card makes it
+// most visible), but it was in every join, and it reads as a montage seam
+// rather than as a transition.
+//
+// So each segment except the last is rendered FADE seconds LONGER than its
+// budget (the extra comes from the tpad clone that already pads the tail), and
+// `xfade` overlaps consecutive segments by exactly FADE at an offset of the
+// running scene total. That keeps every scene starting at its cumulative
+// budget — so the VO track and the SRT stay aligned to the frame — and the
+// finished film is still exactly `sum(seconds)` long. Only the film's own
+// opening and closing still touch black.
+const LAST = SCENES.length - 1;
 const segments = [];
-for (const scene of SCENES) {
+for (const [index, scene] of SCENES.entries()) {
 	const seg = join(PROMO, `seg-${scene.id}.mp4`);
-	const fadeOutStart = Math.max(0, scene.seconds - FADE);
+	// A hair of slack over the dissolve so the transition never asks for a frame
+	// one tick past the end of the outgoing segment.
+	const segSeconds = index === LAST ? scene.seconds : scene.seconds + FADE + 0.05;
+	const fades = [
+		index === 0 ? `fade=t=in:st=0:d=${FADE}` : null,
+		index === LAST ? `fade=t=out:st=${Math.max(0, scene.seconds - FADE)}:d=${FADE}` : null,
+	].filter(Boolean);
 	// Per-scene time-compression keeps footage dense — actions are captured
 	// at a comfortable driving pace and played back snappier. The factor
 	// auto-raises so the WHOLE captured action fits the scene budget (a cut
@@ -70,7 +93,15 @@ for (const scene of SCENES) {
 			}
 		}
 	}
-	const vf = `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS/${speed},fps=${FPS},tpad=stop_mode=clone:stop_duration=${scene.seconds},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE},setpts=PTS-STARTPTS`;
+	const vf = [
+		"scale=1920:1080:force_original_aspect_ratio=decrease",
+		"pad=1920:1080:(ow-iw)/2:(oh-ih)/2",
+		`setpts=PTS/${speed}`,
+		`fps=${FPS}`,
+		`tpad=stop_mode=clone:stop_duration=${segSeconds}`,
+		...fades,
+		"setpts=PTS-STARTPTS",
+	].join(",");
 	if (scene.titleCard || scene.introCard || scene.slide) {
 		// Pillow renders the stills (Homebrew ffmpeg has no drawtext/freetype)
 		// in the site's indigo palette. Cards use the shell's indigo app icon
@@ -92,8 +123,8 @@ for (const scene of SCENES) {
 		ffmpeg([
 			"-loop", "1",
 			"-i", cardPng,
-			"-t", String(scene.seconds),
-			"-vf", `fps=${FPS},fade=t=in:st=0:d=${FADE},fade=t=out:st=${fadeOutStart}:d=${FADE}`,
+			"-t", String(segSeconds),
+			"-vf", [`fps=${FPS}`, ...fades].join(",") || `fps=${FPS}`,
 			"-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", seg,
 		]);
 	} else {
@@ -113,12 +144,12 @@ for (const scene of SCENES) {
 		ffmpeg([
 			"-i", clip,
 			"-loop", "1", "-i", captionPng,
-			"-t", String(scene.seconds),
+			"-t", String(segSeconds),
 			"-filter_complex",
 			`[1:v]format=rgba,fade=t=in:st=0.4:d=0.3:alpha=1,fade=t=out:st=${capOut}:d=0.4:alpha=1[cap];[0:v]${vf}[base];[base][cap]overlay=0:0:shortest=1[v]`,
 			"-map", "[v]",
 			"-an",
-			"-c:v", "libx264", "-preset", "medium", "-crf", "18", seg,
+			"-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", seg,
 		]);
 	}
 	segments.push(seg);
@@ -138,11 +169,33 @@ writeFileSync(voConcatList, voSegs.map((p) => `file '${p}'`).join("\n"));
 const voTrack = join(PROMO, "vo-track.wav");
 ffmpeg(["-f", "concat", "-safe", "0", "-i", voConcatList, "-c", "copy", voTrack]);
 
-// ── 3. video concat + audio mix ──────────────────────────────────────────
-const videoConcatList = join(PROMO, "video-concat.txt");
-writeFileSync(videoConcatList, segments.map((p) => `file '${p}'`).join("\n"));
+// ── 3. video: cross-dissolve the segments together, then mix audio ───────
 const silentVideo = join(PROMO, "video-silent.mp4");
-ffmpeg(["-f", "concat", "-safe", "0", "-i", videoConcatList, "-c", "copy", silentVideo]);
+if (segments.length === 1) {
+	ffmpeg(["-i", segments[0], "-c", "copy", silentVideo]);
+} else {
+	// acc_i length is always `sum(seconds through i) + FADE`, and the transition
+	// sits at `offset = sum(seconds before i)` — so `offset + FADE` never runs
+	// past the outgoing segment, and the final output is exactly `sum(seconds)`.
+	const steps = [];
+	let prev = "[0:v]";
+	let offset = 0;
+	for (let i = 1; i < segments.length; i++) {
+		offset += SCENES[i - 1].seconds;
+		const out = i === segments.length - 1 ? "[vout]" : `[x${i}]`;
+		steps.push(
+			`${prev}[${i}:v]xfade=transition=fade:duration=${FADE}:offset=${offset.toFixed(3)}${out}`,
+		);
+		prev = out;
+	}
+	ffmpeg([
+		...segments.flatMap((p) => ["-i", p]),
+		"-filter_complex", steps.join(";"),
+		"-map", "[vout]",
+		"-r", String(FPS),
+		"-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", silentVideo,
+	]);
+}
 
 // Music bed + mix are selectable so a reel can bring its own track and its own
 // VO-vs-music balance. PROMO_MUSIC picks the file (else auto-find music.* in

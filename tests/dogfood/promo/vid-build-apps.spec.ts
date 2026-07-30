@@ -11,12 +11,15 @@
  * Drivers are defensive — a selector drifting degrades the beat, never kills
  * the run.
  *
- * What is REAL here: the app, its code, that it installs and runs, the consent
- * sheet (shown at install and recalled in the walls beat), the capability
- * grants, and the refusal. The ONE scripted element is the model's output in
- * the agent act, via the capture-only `BRAINSTORM_DEMO_AGENT=appforge`
- * provider (`promo:capture:build-apps` sets it) — the tray, the approval, and
- * the entity writes are the genuine pipeline, exactly as in `vid-agent-team`.
+ * What is REAL here: BOTH apps, their code, that they install and run, the
+ * consent sheet, the capability grants, and the refusal. The ONE scripted
+ * element is the model's output in the agent act, via the capture-only
+ * `BRAINSTORM_DEMO_AGENT=appforge` provider (`promo:capture:build-apps` sets
+ * it) — the tray, the approval, and the entity writes are the genuine
+ * pipeline, exactly as in `vid-agent-team`. What that script drafts is a
+ * second, genuinely working app ("Milestones", see `milestones-source.ts`):
+ * its own id, its own product, the same one scoped capability, asserted here
+ * against the bytes the vault actually received.
  *
  * Two mechanics worth knowing before editing a driver:
  *
@@ -44,6 +47,12 @@
  *  4. **Every scene ends on the frame worth freezing.** Whatever the last
  *     painted frame is, the viewer may sit on it for up to a second. Park the
  *     cursor and land the beat before the driver returns.
+ *  5. **A beat that is only motion gets cut.** *(pacing pass 2026-07-30.)* The
+ *     opening grid scan is 3s and hands off to the Code tile; the picker →
+ *     consent flow is driven ONCE in full (04+05) and re-used compressed for
+ *     the agent's app (13); the walls beat makes its point inside the running
+ *     app instead of recalling the consent sheet. The seconds that frees go to
+ *     the agent act (09→13), which is the thing the episode is actually about.
  *
  *   bun run promo:capture:build-apps && bun run promo:vo:build-apps && bun run promo:render:build-apps
  */
@@ -62,6 +71,14 @@ import {
 	CLIENT_PULSE_MANIFEST_PATH,
 	assertOnCameraIsSubsequence,
 } from "./client-pulse-source";
+import {
+	MILESTONES_APP_ID,
+	MILESTONES_APP_NAME,
+	MILESTONES_INDEX_PATH,
+	MILESTONES_MANIFEST_PATH,
+	MILESTONES_PROMPT,
+	assertDraftedAppIsReal,
+} from "./milestones-source";
 
 const HARNESS = join(import.meta.dirname, "..", "..", "..");
 const DATA = join(HARNESS, "tests", "dogfood", ".promo-build-apps-data");
@@ -73,11 +90,6 @@ const CODE_FILE_TYPE = "brainstorm/CodeFile/v1";
 
 /** The `CmdOrCtrl` half of the editor's Save chord, per platform. */
 const MOD = process.platform === "darwin" ? "Meta" : "Control";
-
-const AGENT_PROMPT = "Build me a small hello app I can install — a manifest and a page.";
-
-/** The agent-drafted app's name in the grid — the second tile in the payoff. */
-const HELLO_APP_NAME = "Hello";
 
 /** Console / page errors seen on ANY window. The polish gate's bar is zero. */
 type Defect = { where: string; text: string };
@@ -324,6 +336,23 @@ test("capture VID-build-apps reel", async () => {
 			.filter({ hasText: name })
 			.first();
 
+	/** Glide the cursor onto a locator's box — the wheel-target primitive the
+	 *  agent act needs, because `scrollHuman` wheels wherever the pointer is.
+	 *  `fx`/`fy` pick the point inside the box (0.02 lands in a container's own
+	 *  padding, i.e. over the scroller and not over a nested one). */
+	const glideToBox = async (
+		page: Page,
+		target: ReturnType<Page["locator"]>,
+		ms: number,
+		fx = 0.5,
+		fy = 0.5,
+	): Promise<boolean> => {
+		const box = await target.first().boundingBox().catch(() => null);
+		if (!box) return false;
+		await glideTo(page, box.x + box.width * fx, box.y + box.height * fy, ms);
+		return true;
+	};
+
 	/** Glide onto a dashboard tile by label; reports whether it was there. The
 	 *  grid reveals are only worth their seconds if the tile is on screen. */
 	const glideToTile = async (name: string, ms: number): Promise<boolean> => {
@@ -336,13 +365,15 @@ test("capture VID-build-apps reel", async () => {
 	};
 
 	// ── 01: THE GAP — the grid, and nothing in it does client pulse ─────────
+	// 3s, down from 5+: the previous cut opened on six seconds of a cursor
+	// drifting over a settled grid, which is motion carrying no information.
+	// One sweep, then park on the Code tile — the scan and the hand-off to the
+	// next scene in a single gesture.
 	await s.scene("01-the-gap", async () => {
 		await s.film(s.dashboard);
-		await beat(s.dashboard, 400);
-		// Scan the app grid the way someone looking for a tool they don't have does.
-		await glideTo(s.dashboard, 240, 220, 600);
-		await glideTo(s.dashboard, 700, 320, 700);
-		await glideTo(s.dashboard, 1120, 250, 700);
+		await beat(s.dashboard, 250);
+		await glideTo(s.dashboard, 300, 240, 500);
+		if (!(await glideToTile("Code", 700))) await glideTo(s.dashboard, 900, 300, 700);
 		await beat(s.dashboard, 700);
 	});
 
@@ -356,7 +387,7 @@ test("capture VID-build-apps reel", async () => {
 		await typeSource(code, CLIENT_PULSE_MANIFEST, 11);
 		await save(code);
 		// Hold on the capability line — the whole safety story rests on it.
-		await beat(code, 1300);
+		await beat(code, 800);
 	});
 
 	// ── 03: THE PAGE — it asks the vault for her clients and draws them ────
@@ -406,12 +437,12 @@ test("capture VID-build-apps reel", async () => {
 		// This hold IS the scene, which is why the scene table sets no `speed`
 		// floor here: a floor would compress the sheet and then freeze the tail
 		// on the marketplace behind it.
-		await beat(s.dashboard, 3000);
+		await beat(s.dashboard, 2200);
 		await glideClick(
 			s.dashboard,
 			sheet.locator(".popover__footer button.button--primary").first(),
 		).catch(() => undefined);
-		await beat(s.dashboard, 700);
+		await beat(s.dashboard, 600);
 	});
 
 	// ── 06: INSTALLED — the toast, then the icon in the grid ───────────────
@@ -433,7 +464,7 @@ test("capture VID-build-apps reel", async () => {
 		await glideTo(s.dashboard, 700, 420, 350);
 		await backToGrid();
 		tileRevealed = await glideToTile(CLIENT_PULSE_APP_NAME, 700);
-		await beat(s.dashboard, 2200);
+		await beat(s.dashboard, 1200);
 	});
 
 	// Asserted OUTSIDE the scene on purpose: `s.scene` swallows a driver throw
@@ -454,21 +485,20 @@ test("capture VID-build-apps reel", async () => {
 	await s.scene("07-launch", async () => {
 		await s.film(pulse);
 		await pulse.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
-		await beat(pulse, 300);
+		await beat(pulse, 250);
 		// Two things keep this page painting: the cards' staggered rise-in on
 		// load, and the cursor walking them — each lights up on hover. Reading it
 		// that way is also what a person would do.
 		for (const [x, y] of [
-			[320, 130],
 			[420, 260],
 			[700, 400],
 			[420, 540],
 			[820, 300],
 		] as const) {
-			await glideTo(pulse, x, y, 750);
+			await glideTo(pulse, x, y, 700);
 			await beat(pulse, 250);
 		}
-		await beat(pulse, 400);
+		await beat(pulse, 350);
 	});
 
 	const rendered = await pulse
@@ -478,176 +508,243 @@ test("capture VID-build-apps reel", async () => {
 	console.log(`[vid-build-apps] Client Pulse rendered: ${JSON.stringify(rendered)}`);
 	expect(rendered.length, "Client Pulse must render seeded clients").toBeGreaterThan(0);
 
-	// ── 08: THE WALLS — what she consented to, and what it is refused ──────
-	// Moved AHEAD of the agent act. It used to be the last content scene, so the
-	// episode's final frame was a red `refused — …` line, which reads as a crash
-	// rather than as proof. Here it lands one beat after the app has just read
-	// her clients, which is where the contrast is most legible: same app, same
-	// window, one call inside the grant and one outside it.
+	// ── 08: THE WALLS — what it was granted, and what it is refused ────────
+	// A CONTINUATION of `07`, not a new setup: same app, same window, nothing
+	// staged in between, so the join reads as a beat inside one shot.
 	//
-	// The surface for the consent half is the INSTALL CONSENT SHEET, recalled —
-	// not Settings → Security → Capability grants. The grants popover truthfully
-	// lists the shell baseline every installed app receives *on top of* what its
-	// manifest asked for (~22 rows), which reads as a contradiction under this
-	// scene's VO. The consent sheet shows exactly what the user agreed to: the
-	// one requested capability plus the unsigned advisory. See the storyboard,
-	// §"Why the walls beat shows the consent sheet, not the grants popover".
-	await s.closeAppWindows();
-	await backToGrid();
-	// Both surfaces this scene uses are staged off camera — the app window and
-	// the vault picker — so the take spends its seconds on the sheet and the
-	// probes rather than on a window opening.
-	const walls = await s.openApp(CLIENT_PULSE_APP_ID);
-	watch(walls, "client-pulse (walls)");
-	await openVaultInstaller();
-	const consentRow = vaultRow(CLIENT_PULSE_APP_NAME);
-	await consentRow.scrollIntoViewIfNeeded().catch(() => undefined);
-	console.log(
-		`[vid-build-apps] consent recall row present: ${await consentRow.count().catch(() => 0)}`,
-	);
-
+	// The consent-sheet recall this scene used to open with is gone (pacing pass
+	// 2026-07-30). It was the third appearance of the install chrome in a 92s
+	// film, and the point it made is already printed *by the app itself* in its
+	// own header — `vault access: entities.read:brainstorm/Project/v1`, rendered
+	// from `window.brainstorm.capabilities`. Holding on that and then running
+	// the probe pair keeps the whole beat inside the running app, which is where
+	// it is strongest and where it needs no dialog. See the storyboard,
+	// §"Why the walls beat stopped recalling the consent sheet".
+	//
+	// The pair matters: the granted read succeeds and the ungranted one is
+	// refused, side by side. The refusal on its own read like a broken app; next
+	// to the call that works it reads as the wall holding. `vaultEntities.list`
+	// statically requires `entities.read:*`, which this app was never granted,
+	// and the message on screen is the broker's own.
 	await s.scene("08-walls", async () => {
-		await s.film(s.dashboard);
-		await beat(s.dashboard, 400);
-		// What she actually consented to, in the shell's own words…
-		await glideClick(s.dashboard, consentRow.getByRole("button", { name: "Install" })).catch(
-			() => undefined,
-		);
-		const consentSheet = s.dashboard.locator('[data-testid="confirm-dialog"]');
-		await consentSheet.waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
-		const consent = await consentSheet
-			.locator(".confirm__body")
-			.first()
-			.textContent()
-			.catch(() => null);
-		console.log(`[vid-build-apps] consent sheet recalled: ${consent ?? "(none)"}`);
-		await beat(s.dashboard, 2200);
-		// Dismiss without installing — this is a recall of the sheet, not a
-		// second install.
-		await glideClick(
-			s.dashboard,
-			consentSheet.locator(".popover__footer button.button--neutral").first(),
-		).catch(() => undefined);
-		await backToGrid();
-
-		// …and then the pair, in the app itself: the granted read succeeds and the
-		// ungranted one is refused, side by side. The refusal on its own read like
-		// a broken app; next to the call that works it reads as the wall holding.
-		// `vaultEntities.list` statically requires `entities.read:*`, which this
-		// app was never granted, and the message on screen is the broker's own.
-		await s.film(walls);
-		await beat(walls, 400);
-		await glideClick(walls, walls.locator("#probe-ok")).catch(() => undefined);
-		await walls
+		await s.film(pulse);
+		await beat(pulse, 250);
+		await glideToBox(pulse, pulse.locator("#granted"), 600);
+		await beat(pulse, 900);
+		await glideClick(pulse, pulse.locator("#probe-ok")).catch(() => undefined);
+		await pulse
 			.locator("#probe-ok-out.out--granted")
 			.waitFor({ state: "visible", timeout: 10_000 })
 			.catch(() => undefined);
-		const granted = await walls.locator("#probe-ok-out").textContent().catch(() => null);
-		await beat(walls, 800);
-		await glideClick(walls, walls.locator("#probe")).catch(() => undefined);
-		await walls
+		const granted = await pulse.locator("#probe-ok-out").textContent().catch(() => null);
+		await beat(pulse, 1100);
+		await glideClick(pulse, pulse.locator("#probe")).catch(() => undefined);
+		await pulse
 			.locator("#probe-out.out--refused")
 			.waitFor({ state: "visible", timeout: 10_000 })
 			.catch(() => undefined);
-		const refusal = await walls.locator("#probe-out").textContent().catch(() => null);
+		const refusal = await pulse.locator("#probe-out").textContent().catch(() => null);
 		console.log(
 			`[vid-build-apps] granted: ${granted ?? "(none)"} | refused: ${refusal ?? "(none)"}`,
 		);
-		await glideTo(walls, 640, 690, 600);
-		await beat(walls, 1200);
+		await glideTo(pulse, 300, 690, 450);
+		await beat(pulse, 400);
+		await glideTo(pulse, 640, 690, 450);
+		await beat(pulse, 900);
 	});
 
-	// ── 09: THE AGENT DRAFTS IT — two staged code-file cards ───────────────
+	// ── THE AGENT ACT (09 → 13) ────────────────────────────────────────────
+	// Four scenes and 29 of the film's 92 seconds, up from two scenes and 15.
+	// The owner's note on the previous cut was that this is the part worth
+	// watching and it was the thinnest, so it now shows the whole gesture:
+	// asking, the drafts arriving, reading the code, approving, the files
+	// landing in the same tree her own files live in, and only then a
+	// deliberately compressed re-run of the install path.
+	//
+	// The new-chat dance is staged OFF camera: the app auto-selects a seeded
+	// conversation on mount, and a New-chat click that misses drops the whole
+	// act into someone else's thread (it did, once). Click, then confirm the
+	// header fell back to the app title before a single frame is recorded.
 	await s.closeAppWindows();
 	const agent = await s.openApp(AGENT);
 	watch(agent, "agent");
 	const codeCard = agent.locator('[data-testid="agent-proposal"][data-kind="code-file"]');
+	const codePre = agent.locator('[data-testid="agent-proposal-code"]');
+	const tray = agent.locator(".agent-proposal-tray");
+	await agent
+		.locator('[data-testid="agent-send"]')
+		.first()
+		.waitFor({ state: "visible", timeout: 20_000 })
+		.catch(() => undefined);
+	const newChat = agent.locator('[aria-label="New chat"]').first();
+	for (let attempt = 0; attempt < 3; attempt++) {
+		await newChat.click().catch(() => undefined);
+		await beat(agent, 400);
+		const title = await agent.locator(".app-header__title").first().textContent().catch(() => null);
+		if (title !== null && /agent/i.test(title)) break;
+	}
 
-	await s.scene("09-agent-drafts", async () => {
+	// ── 09: SHE ASKS — the prompt typed, sent, and the first draft landing ─
+	await s.scene("09-agent-ask", async () => {
 		await s.film(agent);
-		await agent
-			.locator('[data-testid="agent-send"]')
-			.first()
-			.waitFor({ state: "visible", timeout: 20_000 })
-			.catch(() => undefined);
-		// Start clean: the app auto-selects a seeded conversation on mount, and a
-		// New-chat click that misses drops the whole act into someone else's
-		// thread (it did, first run). Click, then confirm the header fell back to
-		// the app title before typing a word.
-		const newChat = agent.locator('[aria-label="New chat"]').first();
-		for (let attempt = 0; attempt < 3; attempt++) {
-			await newChat.click().catch(() => undefined);
-			await beat(agent, 500);
-			const title = await agent.locator(".app-header__title").first().textContent().catch(() => null);
-			if (title !== null && /agent/i.test(title)) break;
-		}
-		await beat(agent, 300);
+		await beat(agent, 200);
 		const composer = agent.locator('[contenteditable="true"], textarea').last();
+		await glideToBox(agent, composer, 500);
 		await composer.click().catch(() => undefined);
-		await typeHuman(agent, AGENT_PROMPT, 18);
-		await beat(agent, 300);
-		await agent.locator('[data-testid="agent-send"]').first().click().catch(() => undefined);
+		// Slower than the editor's typing pace on purpose: this is one short
+		// sentence, and it is the only thing on screen while it is typed.
+		await typeHuman(agent, MILESTONES_PROMPT, 58);
+		await beat(agent, 400);
+		await glideClick(agent, agent.locator('[data-testid="agent-send"]').first()).catch(
+			() => undefined,
+		);
+		await agent
+			.locator('[data-testid="agent-thinking"]')
+			.waitFor({ state: "visible", timeout: 5_000 })
+			.catch(() => undefined);
+		await beat(agent, 600);
 		await codeCard.first().waitFor({ state: "visible", timeout: 60_000 }).catch(() => undefined);
-		// Read them the way she would: hold on the manifest card, scroll to the
-		// page card, hold again. (Also keeps the screencast painting.)
-		await glideTo(agent, 760, 300, 700);
-		await beat(agent, 1200);
-		await scrollHuman(agent, 260, 900).catch(() => undefined);
-		await beat(agent, 800);
-		await glideTo(agent, 760, 520, 650);
-		await scrollHuman(agent, 300, 900).catch(() => undefined);
-		await beat(agent, 1200);
+		await beat(agent, 500);
+		await glideToBox(agent, tray, 600, 0.5, 0.06);
+		await beat(agent, 700);
 	});
 
-	// ── 10: APPROVE → THE SAME INSTALL PATH ────────────────────────────────
-	await s.scene("10-agent-approve", async () => {
+	// ── 10: IT DRAFTS A REAL APP — both cards, read ────────────────────────
+	// The tray is height-capped and scrolls internally (shell PR alongside this
+	// one), so the composer stays put and both cards are reachable. Two code
+	// previews at 240px each never fit the frame at once, so the beat reads them
+	// the way a person would: card one's code, then travel to card two's.
+	await s.scene("10-agent-drafts", async () => {
 		await s.film(agent);
-		const cards = await codeCard.count().catch(() => 0);
-		for (let i = 0; i < cards; i++) {
+		await beat(agent, 250);
+		await glideToBox(agent, codePre.first(), 550);
+		await scrollHuman(agent, 200, 900).catch(() => undefined);
+		await beat(agent, 700);
+		// Wheel over the tray's own padding, not over a nested code preview, so
+		// the tray is what scrolls.
+		await glideToBox(agent, tray, 450, 0.015, 0.5);
+		await scrollHuman(agent, 380, 900).catch(() => undefined);
+		await beat(agent, 500);
+		await glideToBox(agent, codePre.nth(1), 500);
+		await scrollHuman(agent, 220, 800).catch(() => undefined);
+		await beat(agent, 900);
+	});
+
+	const staged = await codeCard.count().catch(() => 0);
+	console.log(`[vid-build-apps] staged code-file cards: ${staged}`);
+	expect(staged, "the agent must stage both drafted files").toBe(2);
+
+	// ── 11: APPROVE — and only then is anything written ────────────────────
+	await s.scene("11-agent-approve", async () => {
+		await s.film(agent);
+		await beat(agent, 250);
+		// Back to the top of the tray first: scene 10 left it parked on card two,
+		// and approving a card that is scrolled out of frame is an invisible click.
+		await glideToBox(agent, tray, 450, 0.015, 0.5);
+		await scrollHuman(agent, -520, 650).catch(() => undefined);
+		await beat(agent, 400);
+		for (let i = 0; i < 2; i++) {
 			// Approving removes the card, so always take the first one left.
 			await codeCard
 				.first()
 				.locator('[data-testid="agent-proposal-approve"]')
-				.click()
+				.scrollIntoViewIfNeeded()
 				.catch(() => undefined);
-			await beat(agent, 700);
+			await glideClick(
+				agent,
+				codeCard.first().locator('[data-testid="agent-proposal-approve"]'),
+			).catch(() => undefined);
+			await beat(agent, 800);
 		}
-		await beat(agent, 500);
-		await s.closeAppWindows();
+		await glideToBox(agent, agent.locator('[data-testid="agent-created-objects"]'), 600).catch(
+			() => undefined,
+		);
+		await beat(agent, 900);
+	});
+
+	// ── 12: THE FILES LAND — beside the ones she wrote ─────────────────────
+	// The Code editor is reopened off camera; its FILES tree is a folder tree,
+	// so the agent's `milestones/` folder now sits next to her `client-pulse/`
+	// one — the same place, the same file rows, no distinction between who
+	// wrote them. That is the whole point of the beat.
+	await s.closeAppWindows();
+	const codeAgain = await s.openApp(CODE);
+	watch(codeAgain, "code-editor (agent files)");
+
+	const drafted = await readCodeFiles(codeAgain);
+	console.log(
+		`[vid-build-apps] vault code files after approval: ${drafted
+			.map((f) => `${f.path} (${f.content.length}B)`)
+			.join(", ")}`,
+	);
+	// The honesty gate for the whole act: what the agent staged has to be a real
+	// app — one scoped capability, a real vault read, not a stub, not a copy of
+	// the app she wrote. See `milestones-source.ts`.
+	assertDraftedAppIsReal(drafted);
+
+	const fileRow = (path: string) =>
+		codeAgain.locator(".editor__file").filter({ has: codeAgain.locator(`[title="${path}"]`) });
+
+	await s.scene("12-agent-files", async () => {
+		await s.film(codeAgain);
+		await beat(codeAgain, 250);
+		await glideClick(codeAgain, fileRow(MILESTONES_MANIFEST_PATH).first()).catch(() => undefined);
+		await beat(codeAgain, 700);
+		await glideClick(codeAgain, fileRow(MILESTONES_INDEX_PATH).first()).catch(() => undefined);
+		await beat(codeAgain, 500);
+		await glideTo(codeAgain, 760, 420, 450);
+		await scrollHuman(codeAgain, 300, 800).catch(() => undefined);
+		await beat(codeAgain, 600);
+	});
+
+	// ── 13: SAME INSTALL PATH — deliberately compressed ────────────────────
+	// The viewer watched the picker and the consent sheet in full at 04-05.
+	// Re-running them at length taught nothing and was the main reason the back
+	// half dragged, so the whole path — picker, row, sheet, confirm — plays here
+	// inside four seconds (the renderer compresses the take ~1.7×).
+	await s.closeAppWindows();
+	await backToGrid();
+
+	let agentAppInstalled = false;
+	await s.scene("13-agent-install", async () => {
 		await s.film(s.dashboard);
+		await beat(s.dashboard, 250);
 		await openVaultInstaller();
-		await beat(s.dashboard, 900);
-		const hello = vaultRow("hello-app");
-		const install = hello.getByRole("button", { name: "Install" });
+		await beat(s.dashboard, 500);
+		const row = vaultRow(MILESTONES_APP_NAME);
+		const install = row.getByRole("button", { name: "Install" });
 		if (await install.isEnabled().catch(() => false)) {
 			await glideClick(s.dashboard, install).catch(() => undefined);
 			const sheet = s.dashboard.locator('[data-testid="confirm-dialog"]');
 			await sheet.waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
-			await beat(s.dashboard, 1200);
+			await beat(s.dashboard, 900);
 			await glideClick(
 				s.dashboard,
 				sheet.locator(".popover__footer button.button--primary").first(),
 			).catch(() => undefined);
 			await beat(s.dashboard, 600);
+			agentAppInstalled = true;
 		} else {
-			// Dry-run signal: the candidate is listed but refused. `.marketplace__vault-problem`
-			// carries the validator's reason — read it into the run log rather than
-			// pretending the beat played.
-			const problem = await hello
+			// Dry-run signal: the candidate is listed but refused.
+			// `.marketplace__vault-problem` carries the validator's reason — read it
+			// into the run log rather than pretending the beat played.
+			const problem = await row
 				.locator(".marketplace__vault-problem")
 				.first()
 				.textContent()
 				.catch(() => null);
-			console.warn(`[vid-build-apps] hello-app not installable: ${problem ?? "row missing"}`);
+			console.warn(`[vid-build-apps] Milestones not installable: ${problem ?? "row missing"}`);
 			await beat(s.dashboard, 1500);
 		}
 	});
+	expect(agentAppInstalled, "the agent's app must install from the vault").toBe(true);
 
-	// ── 11: PAYOFF — the grid carrying both new apps, and hers running ─────
-	// The episode's closing image, and the reason the walls beat moved up. The
-	// hook's claim ("it runs the apps you write") is affirmative, so the last
-	// thing on screen is too: two tiles that were not in the grid at the top of
-	// the episode, and then the app she wrote painting its cards in.
+	// ── 14: PAYOFF — both tiles, then the AGENT'S app running ──────────────
+	// The previous cut closed on Client Pulse — the app SHE wrote — right after
+	// the narration said the agent had written one, so the payoff argued against
+	// itself. The closing shot is now the agent's app, reading the same vault
+	// through the same broker: two apps in the grid, one of them written by the
+	// OS, both real.
 	await s.dashboard
 		.locator(".toast--success .toast__title")
 		.first()
@@ -655,49 +752,51 @@ test("capture VID-build-apps reel", async () => {
 		.catch(() => undefined);
 	await backToGrid();
 	console.log(`[vid-build-apps] icon cells at payoff: ${(await iconCells()).join(" ")}`);
-	// Hers, reopened off camera for the closing shot — its board re-runs the
-	// staggered rise-in on load, which is the motion the last beat rides.
-	//
-	// The reload is not decoration. A relaunch can hand back the SAME window
-	// still carrying the walls beat's `refused — …` line, which would put a red
-	// error in the episode's closing frame — the exact thing this restructure
-	// exists to remove. It happened in the dry run, so the state is asserted
-	// clean rather than assumed.
-	const closer = await s.openApp(CLIENT_PULSE_APP_ID);
-	watch(closer, "client-pulse (payoff)");
-	await closer.reload().catch(() => undefined);
-	await closer.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
-	const closingProbe = (await closer.locator("#probe-out").textContent().catch(() => "")) ?? "";
-	console.log(`[vid-build-apps] closing shot probe line: ${JSON.stringify(closingProbe)}`);
-	expect(closingProbe.trim(), "the closing shot must not carry the refusal line").toBe("");
+	const closer = await s.openApp(MILESTONES_APP_ID);
+	watch(closer, "milestones (payoff)");
+	await closer.locator(".lane").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
+	const lanes = await closer.locator(".lane__name").allTextContents().catch(() => [] as string[]);
+	const grant = (await closer.locator("#grant").textContent().catch(() => "")) ?? "";
+	console.log(`[vid-build-apps] Milestones rendered: ${JSON.stringify(lanes)} · ${grant}`);
+	expect(lanes.length, "the agent's app must render the seeded projects").toBeGreaterThan(0);
 
 	let bothTiles = false;
-	await s.scene("11-payoff", async () => {
+	await s.scene("14-payoff", async () => {
 		await s.film(s.dashboard);
-		await beat(s.dashboard, 400);
-		const hers = await glideToTile(CLIENT_PULSE_APP_NAME, 750);
-		await beat(s.dashboard, 350);
-		const its = await glideToTile(HELLO_APP_NAME, 750);
+		await beat(s.dashboard, 300);
+		const hers = await glideToTile(CLIENT_PULSE_APP_NAME, 700);
+		await beat(s.dashboard, 300);
+		const its = await glideToTile(MILESTONES_APP_NAME, 700);
 		bothTiles = hers && its;
-		console.log(`[vid-build-apps] payoff tiles — Client Pulse: ${hers}, Hello: ${its}`);
-		await beat(s.dashboard, 500);
-		// The app she wrote, one last time: the reel lands on it WORKING rather
-		// than refused. Reloaded ON camera so the staggered rise-in plays into
-		// the closing frame instead of having finished off it.
+		console.log(`[vid-build-apps] payoff tiles — Client Pulse: ${hers}, Milestones: ${its}`);
+		await beat(s.dashboard, 400);
+		// Reloaded ON camera so the lanes' staggered rise-in plays into the
+		// closing frame instead of having finished off it.
 		await s.film(closer);
 		await closer.reload().catch(() => undefined);
-		await closer.locator("#board .card").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
-		await beat(closer, 500);
-		await glideTo(closer, 640, 300, 700);
-		await beat(closer, 800);
-		await glideTo(closer, 430, 520, 700);
-		await beat(closer, 1000);
+		await closer.locator(".lane").first().waitFor({ timeout: 15_000 }).catch(() => undefined);
+		// `film` again, on purpose: the synthetic cursor is a DOM node injected
+		// into the page, and a reload wipes it. Without this the closing shot has
+		// no pointer at all AND — because the screencast only emits frames on
+		// paint — the glides below paint nothing, which is how this scene came
+		// back 2.1s short of its budget and got a frozen tail.
+		await s.film(closer);
+		await beat(closer, 450);
+		// Walk the lanes the way the cards were walked in 07 — the closing frame
+		// is a hold, but the seconds before it have to be motion or the renderer
+		// clones a frame out to the budget (this scene came back 1.8s short once).
+		await glideTo(closer, 700, 200, 600);
+		await beat(closer, 400);
+		await glideTo(closer, 420, 340, 600);
+		await beat(closer, 400);
+		await glideTo(closer, 700, 480, 600);
+		await beat(closer, 1100);
 	});
 
 	// Asserted outside the scene, like the `06-installed` reveal: the closing
 	// image is "two apps that weren't there this morning", so one missing tile
 	// means the agent act silently degraded and the take is not shippable.
-	expect(bothTiles, "both new tiles must be on the grid in 11-payoff").toBe(true);
+	expect(bothTiles, "both new tiles must be on the grid in 14-payoff").toBe(true);
 
 	await s.finish();
 	if (defects.length > 0) {
