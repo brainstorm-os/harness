@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-477 - the Backup & Migration settings panel looks thrown together
+- **session:** owner-report-2026-07-31   **kind:** design   **app:** shell (settings)   **status:** ✅ fixed (shell #401)
+- **what I was trying to do:** look over the export / import options in Settings → Backup & Migration.
+- **what happened:** the panel reads as a mess — the description text is squeezed into a narrow ragged column beside oversized buttons with labels like "Choose an export (.zip or folder)…", the cards have big empty dead zones, and the Notion token box is a bare white input that matches nothing else in the app.
+- **what I expected:** the same tidy card layout as the rest of Settings — clean text, consistent buttons, a themed input.
+- **evidence:** owner screenshot (dark theme over wallpaper); reproduced in the real-shell visual spec.
+- **triage (developer, 2026-07-31):** three causes. (1) *Layout* — the card header was one flex row, so the action button's width was subtracted from the description column for the card's **entire height**; with labels as wide as "Choose an export (.zip or folder)…" the copy wrapped into a narrow ragged column and left large dead zones. The header is now a grid (icon | title | action on one centered baseline, description spanning the full card width below at a 64ch measure), and follow-up content (token row, progress, run reports, errors) hangs at the title's left edge. (2) *Buttons* — labels tightened to `Export…` / `Choose file…` / `Choose folder…` / `Choose export…`; the format detail already lives in each card's hint, and the actions now read as one right-aligned column. (3) *Input* — the Notion API token field was a raw `<input class="bs-input">`; `bs-input` is an SDK **app-side** class the shell renderer deliberately never loads, so the field rendered as an unstyled native input (the same phantom-class family as the phantom-CSS-token rule). It now uses the shared `<TextField>` (password, Md) beside its Connect button. New real-shell visual spec `tests/visual/specs/settings-backup-migration.spec.ts` guards the panel end-to-end, including that the token field rides the shared `text-field__input` face. Panel tests 5/5, typecheck + lint green. Fix: shell #401.
+
 ### F-476 - properties panel items jump when editing is clicked
 - **session:** owner-report-2026-07-31   **kind:** bug   **app:** shared (sdk property-ui)   **status:** ✅ fixed (shell #395)
 - **what I was trying to do:** edit a property value in an object's Properties panel.
