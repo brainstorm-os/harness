@@ -15,6 +15,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type ElectronApplication, _electron, expect, test } from "@playwright/test";
+import { shellLaunchEnv } from "../lib/shell-launch-env";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SHELL_DIR = join(HERE, "..", "..", "..", "packages", "shell");
@@ -64,13 +65,7 @@ async function bootShell(dataDir: string, vaultName: string): Promise<ElectronAp
 		args: [MAIN_ENTRY, `--user-data-dir=${dataDir}`],
 		cwd: SHELL_DIR,
 		timeout: 120_000,
-		env: {
-			...process.env,
-			BRAINSTORM_DEV_INSECURE_CREDENTIALS: "1",
-			BRAINSTORM_AUTO_SEED: "0",
-			BRAINSTORM_NO_FOCUS: "1",
-			NODE_ENV: "production",
-		},
+		env: shellLaunchEnv(),
 	});
 	const dashboard = await app.firstWindow({ timeout: 60_000 });
 	await dashboard.evaluate(

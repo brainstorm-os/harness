@@ -21,6 +21,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type ElectronApplication, type Locator, type Page, _electron } from "@playwright/test";
 import { type Speaker, postToTeamChat } from "./team-chat";
+import { shellLaunchEnv } from "./shell-launch-env";
 
 export { SPEAKER, type Speaker } from "./team-chat";
 
@@ -196,13 +197,7 @@ export async function startSession(name: string): Promise<FounderSession> {
 		args: [MAIN_ENTRY, `--user-data-dir=${NORTHBOUND_DATA_DIR}`],
 		cwd: SHELL_DIR,
 		timeout: 120_000,
-		env: {
-			...process.env,
-			BRAINSTORM_DEV_INSECURE_CREDENTIALS: "1",
-			BRAINSTORM_AUTO_SEED: "0",
-			BRAINSTORM_NO_FOCUS: "1",
-			NODE_ENV: "production",
-		},
+		env: shellLaunchEnv(),
 	});
 
 	// Capture the Electron MAIN-process stdout/stderr too — that's where the

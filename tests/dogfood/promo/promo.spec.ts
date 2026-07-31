@@ -28,6 +28,7 @@ import {
 } from "@playwright/test";
 import { beat, glideClick, glideDrag, glideTo, typeHuman } from "../lib/humanize";
 import { ScreencastRecorder, makePromoRecorder } from "../lib/recorder";
+import { shellLaunchEnv, visibleWindowsRequested } from "../lib/shell-launch-env";
 
 const HARNESS = join(import.meta.dirname, "..", "..", "..");
 const SHELL_DIR = join(HARNESS, "packages", "shell");
@@ -64,13 +65,15 @@ async function tileAllWindows(app: ElectronApplication): Promise<void> {
 			for (const w of BrowserWindow.getAllWindows()) {
 				try {
 					w.setMinimumSize(480, 360);
-					w.setPosition(stage.x, stage.y);
+					// Hidden runs size but never place: there is no display to
+					// place onto, and the screencast reads from the page.
+					if (stage.place) w.setPosition(stage.x, stage.y);
 					w.setContentSize(stage.width, stage.height);
 				} catch {
 					// best-effort
 				}
 			}
-		}, STAGE)
+		}, { ...STAGE, place: visibleWindowsRequested() })
 		.catch(() => undefined);
 }
 
@@ -86,18 +89,13 @@ test("capture promo scenes", async () => {
 		args: [MAIN_ENTRY, `--user-data-dir=${PROMO_DATA}`],
 		cwd: SHELL_DIR,
 		timeout: 120_000,
-		env: {
-			...process.env,
-			BRAINSTORM_DEV_INSECURE_CREDENTIALS: "1",
-			BRAINSTORM_AUTO_SEED: "0",
+		// Screencast films the window over CDP — the run needs neither OS focus
+		// nor a mapped window, so both are off. The ffmpeg display backend
+		// (explicit opt-in) needs both; `shellLaunchEnv` restores them for it.
+		env: shellLaunchEnv({
 			BRAINSTORM_APP_WINDOW_WIDTH: String(STAGE.width),
 			BRAINSTORM_APP_WINDOW_HEIGHT: String(STAGE.height),
-			// Screencast films the window without OS focus — don't steal the
-			// operator's focus while the rig runs. The ffmpeg display backend
-			// (explicit opt-in) needs focus; drop this only for that mode.
-			...(process.env.PROMO_CAPTURE === "ffmpeg" ? {} : { BRAINSTORM_NO_FOCUS: "1" }),
-			NODE_ENV: "production",
-		},
+		}),
 	});
 
 	// The vault is created ON CAMERA in scene 01 through the real welcome

@@ -276,6 +276,35 @@ bun run dogfood                # run all founder sessions
 bun run dogfood -- -g "001"    # run one session by name
 ```
 
+## Runs are hidden (owner rule, 2026-07-30)
+
+Every harness launch path passes **`BRAINSTORM_HIDDEN_WINDOWS=1`** by default —
+founder sessions, the collab team, the promo/VID stages, and the marketing
+screenshot rigs, all through the one helper
+[`tests/dogfood/lib/shell-launch-env.ts`](../../tests/dogfood/lib/shell-launch-env.ts).
+The shell then never maps a window onto a display, so an agent-driven run cannot
+throw windows over whatever you are doing, and cannot land in your screen share.
+
+This is not the older `BRAINSTORM_NO_FOCUS` flag, which only suppresses `focus()`
+calls — the windows still appeared. Hidden means the window is created
+`show: false` and never revealed, for its whole life.
+
+**Capture is unaffected.** Chromium keeps a never-shown window's renderer
+painting, and both capture backends read from the *page*, not the screen:
+`page.screenshot()` and the recorder's default CDP screencast. Only the opt-in
+`PROMO_CAPTURE=ffmpeg` display backend films the physical screen — it needs the
+windows on it, so it turns hidden mode off for itself.
+
+```sh
+BRAINSTORM_TEST_VISIBLE=1 bun run dogfood -- -g "012"   # watch a run for real
+```
+
+`tests/dogfood/sessions/919-hidden-window-mode.spec.ts` is the guard: it asserts
+no window is ever mapped **and** that a hidden window still yields screencast
+frames and a non-blank screenshot. That second half is the one that fails
+silently — a hidden window whose compositor stopped still screenshots, it just
+screenshots black.
+
 ## The team chat (watch them work, live)
 
 The three founder-side personas and **Kai** (the Brainstorm engineer = the build

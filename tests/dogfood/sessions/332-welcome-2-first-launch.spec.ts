@@ -19,6 +19,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type ElectronApplication, type Page, _electron, expect, test } from "@playwright/test";
+import { shellLaunchEnv } from "../lib/shell-launch-env";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
@@ -42,13 +43,7 @@ test("Welcome-2 — fresh launch shows the template gallery and a chosen templat
 			args: [MAIN_ENTRY, `--user-data-dir=${userDataDir}`],
 			cwd: SHELL_DIR,
 			timeout: 120_000,
-			env: {
-				...process.env,
-				BRAINSTORM_DEV_INSECURE_CREDENTIALS: "1",
-				BRAINSTORM_AUTO_SEED: "0",
-				BRAINSTORM_NO_FOCUS: "1",
-				NODE_ENV: "production",
-			},
+			env: shellLaunchEnv(),
 		});
 
 		const win: Page = await app.firstWindow({ timeout: 60_000 });

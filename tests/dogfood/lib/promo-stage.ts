@@ -1,8 +1,13 @@
 /**
  * Shared capture stage for the promo / app-showcase rigs — launches the shell
- * in production mode against a fresh synthetic vault, tiles every window to a
- * fixed 16:9 region, and hands back the recorder + the scene/film/openApp
+ * in production mode against a fresh synthetic vault, sizes every window to a
+ * fixed 16:9 stage, and hands back the recorder + the scene/film/openApp
  * machinery the scene drivers call.
+ *
+ * Windows are HIDDEN by default (`shell-launch-env.ts`) — the rig films the
+ * pages over CDP, so nothing needs to be on the developer's display. The
+ * `PROMO_CAPTURE=ffmpeg` display backend is the exception: it films the screen,
+ * so it puts the windows back on it and tiles them into the capture rect.
  *
  * Extracted from `promo/promo.spec.ts` so a second rig (the per-app VID-*
  * highlight reels) reuses the exact stage rather than re-deriving it. The 60s
@@ -20,6 +25,7 @@ import { join } from "node:path";
 import { type ElectronApplication, type Page, _electron } from "@playwright/test";
 import { type PromoRecorder, ScreencastRecorder, makePromoRecorder } from "./recorder";
 import { beat } from "./humanize";
+import { shellLaunchEnv, visibleWindowsRequested } from "./shell-launch-env";
 
 const HARNESS = join(import.meta.dirname, "..", "..", "..");
 const SHELL_DIR = join(HARNESS, "packages", "shell");
@@ -88,33 +94,32 @@ export async function launchPromoStage(opts: {
 		args: [MAIN_ENTRY, `--user-data-dir=${opts.dataDir}`],
 		cwd: SHELL_DIR,
 		timeout: 120_000,
-		env: {
-			...process.env,
-			BRAINSTORM_DEV_INSECURE_CREDENTIALS: "1",
-			BRAINSTORM_AUTO_SEED: "0",
+		env: shellLaunchEnv({
 			BRAINSTORM_APP_WINDOW_WIDTH: String(stage.width),
 			BRAINSTORM_APP_WINDOW_HEIGHT: String(stage.height),
-			...(process.env.PROMO_CAPTURE === "ffmpeg" ? {} : { BRAINSTORM_NO_FOCUS: "1" }),
-			NODE_ENV: "production",
-		},
+		}),
 	});
 
 	const dashboard = await app.firstWindow({ timeout: 60_000 });
 	await dashboard.waitForTimeout(2500);
 
+	// Hidden runs size the windows but never place them: there is no display to
+	// place them on, and the CDP screencast reads from the page anyway. Only the
+	// ffmpeg display backend needs the windows tiled into its capture rect.
+	const place = visibleWindowsRequested();
 	const tileAllWindows = async (): Promise<void> => {
 		await app
 			.evaluate(({ BrowserWindow }, s) => {
 				for (const w of BrowserWindow.getAllWindows()) {
 					try {
 						w.setMinimumSize(480, 360);
-						w.setPosition(s.x, s.y);
+						if (s.place) w.setPosition(s.x, s.y);
 						w.setContentSize(s.width, s.height);
 					} catch {
 						// best-effort
 					}
 				}
-			}, stage)
+			}, { ...stage, place })
 			.catch(() => undefined);
 	};
 	await tileAllWindows();
