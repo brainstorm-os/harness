@@ -6,10 +6,10 @@
 import { describe, expect, it } from "vitest";
 import {
 	type BranchObservation,
-	findOrphanedBranches,
-	formatOrphanReport,
 	OrphanSeverity,
 	type PostMergeCommit,
+	findOrphanedBranches,
+	formatOrphanReport,
 } from "../src/tools/orphaned-commit-check";
 
 /** A post-merge commit whose files main never revisited — work stranded on the branch. */
@@ -97,7 +97,11 @@ describe("findOrphanedBranches", () => {
 				prNumber: 999,
 				commitsAfterMerge: [stranded("x", "wip", ["a.ts"])],
 			},
-			{ name: "scratch/local-idea", prState: null, commitsAfterMerge: [stranded("y", "idea", ["b.ts"])] },
+			{
+				name: "scratch/local-idea",
+				prState: null,
+				commitsAfterMerge: [stranded("y", "idea", ["b.ts"])],
+			},
 			{
 				name: "fix/abandoned",
 				prState: "CLOSED",
