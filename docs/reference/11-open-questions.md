@@ -3403,14 +3403,14 @@ Source: [platform/69-agent-teams-and-orchestration.md](../platform/69-agent-team
 - **Tentative leaning:** start with `assignee` (CRDTs merge, so no lock is needed for correctness); add a soft-claim only if real contention appears.
 - **Blocking?:** No.
 
-#### OQ-AT-2 — Agent→agent Chat actuation
+#### OQ-AT-2 — Agent→agent Chat actuation *[POSITION TAKEN in implementation-plan Agent-Teams-3 slice 1, 2026-07-31]*
 - **Question:** When agent A @-mentions agent B in Chat, does B auto-run, or does an agent→agent mention require a human turn to actuate (a throttle against agent chatter / runaway cost)?
-- **Tentative leaning:** human-in-the-loop by default, with an explicit per-thread "let them collaborate" grant.
+- **Position:** human-in-the-loop, enforced **structurally**: the mention runner only actuates on a message whose sender is a human `Participant`; agent replies are `Assistant` senders, so an agent→agent mention can never auto-run. The opt-in per-thread "let them collaborate" grant remains open for a later rung.
 - **Blocking?:** No.
 
-#### OQ-AT-3 — Seeded starter roster
+#### OQ-AT-3 — Seeded starter roster *[RESOLVED in implementation-plan Agent-Teams-4, 2026-07-31]*
 - **Question:** Which starter agents ship (Builder / Reviewer / Researcher?), is seeding opt-in at OOBE or always-on, and do they carry the dogfood persona names/themes or neutral role names?
-- **Tentative leaning:** 2–3 conservative-default (`ConfirmOnWrite`, local-preferred) starters, always-on but fully editable/deletable; neutral role names.
+- **Resolution:** Researcher / Builder / Reviewer, neutral role names, always-on (seeded at vault create), `LocalOnly` + `ConfirmOnWrite`, fully editable/deletable — and **zero grants at seed**: `requestedCapabilities` on the template is a request manifest surfaced on the Team sheet, never auto-granted, so a starter is powerless until the human scopes it. Seeding is a no-op when any agent already exists (never resurrects a deleted starter).
 - **Blocking?:** No.
 
 #### OQ-AT-4 — Delegation-tree governance
