@@ -21,6 +21,7 @@ import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type ElectronApplication, type Page, _electron, test } from "@playwright/test";
+import { shellLaunchEnv } from "../lib/shell-launch-env";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -827,15 +828,10 @@ test("capture per-app marketing screenshots", async () => {
 			args: [MAIN_ENTRY, `--user-data-dir=${DATA_DIR}`],
 			cwd: SHELL_DIR,
 			timeout: 120_000,
-			env: {
-				...process.env,
-				BRAINSTORM_DEV_INSECURE_CREDENTIALS: "1",
-				BRAINSTORM_NO_FOCUS: "1",
-				BRAINSTORM_AUTO_SEED: "0",
+			env: shellLaunchEnv({
 				BRAINSTORM_APP_WINDOW_WIDTH: "1440",
 				BRAINSTORM_APP_WINDOW_HEIGHT: "900",
-				NODE_ENV: "production",
-			},
+			}),
 		});
 
 		const dashboard = await app.firstWindow({ timeout: 60_000 });

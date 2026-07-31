@@ -32,6 +32,7 @@ import { fileURLToPath } from "node:url";
 type ThemeName = "nord" | "rose" | "sepia" | "forest" | "high-contrast" | "midnight";
 import { type ElectronApplication, type Page, _electron } from "@playwright/test";
 import { type RelayHandle, launchRelay } from "../../soak/lib/launch-relay";
+import { shellLaunchEnv } from "./shell-launch-env";
 import { type Speaker, postToTeamChat } from "./team-chat";
 
 /** Runtime mirror of `AccessRole` (../shell/.../collab/access-record.ts). The
@@ -282,15 +283,7 @@ export async function launchCollabShell(
 		args: [MAIN_ENTRY, `--user-data-dir=${dataDir}`],
 		cwd: SHELL_DIR,
 		timeout: 120_000,
-		env: {
-			...process.env,
-			BRAINSTORM_DEV_INSECURE_CREDENTIALS: "1",
-			BRAINSTORM_AUTO_SEED: "0",
-			BRAINSTORM_NO_FOCUS: "1",
-			BRAINSTORM_COLLAB_DEBUG: "1",
-			BRAINSTORM_SOAK_DEBUG: "1",
-			NODE_ENV: "production",
-		},
+		env: shellLaunchEnv({ BRAINSTORM_COLLAB_DEBUG: "1", BRAINSTORM_SOAK_DEBUG: "1" }),
 	});
 
 	const mainProc = app.process();
