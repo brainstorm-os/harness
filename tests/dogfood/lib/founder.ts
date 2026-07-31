@@ -28,7 +28,11 @@ export { SPEAKER, type Speaker } from "./team-chat";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
-const SHELL_DIR = join(REPO_ROOT, "packages", "shell");
+// `BRAINSTORM_SHELL_DIR` points a run at a side worktree's build (same
+// contract as the site-screenshot specs) so a feature branch can be probed
+// without touching the shared main shell tree; default is the symlinked
+// main tree.
+const SHELL_DIR = process.env.BRAINSTORM_SHELL_DIR ?? join(REPO_ROOT, "packages", "shell");
 const ELECTRON_BIN = join(SHELL_DIR, "node_modules", ".bin", "electron");
 const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 
