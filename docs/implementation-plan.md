@@ -384,6 +384,30 @@ The owner bar is a **polished product**, and as of 2026-07-21 it is **not met**:
 
 *Hunt #2 non-defect verdicts (recorded so they aren't re-raised): the day-view all-day banner "run-on text" is mangled seeded titles (913p already disproved the render theory); the New-event LOCATION field's "different face" is the shared `.bs-input:hover` under a parked cursor; "Save event leaves the dialog open" in `228-deep-calendar` is the documented stale-selector drift (Save button is a sibling of `.cal-detail`); the journal/tasks deep-spec FAIL clusters are probe drift (wrong `data-nav-open` element; persisted-closed sidebars). Dark sweep: 20/20 apps, 0 console/page errors.*
 
+**Per-app design polish program (`POLISH-APP-*`, filed 2026-08-01 — owner directive: "design quality is still bad, all apps have elements that look bad and out of our design patterns, we need to polish each app separately").** One rung per first-party app. Each rung = drain the app's mechanical baselines to zero (or `design-ok`-annotate with reasons) **+ walk the shared rubric** ([dogfood/app-design-audit.md](dogfood/app-design-audit.md): both-themes screenshot pass · type rhythm · control faces/heights · header conventions · shared menus · empty/loading states · selection fills · alignment/overflow · lock coverage) **+ extract any cross-app finding to the SDK or a new ratchet** instead of patching locally. Enforcement substrate: the design-drift ratchet (`tools/check-design-drift.mjs`, shell #407) counts literal colors + px font-sizes per file, shrink-only; px font-size drift is already **zero across all 20 apps** (chat/journal/books drained in #407). Order = measured color-drift first (objective), judgment-only apps after; the owner can reorder.
+
+- ✅ `POLISH-APP-0` — the enforcement substrate: `check-design-drift.mjs` ratchet (literal colors + px font-sizes, per-file shrink-only baseline, `design-ok:` audited exemptions) wired into `lint`/`verify`, + the rubric doc, + the first mechanical drains (chat 21 sizes → tokens with role-split; journal 3; books annotated). *(shell #407, 2026-08-01.)*
+- ⚪ `POLISH-APP-1` — **Whiteboard** (53 literal colors — worst in fleet; likely a mix of pen-palette data-literals to annotate and real chrome drift) + rubric audit.
+- ⚪ `POLISH-APP-2` — **Books** (38 literal colors; reader chrome vs. content typography split) + rubric audit.
+- ⚪ `POLISH-APP-3` — **Browser** (17 literal colors) + rubric audit incl. the new start page.
+- ⚪ `POLISH-APP-4` — **Code editor** (14 literal colors; syntax-theme literals may warrant annotation) + rubric audit.
+- ⚪ `POLISH-APP-5` — **Graph** (13 literal colors; canvas draw-loop colors need theme-reactive resolution, not CSS vars alone) + rubric audit.
+- ⚪ `POLISH-APP-6` — **Tasks** (10 literal colors) + rubric audit incl. the POLISH-DSN-4 follow-up (ghost Group/Sort → `.bs-select` face).
+- ⚪ `POLISH-APP-7` — **Files** (10 literal colors) + rubric audit.
+- ⚪ `POLISH-APP-8` — **Database** (9 literal colors) + rubric audit.
+- ⚪ `POLISH-APP-9` — **Calendar** (8 literal colors) + rubric audit.
+- ⚪ `POLISH-APP-10` — **Journal** (6 literal colors; font-px drained in #407) + rubric audit.
+- ⚪ `POLISH-APP-11` — **Preview** (6 literal colors) + rubric audit.
+- ⚪ `POLISH-APP-12` — **Notes** (5 literal colors) + rubric audit — the flagship editor surface, worth an extra-deep pass despite low drift.
+- ⚪ `POLISH-APP-13` — **Form designer** (4 literal colors) + rubric audit.
+- ⚪ `POLISH-APP-14` — **Bookmarks** (1 literal color) + rubric audit.
+- ⚪ `POLISH-APP-15` — **Chat** (mechanical drift drained in #407) — judgment audit; the Teams flagship surface.
+- ⚪ `POLISH-APP-16` — **Agent** (0 mechanical) — judgment audit; builds on POLISH-DSN-11.
+- ⚪ `POLISH-APP-17` — **Mailbox** (0 mechanical) — judgment audit.
+- ⚪ `POLISH-APP-18` — **Contacts** (0 mechanical) — judgment audit.
+- ⚪ `POLISH-APP-19` — **Automations** (0 mechanical) — judgment audit.
+- ⚪ `POLISH-APP-20` — **Theme editor** (0 mechanical) — judgment audit.
+
 ## App showcase videos *(standing content + polish cadence, `VID-*`; owner-driven, one app / week)*
 
 Owner directive 2026-07-22: ship a **weekly YouTube video, one app per week**, each a full walkthrough of a first-party app's functionality. The forcing function makes this a **polish** track as much as a marketing one: a video only rolls when its subject app is **capture-ready — super-polished end to end**, so every affordance shown on screen holds up at recording resolution. The video queue is a *pull* on the [`POLISH-*` track](#product-polish--dogfood-hardening-standing-quality-track-polish--owner-driven) — each week's app gets a dedicated polish pass (its `POLISH-*` rungs drained) *before* the tape rolls, and the recording is the acceptance test: if it can't be demoed cleanly on camera, it isn't done.
