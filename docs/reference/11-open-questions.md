@@ -3429,40 +3429,40 @@ Source: [platform/69-agent-teams-and-orchestration.md](../platform/69-agent-team
 
 Source: [platform/77-agent-observability.md](../platform/77-agent-observability.md). Plan rungs `Agent-12a`–`Agent-12e`. Only OQ-AO-1 blocks the track's first rung; the rest are leaf-local.
 
-#### OQ-AO-1 — Trace retention window and caps
+#### OQ-AO-1 — Trace retention window and caps *[RESOLVED in implementation-plan Agent-12a]*
 - **Where:** [77 §The data model](../platform/77-agent-observability.md).
 - **Question:** How long do `agent_runs` / `agent_events` rows live, and what are the count/size caps? The trace is an operational record, not an archive — but "what did agents do last month" is a legitimate query, and per-entity history via `agentProvenance` outlives any window.
 - **Options & trade-offs:** Short window (7–30 days, aggressive prune — `AiUsageRepo.prune` shape) keeps the DB small but truncates the Settings activity view; long window (6–12 months) serves audit questions but grows `account.db` with event-per-tool-call granularity; tiered (events pruned early, run summaries kept long) adds a second shape but matches how the surfaces actually read.
-- **Tentative leaning:** tiered — events ~30 days, run rows ~12 months, both count-capped; creation provenance on entities is permanent regardless (it lives on the entity, not in the trace).
-- **Blocking?:** **Blocks Agent-12a** (the prune contract is part of the schema).
+- **Resolution (2026-08-01): tiered, as the leaning.** `agent_events` live ~30 days; `agent_runs` ~12 months; **both additionally count-capped** (newest-wins), because an age window alone does not bound a runaway automation loop — the two limits fail differently and the schema needs both. Pruning reuses the `AiUsageRepo.prune` shape and cadence rather than inventing a second sweeper. Creation provenance on entities (`agentProvenance`) is **permanent regardless** — it lives on the entity, not in the trace, so the audit question "what made this object" survives any retention choice. The prune contract ships **inside `Agent-12a`**, not as a follow-up: an unbounded table is the failure this decision exists to prevent.
+- **Blocking?:** ~~Blocks Agent-12a~~ — resolved; the rung is unblocked.
 
-#### OQ-AO-2 — App-facing read surface
+#### OQ-AO-2 — App-facing read surface *[RESOLVED in implementation-plan Agent-12a]*
 - **Where:** [77 §The surfaces](../platform/77-agent-observability.md).
 - **Question:** May an app query runs beyond its own (e.g. a third-party dashboard app reading the whole vault's agent activity), and if so behind what capability?
 - **Options & trade-offs:** Shell-surfaces-only (Settings + each app's own runs) needs no new capability and leaks nothing; a `agent.trace:read` capability enables ecosystem dashboards but hands an app a map of the user's entities and habits — high-sensitivity metadata for speculative value.
-- **Tentative leaning:** shell-surfaces-only for v1; revisit if a real consumer appears.
-- **Blocking?:** Blocks only Agent-12d's *app-facing* variant, which the leaning rejects anyway; non-blocking with the shell-only position.
+- **Resolution (2026-08-01): shell-surfaces-only for v1 — no `agent.trace:read` capability exists.** An app sees only its own runs; the vault-wide view is the privileged shell renderer (Settings → AI). The trade is deliberately asymmetric: the capability would hand any installed app a map of which entities the user touches and when — the highest-sensitivity metadata in the vault — to serve a consumer that does not exist. Not shipping a capability is reversible; shipping one is not. Revisit only when a real consumer appears.
+- **Blocking?:** No — Agent-12d ships the shell-only form.
 
 #### OQ-AO-3 — Opt-in debug capture
 - **Where:** [77 §Principles](../platform/77-agent-observability.md).
 - **Question:** Does a default-off, explicit-consent, self-expiring "capture full prompts/completions for this conversation" debug mode ever exist (for diagnosing bad agent behaviour), or is metadata-only absolute?
 - **Options & trade-offs:** Absolute is the cleanest privacy story and the substrate is complete without capture; a scoped debug mode materially helps "why did it do that" support cases but creates a plaintext-prompt store that must be excluded from sync/export and reliably expired.
-- **Tentative leaning:** not in v1; the metadata timeline plus the existing message transcript answers most "why" questions.
+- **Resolution (2026-08-01): not in v1 — metadata-only is absolute.** No path on any surface captures prompt or completion bytes. The substrate is deliberately complete without it, and the metadata timeline plus the existing message transcript answers most "why did it do that" questions. The cost of the alternative is a plaintext-prompt store that would have to be excluded from sync *and* export *and* reliably expired — three new ways to leak the most sensitive bytes in the product, to serve support cases we can mostly answer already. Revisit only with a concrete diagnostic need the timeline provably cannot meet.
 - **Blocking?:** No.
 
 #### OQ-AO-4 — Denial notification posture
 - **Where:** [77 §The surfaces](../platform/77-agent-observability.md).
 - **Question:** Are denials passive (timeline + badge, discovered on inspection) or active (toast / inline notice the moment a tool call is refused)? Fail-closed silence is the failure mode being fixed — but automations denying in a loop could toast-storm.
 - **Options & trade-offs:** Passive never nags but repeats the "silently broken" pattern one level up; active surfaces breakage immediately but needs per-run coalescing and a quiet mode for expected denials (a narrowed conversation refusing by design).
-- **Tentative leaning:** active-but-coalesced in chat (the Agent-5 escalation prompt *is* the active surface — extend it), passive badge for automations with denial-state on the run row.
-- **Blocking?:** No — Agent-12b can ship the leaning and adjust.
+- **Resolution (2026-08-01): active-but-coalesced in chat, passive badge for automations.** In chat the **existing Agent-5 escalation prompt is the active surface** — extend it rather than inventing a second notice mechanism (a denial the user can act on should offer the grant, not just report the refusal). Automations get a passive denial badge with denial state on the run row, because an automation denying in a loop is exactly the toast-storm case and its user is not present at the moment of refusal anyway. Shipped by `Agent-12b` / `Agent-12c`.
+- **Blocking?:** No.
 
-#### OQ-AO-5 — Model-call event granularity
+#### OQ-AO-5 — Model-call event granularity *[RESOLVED in implementation-plan Agent-12a]*
 - **Where:** [77 §The data model](../platform/77-agent-observability.md).
 - **Question:** Is `model-call` one event per provider round-trip or one per loop iteration (a multi-tool turn can make N provider calls), and does it duplicate what `ai_usage` already rows?
 - **Options & trade-offs:** Per-round-trip is honest and joins `ai_usage` 1:1 but doubles rows for pure bookkeeping; per-iteration is coarser but the timeline mostly wants tool/proposal events anyway — the model-call is connective tissue.
-- **Tentative leaning:** don't row `model-call` at all in v1 — add a nullable `run_id` to `ai_usage` and derive the timeline's model steps from the join; one accounting substrate, zero duplication.
-- **Blocking?:** No — resolve inside Agent-12a's schema review.
+- **Resolution (2026-08-01): no `model-call` rows at all.** The `kind` enum omits it; instead `ai_usage` gains a **nullable `run_id`** (a cheap additive migration) and the timeline derives its model steps from the join. One accounting substrate, zero duplication — and no second place for token/cost numbers to disagree with the first. Resolved inside `Agent-12a`'s schema, as the leaning proposed.
+- **Blocking?:** No.
 
 ---
 
