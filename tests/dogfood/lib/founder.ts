@@ -36,6 +36,19 @@ const SHELL_DIR = process.env.BRAINSTORM_SHELL_DIR ?? join(REPO_ROOT, "packages"
 const ELECTRON_BIN = join(SHELL_DIR, "node_modules", ".bin", "electron");
 const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 
+/** `BRAINSTORM_PACKAGED_APP` points a session at a PACKAGED build's executable
+ *  (e.g. `dist/mac-arm64/Brainstorm.app/Contents/MacOS/Brainstorm`) instead of
+ *  the dev entry. This is the only way to exercise what packaging changes:
+ *  `app.isPackaged` (analytics install-id, the dev-only seeder, DevTools), asar
+ *  reads, and native-addon resolution from `Resources/native/` — none of which
+ *  a dev build can prove. The packaged binary takes NO main-entry argument;
+ *  everything else about the session is identical. */
+const PACKAGED_APP = process.env.BRAINSTORM_PACKAGED_APP ?? null;
+
+/** True when this session is driving a packaged build. Specs can assert
+ *  packaged-only invariants (and skip dev-only affordances) off it. */
+export const IS_PACKAGED_RUN = PACKAGED_APP !== null;
+
 /** Mira's persistent desk. Gitignored, never wiped between sessions. */
 export const NORTHBOUND_DATA_DIR = join(REPO_ROOT, "tests", "dogfood", ".data");
 const SESSIONS_ROOT = join(REPO_ROOT, "tests", "dogfood", ".sessions");
@@ -197,8 +210,10 @@ export async function startSession(name: string): Promise<FounderSession> {
 	writeFileSync(notesFile, `# Session ${name}\n\n`);
 
 	const app = await _electron.launch({
-		executablePath: ELECTRON_BIN,
-		args: [MAIN_ENTRY, `--user-data-dir=${NORTHBOUND_DATA_DIR}`],
+		executablePath: PACKAGED_APP ?? ELECTRON_BIN,
+		args: PACKAGED_APP
+			? [`--user-data-dir=${NORTHBOUND_DATA_DIR}`]
+			: [MAIN_ENTRY, `--user-data-dir=${NORTHBOUND_DATA_DIR}`],
 		cwd: SHELL_DIR,
 		timeout: 120_000,
 		env: shellLaunchEnv(),
@@ -229,7 +244,7 @@ export async function startSession(name: string): Promise<FounderSession> {
 	wireConsole(dashboard, consoleLog, "dashboard");
 
 	await dashboard.evaluate(
-		async ({ vaultName, dataDir }) => {
+		async ({ vaultName, dataDir, packaged }) => {
 			const bs = (window as unknown as BrainstormWindow).brainstorm;
 			const list = await bs.vaults.list();
 			let session = await bs.vaults.session();
@@ -247,9 +262,15 @@ export async function startSession(name: string): Promise<FounderSession> {
 			// Install the bundles built once in global setup — re-seeding from
 			// source per session rebuilt all 11 apps (~200s) and timed sessions
 			// out before any of Mira's work ran.
-			await bs.dev.seedPrebuiltApps();
+			//
+			// A PACKAGED build registers no `dev:*` IPC at all (that gating is
+			// the point of `app.isPackaged`), so the seeder is dev-only. A
+			// packaged session therefore runs against whatever the vault already
+			// holds — which is the honest thing to exercise: a real user's apps
+			// come from the bundled marketplace, not from a dev seeder.
+			if (!packaged) await bs.dev.seedPrebuiltApps();
 		},
-		{ vaultName: VAULT_NAME, dataDir: NORTHBOUND_DATA_DIR },
+		{ vaultName: VAULT_NAME, dataDir: NORTHBOUND_DATA_DIR, packaged: IS_PACKAGED_RUN },
 	);
 
 	let shotCounter = 0;
