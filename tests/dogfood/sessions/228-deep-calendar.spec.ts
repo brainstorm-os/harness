@@ -168,8 +168,12 @@ test("deep calendar walkthrough (228)", async () => {
 			await next.click().catch(() => undefined);
 			await cal.waitForTimeout(300);
 			const away = await rangeLabel();
+			// The Today control is the shared DatePager's TEXT button — it carries
+			// neither aria-label nor title (its visible text is its name), so the
+			// old attribute locator matched nothing and the `.catch()` swallowed
+			// the miss, producing POLISH-LAY-5's false FAIL.
 			await cal
-				.locator('.cal-toolbar__nav button[aria-label="Today"], .cal-toolbar__nav [title="Today"]')
+				.locator(".cal-toolbar__nav .bs-date-pager__today")
 				.first()
 				.click()
 				.catch(() => undefined);
