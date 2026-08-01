@@ -398,7 +398,7 @@ The owner bar is a **polished product**, and as of 2026-07-21 it is **not met**:
 - ✅ `POLISH-APP-7` — **Files** — drift 10 → 0 (dead fallbacks; card/hover shadows → tokens; modal scrim → the shared `--color-dimmer`, which encodes the dark-wash-in-every-theme convention the old comment defended). Chrome already compliant (DSN-4 faces, accent-soft selection). Both-themes evidence: harness session `316-polish-files-both-themes`. *(shell [#419](https://github.com/brainstorm-os/shell/pull/419), 2026-08-01.)*
 - ⚪ `POLISH-APP-8` — **Database** (9 literal colors) + rubric audit.
 - ⚪ `POLISH-APP-9` — **Calendar** (8 literal colors) + rubric audit.
-- ⚪ `POLISH-APP-10` — **Journal** (6 literal colors; font-px drained in #407) + rubric audit.
+- ✅ `POLISH-APP-10` — **Journal** — drift 6 → 0 (all dead fallbacks on guaranteed tokens; font-px was already drained in #407). Chrome already compliant. Both-themes evidence: harness session `319-polish-journal-both-themes`. *(shell [#422](https://github.com/brainstorm-os/shell/pull/422), 2026-08-01.)*
 - ⚪ `POLISH-APP-11` — **Preview** (6 literal colors) + rubric audit.
 - ⚪ `POLISH-APP-12` — **Notes** (5 literal colors) + rubric audit — the flagship editor surface, worth an extra-deep pass despite low drift.
 - ⚪ `POLISH-APP-13` — **Form designer** (4 literal colors) + rubric audit.
