@@ -37,7 +37,7 @@ Two tables in `account.db` beside `ai_usage` (same migration discipline, same re
 
 **`agent_events`** — ordered events within a run: `run_id`, `seq`, `kind` (enum: `model-call` | `retrieval` | `tool-call` | `tool-denied` | `proposal-staged` | `proposal-approved` | `proposal-discarded` | `mcp-call` | `error`), `tool` (verb or provider/model), `target_entity_id` (nullable), `capability` (the cap checked; for `tool-denied`, **the cap that was missing** — the row that makes a denial actionable), `outcome`, `duration_ms`.
 
-Token/cost accounting stays in `ai_usage` (joined by time + app; a `run_id` column on `ai_usage` is a cheap additive migration if the join proves annoying). Retention is a bounded window — count- and age-capped with periodic pruning like `AiUsageRepo.prune` — sized by OQ-AO-1; the trace is an operational record, not an archive.
+Token/cost accounting stays in `ai_usage`, which gains a **nullable `run_id`** (OQ-AO-5 resolved: no `model-call` event kind exists — the timeline derives its model steps from the join, so token/cost numbers have exactly one home). Retention is a bounded window — **both** count- and age-capped, with periodic pruning like `AiUsageRepo.prune`: events ~30 days, run rows ~12 months (OQ-AO-1 resolved). The trace is an operational record, not an archive; `agentProvenance` on the entity carries the permanent half.
 
 ## The surfaces
 
@@ -62,7 +62,7 @@ No new trust primitive. The trace is written by the shell at existing chokepoint
 
 ## Open questions
 
-OQ-AO-1 (retention window + caps — blocks the substrate rung), OQ-AO-2 (whether an app may query runs beyond its own — deferred-leaning), OQ-AO-3 (opt-in debug capture — default no), OQ-AO-4 (active denial notification vs. passive timeline — noise budget), OQ-AO-5 (per-event verbosity for `model-call` — one event per provider call vs. per loop iteration). Ledger: [11-open-questions.md](../reference/11-open-questions.md).
+**All five resolved 2026-08-01** — the track's gate is clear and `Agent-12a` builds to these positions. **OQ-AO-1** (retention): tiered — `agent_events` ~30 days, `agent_runs` ~12 months, **both** additionally count-capped, pruned on the `AiUsageRepo.prune` shape; `agentProvenance` is permanent regardless. **OQ-AO-2** (app-facing reads): shell-surfaces-only — no `agent.trace:read` capability is built. **OQ-AO-3** (debug capture): no — metadata-only is absolute in v1. **OQ-AO-4** (denial posture): active-but-coalesced in chat via the existing Agent-5 escalation prompt, passive badge for automations. **OQ-AO-5** (`model-call` granularity): no `model-call` rows at all; `ai_usage` gains a nullable `run_id` and the timeline derives model steps from the join. Ledger: [11-open-questions.md](../reference/11-open-questions.md).
 
 ## What this doc does **not** cover
 
