@@ -27,6 +27,15 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-479 - presence between two users is broken: awareness frames arrive but the receiver has no DEK
+- **session:** collab-010-presence-live (2026-08-02 chores dogfood)   **kind:** bug   **app:** shell (sync / presence)   **status:** 🔴 open
+- **what I was trying to do:** the standing two-shell presence check — Mira and Marcus open a shared note and should see each other.
+- **what happened:** neither sees the other; the spec times out waiting for the peer name.
+- **what I expected:** presence appears within a couple of seconds, as `PRES-4` shipped it in `v0.4.2`.
+- **evidence:** `tests/dogfood/.sessions/collab-010-presence-live/` — `relay-audit.log` shows awareness frames flowing BOTH ways (282 bytes each, every 15 s), so the transport is fine; `marcus.console.log` ends with `[dev:collab] receive failed: envelope-pipeline: no DEK for entity ent_presence_note`. The frames arrive and cannot be opened.
+- **NOT a regression from the 2026-08-01/02 window:** reproduced identically against a **v0.12.0 baseline build** (the pre-window tag) in the same environment, so the polish / agent-UI / app-tools work is not implicated. In the same sweep `003` (durable node) passed on re-run — flaky under parallel load with `ydoc: file shorter than header` — and `012` is the already-filed `10.3c` multi-device DEK gap, a *different* (same-user, two-device) hole.
+- **triage (developer, 2026-08-02):** same failure CLASS as F-466 (a share-time `WrapBootstrap` never reaching the receiver's inbox), which shell #350 fixed for the relay-classification cause, and as the retro-wrap ordinal bug shell #387 fixed. This is a cross-USER share, so `10.3c` does not explain it. Next step is to bisect `v0.11.x..v0.12.0` over the wrap-delivery path rather than re-diagnose from scratch — both prior fixes landed in that window and either could have regressed the other.
+
 ### F-478 - inserting a reference in a quote drags an empty quote block along, deleting one deletes both
 - **session:** owner-report-2026-08-01   **kind:** bug   **app:** notes (packages/editor)   **status:** ✅ fixed (shell #424)
 - **what I was trying to do:** add a `!@` reference to an iteration inside a note.
