@@ -399,10 +399,10 @@ The owner bar is a **polished product**, and as of 2026-07-21 it is **not met**:
 - ✅ `POLISH-APP-8` — **Database** — drift 9 → 0 (dead fallbacks; import-modal `::backdrop` → `--color-dimmer`). Chrome already compliant. Both-themes evidence: harness session `317-polish-database-both-themes`. *(shell [#420](https://github.com/brainstorm-os/shell/pull/420), 2026-08-01.)*
 - ✅ `POLISH-APP-9` — **Calendar** — drift 8 → 0 (dead fallbacks; tentative-chip hatch `design-ok`: theme-independent darkening of the event tint). Both-themes evidence: harness session `318-polish-calendar-both-themes`. *(shell [#421](https://github.com/brainstorm-os/shell/pull/421), 2026-08-01.)*
 - ✅ `POLISH-APP-10` — **Journal** — drift 6 → 0 (all dead fallbacks on guaranteed tokens; font-px was already drained in #407). Chrome already compliant. Both-themes evidence: harness session `319-polish-journal-both-themes`. *(shell [#422](https://github.com/brainstorm-os/shell/pull/422), 2026-08-01.)*
-- ⚪ `POLISH-APP-11` — **Preview** (6 literal colors) + rubric audit.
-- ⚪ `POLISH-APP-12` — **Notes** (5 literal colors) + rubric audit — the flagship editor surface, worth an extra-deep pass despite low drift.
-- ⚪ `POLISH-APP-13` — **Form designer** (4 literal colors) + rubric audit.
-- ⚪ `POLISH-APP-14` — **Bookmarks** (1 literal color) + rubric audit.
+- ✅ `POLISH-APP-11` — **Preview** — drift 6 → 0 (dead fallbacks; PDF page white `design-ok`). *(shell [#423](https://github.com/brainstorm-os/shell/pull/423), 2026-08-01.)*
+- 🟡 `POLISH-APP-12` — **Notes** — the mechanical half is drained (5 → 0: media scrim/ink/matte constants `design-ok`'d per their own never-tokenise contract; dead fallbacks dropped — shell [#423](https://github.com/brainstorm-os/shell/pull/423)); **the extra-deep judgment pass on the flagship editor is still owed** — stays open for it.
+- ✅ `POLISH-APP-13` — **Form designer** — drift 4 → 0 (export text → `--accent-fg`; the form-preview paper sheet `design-ok`'d — printable page, white in both themes). *(shell [#423](https://github.com/brainstorm-os/shell/pull/423), 2026-08-01.)*
+- ✅ `POLISH-APP-14` — **Bookmarks** — drift 1 → 0 (dead fallback). *(shell [#423](https://github.com/brainstorm-os/shell/pull/423), 2026-08-01.)*
 - ⚪ `POLISH-APP-15` — **Chat** (mechanical drift drained in #407) — judgment audit; the Teams flagship surface.
 - ⚪ `POLISH-APP-16` — **Agent** (0 mechanical) — judgment audit; builds on POLISH-DSN-11.
 - ⚪ `POLISH-APP-17` — **Mailbox** (0 mechanical) — judgment audit.
