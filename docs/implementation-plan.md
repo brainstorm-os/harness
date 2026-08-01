@@ -133,7 +133,8 @@ Beta is **shipped** (`v0.1.5`, 2026-06-29; now `v0.7.0`, 2026-07-21). The forwar
 
 | Train | Hero 1 | Hero 2 | Riders |
 |---|---|---|---|
-| **0.12.0 — Share for real** | `Collab-C5` sharing UX (finish) | `P2P-1` peer-to-peer sync (built on the `P2P-0` spike) | `Collab-C6` human user identity · **POLISH batch** |
+| **0.12.0 — Share for real** ✅ **cut 2026-07-31** (`v0.12.0` — AppForge + sharing by name; `P2P-1`'s LAN hero deliberately unclaimed, see F-474/`10.3c`) | `Collab-C5` sharing UX (finish) | `P2P-1` peer-to-peer sync (built on the `P2P-0` spike) | `Collab-C6` human user identity · **POLISH batch** |
+| **0.13.0 — Agents everywhere, polished** *(owner directive 2026-08-01: the release gate is ALL three buckets drained — no cut before that, however long the window runs)* | **Agents productized** — the agent track's named ✅-residue: delegation UI (Team-surface `agents.delegate` grant toggle + `assigneeAgent` trigger-builder row), real-shell + packaged-build exercise of `Agent-Teams-1..5` and `Agent-12a..e`, Teams screenshot/dogfood pass | **App interoperability** — `Tool-1..Tool-9` ([platform/78](platform/78-app-tools.md)): installed apps expose typed tools to other apps' menus, the agent's Tools layer, and automation steps | **The full per-app polish program drained** — `POLISH-APP-5..20` (graph → … → theme-editor; 1–4 already ✅) + whatever `POLISH-*` the window's dogfooding files · release cuts only when all three buckets are empty |
 | **1.0.0 — GA** | [GA definition of done](#ga-definition-of-done-post-beta-no-date--single-v1) | — | a11y / perf tails · Windows EV signing (`DQ-13.1-B`) |
 | **v2 — commercial** | `14.x` billing / quotas / orgs / wallet / marketplace | company ops — Account · DevPortal · Ops · Support · `Launch-2` (Product Hunt, Aug 2026) | — |
 
