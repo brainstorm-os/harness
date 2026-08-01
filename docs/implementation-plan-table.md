@@ -14,6 +14,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 ### Pass log
 
+- **2026-08-01 · drift baseline EMPTY** — `POLISH-APP-8..11/13/14` drained (shell #420/#421/#422/#423) + APP-12 Notes mechanical half; `tools/design-drift-baseline.json` is now **0 literal colors + 0 px font-sizes across all 20 apps** (born at 194+24 in #407). Remaining polish = judgment audits APP-15..20 + Notes' deep pass.
 - **2026-08-01 · agent track closes** — `Agent-12b/c/d/e` ✅ (shell #416; #415 closed as fully absorbed): per-turn timeline, automation run detail (proven failing-first twice), Settings→AI activity (privileged IPC, no app capability), live dashboard chip. Agent track = zero open rungs; residue stated: no delegation UI, no real-shell/packaged exercise. **88 open — GA 53 · v2 35.**
 - **2026-08-01 · infra merge** — `Asset-B4b` ✅ (packaging gate re-run + appended to the ledger); the find: `10.3b` shipped only the receive half — nothing in production wraps a DEK for a paired device, so `10.3c` (the missing producer) is filed. F-472/F-473 corrected against code. **93 open — GA 58 · v2 35.**
 - **2026-08-01 · agent drain** — `Agent-Teams-5` ✅ (shell #411, delegation with no second mechanism), `Agent-Teams-3` closure ✅ (#409), `Agent-10` ✅ (shipped v0.5.1, never flipped), all five `OQ-AO-*` resolved, `Agent-12a` ✅ (#414 — pentest failed first on a cross-principal audit-erasure primitive, fixed per-principal). **93 open — GA 58 · v2 35.**
