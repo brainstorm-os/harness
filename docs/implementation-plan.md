@@ -405,10 +405,10 @@ The owner bar is a **polished product**, and as of 2026-07-21 it is **not met**:
 - ✅ `POLISH-APP-14` — **Bookmarks** — drift 1 → 0 (dead fallback). *(shell [#423](https://github.com/brainstorm-os/shell/pull/423), 2026-08-01.)*
 - ⚪ `POLISH-APP-15` — **Chat** (mechanical drift drained in #407) — judgment audit; the Teams flagship surface.
 - ⚪ `POLISH-APP-16` — **Agent** (0 mechanical) — judgment audit; builds on POLISH-DSN-11.
-- ⚪ `POLISH-APP-17` — **Mailbox** (0 mechanical) — judgment audit.
-- ⚪ `POLISH-APP-18` — **Contacts** (0 mechanical) — judgment audit.
-- ⚪ `POLISH-APP-19` — **Automations** (0 mechanical) — judgment audit.
-- ⚪ `POLISH-APP-20` — **Theme editor** (0 mechanical) — judgment audit.
+- ✅ `POLISH-APP-17` — **Mailbox** — judgment audit, zero defects (dual EmptyStates, accent-soft folder selection, control faces aligned). Evidence: session `323-audit-four-apps`. *(2026-08-01.)*
+- ✅ `POLISH-APP-18` — **Contacts** — judgment audit, zero defects (DSN-4 `.bs-select` Group/Sort faces, hero EmptyState + CTA, shared monogram rules, letter-group rhythm). Evidence: session `323-audit-four-apps`. *(2026-08-01.)*
+- ✅ `POLISH-APP-19` — **Automations** — judgment audit, zero rubric defects. One recorded observation (design-call class, not fixed): the template gallery shows six accent `Add` buttons beside the primary `New workflow` — accent-heavy for one surface; same family as the DSN-10 neutral-face calls if the owner wants it calmer. Evidence: session `323-audit-four-apps`. *(2026-08-01.)*
+- ✅ `POLISH-APP-20` — **Theme editor** — judgment audit, zero defects (adjacent control heights aligned on the save row; the dark preview pane is by-design — it previews the edited theme, not the app theme). Evidence: session `323-audit-four-apps`. *(2026-08-01.)*
 
 ## App showcase videos *(standing content + polish cadence, `VID-*`; owner-driven, one app / week)*
 
