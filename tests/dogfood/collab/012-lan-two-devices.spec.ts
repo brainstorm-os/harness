@@ -29,37 +29,49 @@
  *
  * ---
  *
- * **STATUS: red at phase 4, and the reason is a harness-fidelity gap rather
- * than a product defect. Read this before touching it.**
+ * **STATUS: red at the CONVERGENCE step (phase 4), on a real product gap.
+ * Read this before touching it — the transport half now passes.**
  *
- * As of the first run (2026-07-31) phases 1 to 3 all work: the shells pair, the
- * relay stops, the desktop binds a real private address
- * (`ws://192.168.2.50:55698`, not loopback), the laptop's dial coordinator
- * selects it (`[lan-dial] target ws://192.168.2.50:55698 (manual)`), and the
- * transport engages. It is then refused and falls back to the relay path
- * (`[lan-dial] no peer — relay`).
+ * Re-run 2026-08-01. Phases 1 to 3 pass, and so do every transport assertion in
+ * phase 4: the shells pair, the relay process stops and is cleared from both
+ * vaults, the desktop binds a real private address (`ws://192.168.2.50:56435`,
+ * not loopback), the laptop's dial coordinator selects it, the host self-joins
+ * its own listener in-process (`[lan-dial] target … (self-host)` →
+ * `[lan-host] connection accepted (2 live)`), and both shells report
+ * `transportKind: "lan"`. **"Two devices are on a server-less LAN link" is now
+ * a fact this spec establishes.**
  *
- * The cause is the topology this harness builds. `startCollabTeam` gives each
- * persona **its own vault**, because it was written for two different *users*.
- * Two of one user's *devices* share ONE vault, which is how `meta.devices`
- * converges: the source records the target, the target records itself, and the
- * vault-properties document carries each to the other. With two separate
- * vaults that document never syncs, so after pairing the laptop's roster holds
- * only the laptop. The channel-bound handshake then does exactly what it
- * should — the client cannot find the host in `listActive()`, cannot verify its
- * proof, and refuses. Fail-closed, working as designed, on a roster that this
- * harness never let converge.
+ * It then fails moving data:
  *
- * Closing it needs a two-DEVICE harness primitive rather than a two-USER one:
- * create the vault once, copy the directory to the second user-data dir, and
- * have the second shell open the copy so both sides genuinely share the vault
- * (`vaults.list()` reads a per-userData registry, so this also needs a way to
- * register an existing vault path). That is real work in `collab-team.ts` and
- * it is the honest next step for this spec.
+ *     [dev:collab] receive failed: envelope-pipeline: no DEK for entity ent_lan_brief
  *
- * The one thing the run DID catch as a product bug is fixed: the joining device
- * adopted the durable node's `127.0.0.1` address from the pairing payload as a
- * LAN peer, because the payload's single URL slot holds the relay's address
+ * That is NOT a LAN problem and NOT a harness problem. **Nothing in production
+ * ever hands a paired device an entity DEK.** Every production
+ * `wrapDekForRecipient` call site addresses either *this* device
+ * (`session.deviceX25519.publicKey`) or a *cross-user* member/invite key
+ * resolved by user identity — under which two devices of one identity are the
+ * same recipient. Pairing transfers the identity secret and writes roster
+ * records, but no keys, and each device mints its own X25519 pair, so a wrap
+ * sealed to device 1 cannot be opened by device 2. Stage `10.3b` shipped the
+ * entire receive half (envelope kind, seq tracker, and an authorization branch
+ * that explicitly admits a wrap from this same identity) and was marked done on
+ * an E2E test that hand-builds the wrap production never builds. The missing
+ * producer is plan rung **`10.3c`**; this spec is its acceptance test and
+ * should go green when it lands, with no change here.
+ *
+ * **Two earlier diagnoses in this header were wrong and are recorded as such so
+ * they are not re-derived.** (1) The two-vault / roster-never-converges theory:
+ * fixed by shell #385 — pairing now records both devices and the roster is
+ * re-read after it, so the channel-bound handshake admits. A two-DEVICE harness
+ * primitive is NOT needed. (2) The host-never-joins theory: fixed by shell #394
+ * — the host joins through `LanRelayHost.webSocketCtor()`, the in-process seam,
+ * rather than dialling its own address over a socket (which was accepted and
+ * then stalled between accepted and authenticated, and bought nothing when both
+ * ends are one process).
+ *
+ * The one thing the first run caught as a product bug is fixed: the joining
+ * device adopted the durable node's `127.0.0.1` address from the pairing payload
+ * as a LAN peer, because the payload's single URL slot holds the relay's address
  * whenever a relay is configured. `parseLanPeerAddress(url, {allowLoopback:
  * false})` on the pairing path now refuses it, with a regression test in
  * `lan-dial-coordinator.test.ts`.
