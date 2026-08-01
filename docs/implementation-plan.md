@@ -403,7 +403,7 @@ The owner bar is a **polished product**, and as of 2026-07-21 it is **not met**:
 - ⚪ `POLISH-APP-12` — **Notes** (5 literal colors) + rubric audit — the flagship editor surface, worth an extra-deep pass despite low drift.
 - ⚪ `POLISH-APP-13` — **Form designer** (4 literal colors) + rubric audit.
 - ⚪ `POLISH-APP-14` — **Bookmarks** (1 literal color) + rubric audit.
-- ⚪ `POLISH-APP-15` — **Chat** (mechanical drift drained in #407) — judgment audit; the Teams flagship surface.
+- ✅ `POLISH-APP-15` — **Chat** — judgment audit, **zero defects**: both-themes sweep over channel list / message history (grouping + day dividers + long-wrap seeded live) / composer / `@`-typeahead found every surface on-pattern (accent-soft channel selection, shared `EmptyState` ×2, End-aligned ⋯, SDK composer-context mentions; the typeahead's grey highlight is the shared `.fm-row` menu-cursor convention, not the banned selection grey). No shell PR — nothing to fix. Evidence: harness session `321-audit-chat-surfaces`. *(2026-08-01.)*
 - ⚪ `POLISH-APP-16` — **Agent** (0 mechanical) — judgment audit; builds on POLISH-DSN-11.
 - ⚪ `POLISH-APP-17` — **Mailbox** (0 mechanical) — judgment audit.
 - ⚪ `POLISH-APP-18` — **Contacts** (0 mechanical) — judgment audit.
