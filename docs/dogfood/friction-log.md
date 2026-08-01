@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-478 - inserting a reference in a quote drags an empty quote block along, deleting one deletes both
+- **session:** owner-report-2026-08-01   **kind:** bug   **app:** notes (packages/editor)   **status:** ✅ fixed (shell #424)
+- **what I was trying to do:** add a `!@` reference to an iteration inside a note.
+- **what happened:** the transcluded card appeared together with a stray empty quote block right under it, and deleting the quote block removed the reference card with it.
+- **what I expected:** the reference lands as its own block; deleting a neighbouring quote leaves it alone.
+- **evidence:** owner screenshot (transclusion card + empty quote bar beneath, "Status: Reverted" iteration); reproduced failing-first in `transclusion-typeahead-plugin.test.ts` — a `!@` committed inside a `QuoteNode` nested the BLOCK `TransclusionNode` inside the quote.
+- **triage (developer, 2026-08-01):** `applyTransclusionInsertion` replaced the trigger text IN PLACE, so any non-paragraph host (quote / heading / list item) swallowed the block card as a child: the host rendered as a stray empty bar beside the card and deleting it deleted the card too — they were parent and child, not neighbours. The card is now hoisted to a top-level sibling after the host; the host keeps any remaining text and is removed only when the trigger was its entire content. `applyEmbedInsertion` checked and NOT affected (it replaces the whole target block, so it never nests). Fix + pinned test in the shell PR.
+
 ### F-477 - the Backup & Migration settings panel looks thrown together
 - **session:** owner-report-2026-07-31   **kind:** design   **app:** shell (settings)   **status:** ✅ fixed (shell #401)
 - **what I was trying to do:** look over the export / import options in Settings → Backup & Migration.
