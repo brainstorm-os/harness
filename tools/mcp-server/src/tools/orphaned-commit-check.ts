@@ -95,30 +95,25 @@ const RECOVERY_ADVICE =
  *
  * Hard orphans sort first so the report's first line is its most important one.
  */
-export function findOrphanedBranches(
-	branches: readonly BranchObservation[],
-): OrphanFinding[] {
+export function findOrphanedBranches(branches: readonly BranchObservation[]): OrphanFinding[] {
 	const findings: OrphanFinding[] = [];
 	for (const b of branches) {
 		if (b.prState !== "MERGED") continue;
 		if (b.commitsAfterMerge.length === 0) continue;
 
-		const stranded = b.commitsAfterMerge.filter(
-			(c) => c.filesMainNeverTouchedSince.length > 0,
+		const stranded = b.commitsAfterMerge.filter((c) => c.filesMainNeverTouchedSince.length > 0);
+		const severity = stranded.length > 0 ? OrphanSeverity.Orphaned : OrphanSeverity.CheckSuperseded;
+		const strandedFiles = [...new Set(stranded.flatMap((c) => c.filesMainNeverTouchedSince))].join(
+			", ",
 		);
-		const severity =
-			stranded.length > 0 ? OrphanSeverity.Orphaned : OrphanSeverity.CheckSuperseded;
 		const label = `${b.name}${b.prNumber ? ` (PR #${b.prNumber})` : ""}`;
 		const n = b.commitsAfterMerge.length;
 		const plural = n === 1 ? "commit" : "commits";
 
 		const detail =
 			severity === OrphanSeverity.Orphaned
-				? `${label} — ${n} ${plural} pushed AFTER the PR merged, touching ` +
-					`${[...new Set(stranded.flatMap((c) => c.filesMainNeverTouchedSince))].join(", ")}, ` +
-					`which main has not touched since. That work exists nowhere else. ${RECOVERY_ADVICE}`
-				: `${label} — ${n} ${plural} pushed after the PR merged, but main has since ` +
-					"touched every file they changed, so they were most likely re-landed. Confirm, then delete the branch.";
+				? `${label} — ${n} ${plural} pushed AFTER the PR merged, touching ${strandedFiles}, which main has not touched since. That work exists nowhere else. ${RECOVERY_ADVICE}`
+				: `${label} — ${n} ${plural} pushed after the PR merged, but main has since touched every file they changed, so they were most likely re-landed. Confirm, then delete the branch.`;
 
 		findings.push({
 			branch: b.name,
@@ -138,9 +133,9 @@ export function findOrphanedBranches(
 export function formatOrphanReport(findings: readonly OrphanFinding[]): string {
 	if (findings.length === 0) return "";
 	const hard = findings.filter((f) => f.severity === OrphanSeverity.Orphaned).length;
-	const head =
-		`orphaned lineage — ${findings.length} branch(es) carry commits their merged PR could not have included` +
-		(hard > 0 ? ` (${hard} with work that exists nowhere else)` : "");
+	const head = `orphaned lineage — ${findings.length} branch(es) carry commits their merged PR could not have included${
+		hard > 0 ? ` (${hard} with work that exists nowhere else)` : ""
+	}`;
 	const body = findings.map((f) => {
 		const mark = f.severity === OrphanSeverity.Orphaned ? "✗" : "?";
 		const commits = f.commits.map((c) => `      ${c.sha} ${c.subject}`).join("\n");

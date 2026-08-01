@@ -18,21 +18,27 @@ const repoRoot = join(import.meta.dirname, "..", "..", "..");
 
 describe("findUnknownStatusIcons", () => {
 	it("flags a bullet leading with a non-Legend icon", () => {
-		const found = findUnknownStatusIcons(["- ⛔ LAN-4b — blocked on a dep", "- ✅ LAN-3 — done"].join("\n"));
+		const found = findUnknownStatusIcons(
+			["- ⛔ LAN-4b — blocked on a dep", "- ✅ LAN-3 — done"].join("\n"),
+		);
 		expect(found).toHaveLength(1);
 		expect(found[0]?.icon).toBe("⛔");
 		expect(found[0]?.line).toBe(1);
 	});
 
 	it("accepts every Legend icon", () => {
-		const plan = ["- ✅ a.1 — x", "- 🟡 a.2 — x", "- ◑ a.3 — x", "- ⚪ a.4 — x", "- ❌ a.5 — x"].join("\n");
+		const plan = ["- ✅ a.1 — x", "- 🟡 a.2 — x", "- ◑ a.3 — x", "- ⚪ a.4 — x", "- ❌ a.5 — x"].join(
+			"\n",
+		);
 		expect(findUnknownStatusIcons(plan)).toEqual([]);
 	});
 
 	it("leaves ordinary prose bullets alone", () => {
 		// Only a glyph exactly where the status icon belongs counts; a bullet that
 		// merely starts with a word (or mentions an emoji later) is not a status line.
-		const plan = ["- plain prose bullet", "- **bold** lead", "- see the ⛔ sign in the copy"].join("\n");
+		const plan = ["- plain prose bullet", "- **bold** lead", "- see the ⛔ sign in the copy"].join(
+			"\n",
+		);
 		expect(findUnknownStatusIcons(plan)).toEqual([]);
 	});
 
