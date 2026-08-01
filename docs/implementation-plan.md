@@ -404,7 +404,7 @@ The owner bar is a **polished product**, and as of 2026-07-21 it is **not met**:
 - ⚪ `POLISH-APP-13` — **Form designer** (4 literal colors) + rubric audit.
 - ⚪ `POLISH-APP-14` — **Bookmarks** (1 literal color) + rubric audit.
 - ⚪ `POLISH-APP-15` — **Chat** (mechanical drift drained in #407) — judgment audit; the Teams flagship surface.
-- ⚪ `POLISH-APP-16` — **Agent** (0 mechanical) — judgment audit; builds on POLISH-DSN-11.
+- ✅ `POLISH-APP-16` — **Agent** — judgment audit, **zero defects**: both-themes sweep over conversation sidebar / thread (markdown reply, entity-link citations, Add-to-note/Draft-as-email chips) / composer found every surface on-pattern (accent-soft active row, shared EmptyState ×2, panel toggle, End-⋯; proposal-card chrome was already DSN-11-polished in #405). No shell PR. Evidence: harness session `322-audit-agent-surfaces`. *(2026-08-01.)*
 - ⚪ `POLISH-APP-17` — **Mailbox** (0 mechanical) — judgment audit.
 - ⚪ `POLISH-APP-18` — **Contacts** (0 mechanical) — judgment audit.
 - ⚪ `POLISH-APP-19` — **Automations** (0 mechanical) — judgment audit.
