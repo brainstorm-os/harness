@@ -28,6 +28,9 @@ A tool provider is an installed app or a connected MCP server; consumers do not 
 
 ### Declaration — `registrations.tools`
 
+As shipped through `Tool-3` (this block is the real contract, not a sketch —
+`AppToolRegistration` / `AppToolInput` in `packages/sdk-types/src/app-tools.ts`):
+
 ```jsonc
 "registrations": {
   "tools": [
@@ -36,22 +39,40 @@ A tool provider is an installed app or a connected MCP server; consumers do not 
       "title": "Rewrite",                         // t()-translatable; the menu label
       "description": "Rewrite text in a different tone or length.",
       "input": [
-        { "key": "text", "type": "text", "required": true },
-        { "key": "tone", "type": "text", "vocabulary": ["concise", "formal", "plain"] }
+        { "name": "text", "description": "The text to rewrite.",
+          "required": true, "valueType": "text" },
+        { "name": "tone", "description": "How the rewrite should read.",
+          "required": false, "valueType": "text",
+          "choices": ["concise", "formal", "plain"] }
       ],
-      "output": { "type": "text" },
       "effect": "pure",                           // pure · reads-vault · proposes-write · external
-      "appliesTo": { "contentKinds": ["text", "rich-text"] },
-      "surfaces": ["selection", "object", "agent", "automation"],
-      "icon": "sparkle", "group": "actions", "priority": "secondary"
+      "appliesTo": ["brainstorm/Note/v1"],        // declared entity types; empty/absent = any
+      "surfaces": ["menu", "agent", "automation"] // absent = registered but never presented
     }
   ]
 }
 ```
 
+Per-argument modifiers each bind to one `valueType` and are refused elsewhere
+(a silently-ignored modifier is a provider believing in a bound the broker
+never enforces): `pattern` + `choices` + `format` on `text`, `range` on
+`number`, `granularity` on `date`, `allowedTypes` on `entityRef`, and `count`
+(`{min,max}`) on any of them to make the argument a list. `valueType:
+"richText"` is refused outright — see the `Tool-3` note under the decision
+below.
+
+> **Drift, filed honestly:** an earlier sketch of this block carried `output`,
+> `icon`, `group`, `priority`, an object-shaped `appliesTo` (`contentKinds`)
+> and selection/object surfaces. None of those shipped in `Tool-2`. Result
+> typing is `Tool-8`'s, and menu presentation (`icon`/`group`/`priority`,
+> selection vs object placement) is `Tool-7`'s — they are not lost, but the
+> manifest does not accept them today.
+
 Registered in `registry.db` as an `app_tools` table with its own repo, following the existing registration pattern (`openers`, `blocks`, `entity_types`, `widgets`, `intents`).
 
 > **Decision:** tool arguments are described with **`PropertyDef`, not raw JSON Schema.** The repo has no JSON-Schema validator (no `ajv`), and the two places it reads inline schemas today only *distill* them (`propertiesFromSchema`, `extractFieldsFromTypeSchema`) — nothing validates a value against one. `PropertyDef` is the one typed-value system with a real validator (`validatePropertyDef` / `validateValue`) that the broker already re-runs defense-in-depth. Reusing it buys **argument validation at the broker, before the call reaches the providing app** — a property MCP's deliberately-opaque `inputSchema` does not have. The model still receives a JSON-Schema *projection* of the `PropertyDef` list, since that is what an LLM tool definition wants.
+>
+> *Ratified 2026-08-02 (OQ-TOOL-1) and built as `Tool-3`.* As shipped it adopts `PropertyDef`'s **value-type system and validator**, not its record shape — `key`/`icon`/`display`/`unique` describe a stored column, not a value in flight — so an argument is an `AppToolInput`, and `validateAppToolArgs` synthesizes a real `PropertyDef` to run the shared `validateValue` against. Two consequences worth stating plainly: **`richText` is not a callable argument type** (its `validateValue` arm is a deliberate no-op, so it would have been the one type crossing the broker unchecked), and **tool arguments are checked strictly while stored property values are not** — `pattern`/`range`/`choices`/`format` are enforced in the tool-argument layer rather than pushed into the shared validator, which would retroactively reject stored values across every vault.
 
 ### Discovery and invocation
 
