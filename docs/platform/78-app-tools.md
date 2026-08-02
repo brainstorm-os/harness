@@ -79,7 +79,7 @@ Registered in `registry.db` as an `app_tools` table with its own repo, following
 Two broker methods, deliberately MCP-shaped:
 
 - **`tools.list({ appliesTo?, surface? })`** — the tools this caller may see, filtered by applicability, capability, and the per-app disable switch from `AS-4`.
-- **`tools.call({ tool, args })`** — validate args against the declared `PropertyDef`s, check capabilities, route to the provider, return the typed result.
+- **`tools.call({ tool, args })`** — validate args against the declared `PropertyDef`s, check capabilities, route to the provider, return the typed result. *(Shipped in `Tool-4`. The `allowedTypes` half of a declaration is enforced HERE rather than in the pure validator, because it needs the entity store: an `entityRef` argument's type is resolved from `entities.db`, never taken from the caller's claim — otherwise a caller could hand a tool the id of an object whose type it was never granted and have the provider read it back.)*
 
 Capabilities reuse the existing `(appId, capability, scope)` ledger shape with no new machinery, because `scope` is a free string:
 
@@ -87,7 +87,29 @@ Capabilities reuse the existing `(appId, capability, scope)` ledger shape with n
 |---|---|
 | `tools.provide` | The app may publish tools at all (provider side). |
 | `tools.call:<appId>` | The caller may invoke any tool of that provider. |
-| `tools.call:<appId>/<toolName>` | Per-tool narrowing (mirrors `mcp.tool:<id>/<tool>`). |
+| `tools.call:<appId>/<toolName>` | Per-tool narrowing. |
+
+*Shipped in `Tool-4`.* Two corrections to the sketch above, both found by
+building it:
+
+- **There is no `mcp.tool:<id>/<tool>` capability to mirror.** MCP gates at the
+  SERVER level only (`mcp.server:<id>`, OQ-MCP-3); `mcp.<serverId>.<toolName>`
+  is a tool *address* for the agent loop, not a grant. So the per-tool
+  narrowing here is new, not a parallel.
+- **The ledger has no prefix matching** — `has()` is exact-scope or literal
+  `*`. A `tools.call:<appId>` grant therefore does NOT satisfy a
+  `tools.call:<appId>/<toolName>` question; the two forms are asked as two
+  explicit questions. The grammar is unambiguous because an app id cannot
+  contain `/` (`APP_ID_PATTERN`) and a tool name cannot contain `.` or `/`
+  (`APP_TOOL_NAME_RE`), so the broad form never collides with the narrow one.
+
+The gate order in `tools.call` is itself a security property: the caller's
+grant is checked against an appId parsed out of the requested id **before the
+registry is touched**, so an unauthorized caller cannot use the difference
+between `Denied` and `Unavailable` to enumerate a vault's installed tools.
+Every not-callable case downstream — missing, poisoned declaration, disabled
+provider, provider missing its own grants, the caller's own tool — answers with
+one uniform refusal for the same reason.
 
 ### The missing wire: a reverse channel
 
@@ -141,7 +163,7 @@ brainstorm.tools.handle("rewrite", async ({ text, tone }) => ({ text: await rewr
 | Shell→app request/response (`AppCallHost`) | ✓ (`Tool-1`) | streaming / progress |
 | Manifest `registrations.tools` + registry + `tools.list` | ✓ (`Tool-2`) | — |
 | `PropertyDef` argument typing + broker-side validation | ✓ (`Tool-3`) | richer value types |
-| `tools.call` + capability scopes + effect-driven friction | ✓ (`Tool-4`) | per-tool user policy |
+| `tools.call` + capability scopes + effect-driven friction | ✓ (`Tool-4`) | per-tool user policy; a shell-minted approval so an AGENT-initiated `Confirm` can proceed at all (`Tool-8`) |
 | Untrusted-descriptor hardening + rug-pull re-prompt | ✓ (`Tool-5`) | per-tool review at install |
 | Projection into the agent's tool layer | ✓ (`Tool-6`) | subsumes intent-derived tools |
 | Menu presentation (selection / block / slash / object) | ✓ (`Tool-7`) | canvas + cell surfaces |
