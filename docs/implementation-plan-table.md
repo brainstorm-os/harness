@@ -14,6 +14,8 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 ### Pass log
 
+- **2026-08-02 · app-tools track complete through Tool-9** — `Tool-5` ✅ (#436), `Tool-6`/`Tool-8`(approval half)/`Tool-9` ✅ (#442). OQ-TOOL-2 → coexist; OQ-TOOL-4 applied (sideloaded tools never reach the model's prompt); OQ-TOOL-5 → effect × initiator. The reviews found two shipping regressions of the same shape — a working path removed before its replacement landed (Tool-5's approval could never be minted; Tool-8's prompt had no receiver) — plus a workflow capability ceiling that did not bind app-tool calls. Residue split honestly: `Tool-7b` (editor surfaces) and `Tool-8b` (proposal tray · refusal chips · argument prompt · trace row, the last gated on OQ-TOOL-6).
+
 - **2026-08-02 · Tool-5 rug-pull re-prompt** — an app UPDATE can no longer rewrite an approved tool and inherit the friction the old wording earned. The review caught the rung shipping a regression that would have made EVERY app tool permanently uncallable (the caller derived `confirmed` from `effect` alone, so an unapproved `pure` tool could never record its approval) — the rung's own tests missed it because the fixture pre-approved everything. Four more fixed: fail-closed on an unreadable store, the Changed reason now reaches the human, approvals keyed per caller, re-baseline only after success.
 
 - **2026-08-02 · Tool-7 object-menu surface** — app tools render in the object ⋯ menu through the SAME AS-4 policy (projection + one shared inline cap), invoked via `tools.call` with a real refusal seam rather than the intent precedent's fire-and-forget. Three defects the rung's premise missed: the shared `dedupe` would have collapsed every tool into one row (the very verb collision this track removes), `tools.list` never stamped a trust tier so the quarantine could not apply, and it would have listed tools the caller could not call — dead menu rows. `Tool-7b` filed for the three EDITOR surfaces, blocked on `BlockCommand.run` being sync/void with nowhere to report a named refusal.
@@ -58,7 +60,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (31)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (30)
 
 ### Sync, multi-device & E2E encryption *(Stage 10)*
 
@@ -146,10 +148,9 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Tool-6` | agent projection: projectAppTools → AgentTool-shaped rows carrying the namespaced id (lif… | ⚪ pending | Tool-4 |
 | `Tool-7b` | menu presentation, the three EDITOR surfaces (inline toolbar / block-gutter menu / slash… | ⚪ pending | Tool-7 |
-| `Tool-8` | results + lifecycle: proposes-write results render through a shared proposal/diff tray an… | ⚪ pending | Tool-4 |
-| `Tool-9` | automations: AgentTool gains the namespaced id + the real input schema so a workflow step… | ⚪ pending | Tool-6 |
+| `Tool-8b` | results + lifecycle, the presentation half (split out of Tool-8, whose approval half ship… | ⚪ pending | Tool-8 |
+| `Tool-8` | results + lifecycle *(shell #442, 2026-08-02)* <gates: security-review> | 🟡 in flight |  |
 
 ## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (35)
 
