@@ -166,9 +166,40 @@ brainstorm.tools.handle("rewrite", async ({ text, tone }) => ({ text: await rewr
 | `tools.call` + capability scopes + effect-driven friction | ✓ (`Tool-4`) | per-tool user policy; a shell-minted approval so an AGENT-initiated `Confirm` can proceed at all (`Tool-8`) |
 | Untrusted-descriptor hardening + rug-pull re-prompt | ✓ (`Tool-5`) | per-tool review at install |
 | Projection into the agent's tool layer | ✓ (`Tool-6`) | subsumes intent-derived tools |
-| Menu presentation (selection / block / slash / object) | ✓ (`Tool-7`) | canvas + cell surfaces |
+| Menu presentation — object ⋯ | ✓ (`Tool-7`) | canvas + cell surfaces |
+| Menu presentation — inline toolbar / block gutter / slash | ✓ (`Tool-7b`) | — |
 | Headless provider invocation | — | ✓ (`Tool-8`, OQ-TOOL-3) |
 | Automations `AgentTool` carrying id + input schema | ✓ (`Tool-9`) | `outputSchema` enforcement |
+
+### Presentation, as shipped (`Tool-7`)
+
+A menu-surfaced tool is projected onto the shared `ContributedAction` shape and
+flows through **the same** `groupContributedActions` policy as an intent
+contribution — one grouping, one ranking, one inline cap, one trust quarantine.
+That is deliberate: two independently-capped contribution blocks in one menu is
+the rot [63](63-action-surface.md)'s `AS-4` exists to prevent.
+
+Three corrections the build forced, all of them things this doc previously
+assumed worked:
+
+- **The shared `dedupe` keys on `(verb, kind)`.** A tool has no verb, so every
+  tool deduped against every other tool and only one row would have survived —
+  the exact collision this track exists to remove. `ContributedAction` gains an
+  optional `dedupeKey`, set to the tool id, used when a contribution is already
+  individually addressable. Intent contributions keep the old key, where
+  collapsing two apps' `share` genuinely is one labelled choice.
+- **`tools.list` stamped no trust tier**, so `AS-4`'s sideloaded quarantine
+  could not have applied to tools at all. It now stamps `trustTier` and
+  `appLabel` from the apps registry — first-party, or a verified signature —
+  never from the provider's manifest, and defaults to `Sideloaded` when
+  unresolved.
+- **`tools.read` is not enough to render a row.** Listing now applies the same
+  exact-scope `tools.call:<appId>[/<name>]` check the call itself uses, so a
+  menu can never show a tool that would refuse when clicked.
+
+A tool row is not fire-and-forget. `tools.call` refuses with named errors, and
+a swallowed refusal is a row that silently does nothing, so the host receives
+the outcome through a reporting seam and renders provider text as **data**.
 
 ## Cross-doc reconciliation needed
 
