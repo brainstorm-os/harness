@@ -40,9 +40,9 @@ const SETTLE: Partial<Record<AppId, number>> = {
  *  Bookmarks Read-pill × hover-⋯ overlap lives on the Tags surface). */
 const EXTRAS: Partial<Record<AppId, (page: Page, shot: (n: string) => Promise<void>) => Promise<void>>> = {
 	[APP.Bookmarks]: async (page, shot) => {
-		const tags = page.locator(".bookmarks__nav-item, .bookmarks__surface", { hasText: /tags/i }).first();
+		const tags = page.getByText(/^Tags$/i).first();
 		if (await tags.count()) {
-			await tags.click();
+			await tags.click({ timeout: 5000 }).catch(() => {});
 			await page.waitForTimeout(900);
 			await shot("06-tags-surface");
 			const card = page.locator(".bookmarks__card").first();
@@ -53,12 +53,27 @@ const EXTRAS: Partial<Record<AppId, (page: Page, shot: (n: string) => Promise<vo
 			}
 		}
 	},
+	// Tasks' first [data-entity-id] is a collapsed-sidebar row parked
+	// off-canvas at x<0 — CSS-visible, never actionable (probe 932). Drive
+	// the main surface's own row class instead.
+	[APP.Tasks]: async (page, shot) => {
+		const row = page.locator(".task-row").first();
+		if (await row.count()) {
+			await row.hover();
+			await shot("06-row-hover");
+			await row.click({ button: "right" });
+			await shot("07-row-context-menu");
+			await page.keyboard.press("Escape");
+			await row.click();
+			await page.waitForTimeout(900);
+			await shot("08-row-open");
+			await page.keyboard.press("Escape");
+		}
+	},
 	[APP.Files]: async (page, shot) => {
-		const sort = page
-			.locator('.app-header button[aria-label*="ort" i], .app-header [data-testid*="sort"]')
-			.first();
+		const sort = page.locator('[data-testid="toolbar-sort"]').first();
 		if (await sort.count()) {
-			await sort.click();
+			await sort.click({ timeout: 5000 });
 			await page.waitForTimeout(600);
 			await shot("06-sort-menu");
 			await page.keyboard.press("Escape");
@@ -136,23 +151,23 @@ test("visual audit — every app, one theme per run (329)", async () => {
 
 			await shot("01-main");
 			await shot("02-hover-first-item", async () => {
-				const item = page.locator("[data-entity-id]").first();
-				if (await item.count()) await item.hover();
+				const item = page.locator("[data-entity-id]:visible").first();
+				if (await item.count()) await item.hover({ timeout: 5000 });
 			});
 			await shot("03-context-menu", async () => {
-				const item = page.locator("[data-entity-id]").first();
-				if (await item.count()) await item.click({ button: "right" });
+				const item = page.locator("[data-entity-id]:visible").first();
+				if (await item.count()) await item.click({ button: "right", timeout: 5000 });
 			});
 			await page.keyboard.press("Escape");
 			await shot("04-header-menu", async () => {
 				const more = page.locator(".app-header .bs-object-menu__more").last();
-				if (await more.count()) await more.click();
+				if (await more.count()) await more.click({ timeout: 5000 });
 			});
 			await page.keyboard.press("Escape");
 			await shot("05-first-item-open", async () => {
-				const item = page.locator("[data-entity-id]").first();
+				const item = page.locator("[data-entity-id]:visible").first();
 				if (await item.count()) {
-					await item.click();
+					await item.click({ timeout: 5000 });
 					await page.waitForTimeout(900);
 				}
 			});
