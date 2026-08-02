@@ -27,6 +27,14 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-484 - only Notes seems to have lock functionality, it's weird
+- **session:** owner-report-2026-08-02   **kind:** design   **app:** fleet (lock)   **status:** triaged → plan rung Lock-5
+- **what I was trying to do:** lock things outside Notes.
+- **what happened:** I couldn't find the lock anywhere else — it feels like a Notes-only feature.
+- **what I expected:** the same lock affordance, in the same place, in every app where locking makes sense.
+- **evidence:** code audit 2026-08-02 (no screenshot — the finding is about where the control *isn't*).
+- **triage (developer, 2026-08-02):** The perception is wrong but earned. Lock shipped fleet-wide (Lock-1..4: 8 apps), yet Notes is the only app where the toggle is effectively always visible. Three causes: (1) **vanishing control** — every other app conditionally renders `<LockButton>` on a selection (`{openTaskRecord ? …}` etc.), the exact anti-pattern the panel-toggle rule rejects, just never extended to LockButton; (2) **inconsistent placement** — header (Notes/Journal/Tasks/Code-editor/Whiteboard) vs detail panel (Calendar/Bookmarks) vs a bespoke hidden inspector button (Database `#inspector-lock`); (3) **no object-⋯-menu entry anywhere**, the one surface that's identical across all apps. The audit also found **real enforcement gaps**: Graph edits entity properties (`graph-canvas-controller.ts:767`) and writes link `entityRef`s (`logic/create-link.ts`) with zero lock checks — a locked note is freely editable from Graph; Agent's propose→approve persist (`logic/propose-persist.ts`) never checks `locked`; Files has rename/delete/bulk-rename and no lock concept; Books/Contacts/Preview *enforce* `locked` but render no toggle (and Preview's `canMutate` at `inspector.tsx:135` is capability-presence, not the lock property — needs verification). **Owner call 2026-08-02:** no lock for Chat, Mailbox, Browser, Agent sessions, Graph-as-view — by design. Scope tracked as **Lock-5** in the implementation plan.
+
 ### F-483 - "Report on GitHub" is dead AGAIN (third recurrence) — the Open-with picker was never mounted with a vault open
 - **session:** owner-report-2026-08-02 + probe 930   **kind:** bug   **app:** shell (open ladder / dashboard)   **status:** 🟡 fixed in shell PR #440 (awaiting merge)
 - **what I was trying to do:** click Help → "Report on GitHub" to file an issue.
