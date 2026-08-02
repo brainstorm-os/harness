@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-08-01 — the agent track has zero open rungs; the per-app polish program is draining. **88 open — GA 53 · v2 35.**
+**Last updated:** 2026-08-02 — polish program drained, app-tools track under way. **68 open — GA 33 · v2 35.**
 
 <!-- PASS LOG — append-only, ONE short bullet per pass, newest FIRST. Never
      rewrite or absorb earlier bullets (that megaparagraph was the repo's worst
@@ -14,6 +14,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 ### Pass log
 
+- **2026-08-02 · Tool-3 + OQ-TOOL-1 settled** — owner picked `PropertyDef` over JSON Schema ("safer wins"), so arguments are validated **at the broker before the call reaches the provider** and the model's JSON Schema is projected from the same declaration. Security review found three real defects (unscreened `pattern`/`allowedTypes` reaching the model prompt; `null` passing every constraint; a `date` value passed by reference) — all fixed in-PR. Also fixes `main`'s red CI, red since Tool-2 (#428) on a mis-anchored `biome-ignore`. **68 open — GA 33 · v2 35** (the count fell 88 → 68 because the table had not been regenerated since the polish drain).
 - **2026-08-01 · drift baseline EMPTY** — `POLISH-APP-8..11/13/14` drained (shell #420/#421/#422/#423) + APP-12 Notes mechanical half; `tools/design-drift-baseline.json` is now **0 literal colors + 0 px font-sizes across all 20 apps** (born at 194+24 in #407). Remaining polish = judgment audits APP-15..20 + Notes' deep pass.
 - **2026-08-01 · agent track closes** — `Agent-12b/c/d/e` ✅ (shell #416; #415 closed as fully absorbed): per-turn timeline, automation run detail (proven failing-first twice), Settings→AI activity (privileged IPC, no app capability), live dashboard chip. Agent track = zero open rungs; residue stated: no delegation UI, no real-shell/packaged exercise. **88 open — GA 53 · v2 35.**
 - **2026-08-01 · infra merge** — `Asset-B4b` ✅ (packaging gate re-run + appended to the ledger); the find: `10.3b` shipped only the receive half — nothing in production wraps a DEK for a paired device, so `10.3c` (the missing producer) is filed. F-472/F-473 corrected against code. **93 open — GA 58 · v2 35.**
@@ -51,9 +52,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-
-
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (53)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (33)
 
 ### Sync, multi-device & E2E encryption *(Stage 10)*
 
@@ -84,23 +83,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `POLISH-DSN-10` | the Neutral button variant reads as the heaviest element on a light surface. By design Ne… | 🟡 in flight |  |
 | `POLISH-DSN-11` | the Agent's proposal cards wear bespoke chrome. .agent-proposal__btn (Add to vault / Disc… | 🟡 in flight |  |
 | `POLISH-DSN-12` | the Marketplace listing detail mixes chip and value faces. On a sideloaded app's detail t… | 🟡 in flight |  |
-| `POLISH-APP-4` | Code editor (14 literal colors; syntax-theme literals may warrant annotation) + rubric au… | ⚪ pending |  |
-| `POLISH-APP-5` | Graph (13 literal colors; canvas draw-loop colors need theme-reactive resolution, not CSS… | ⚪ pending |  |
-| `POLISH-APP-6` | Tasks (10 literal colors) + rubric audit incl. the POLISH-DSN-4 follow-up (ghost Group/So… | ⚪ pending |  |
-| `POLISH-APP-7` | Files (10 literal colors) + rubric audit. | ⚪ pending |  |
-| `POLISH-APP-8` | Database (9 literal colors) + rubric audit. | ⚪ pending |  |
-| `POLISH-APP-9` | Calendar (8 literal colors) + rubric audit. | ⚪ pending |  |
-| `POLISH-APP-10` | Journal (6 literal colors; font-px drained in #407) + rubric audit. | ⚪ pending |  |
-| `POLISH-APP-11` | Preview (6 literal colors) + rubric audit. | ⚪ pending |  |
-| `POLISH-APP-12` | Notes (5 literal colors) + rubric audit | ⚪ pending |  |
-| `POLISH-APP-13` | Form designer (4 literal colors) + rubric audit. | ⚪ pending |  |
-| `POLISH-APP-14` | Bookmarks (1 literal color) + rubric audit. | ⚪ pending |  |
-| `POLISH-APP-15` | Chat (mechanical drift drained in #407) | ⚪ pending |  |
-| `POLISH-APP-16` | Agent (0 mechanical) | ⚪ pending |  |
-| `POLISH-APP-17` | Mailbox (0 mechanical) | ⚪ pending |  |
-| `POLISH-APP-18` | Contacts (0 mechanical) | ⚪ pending |  |
-| `POLISH-APP-19` | Automations (0 mechanical) | ⚪ pending |  |
-| `POLISH-APP-20` | Theme editor (0 mechanical) | ⚪ pending |  |
 
 ### App showcase videos *(standing content + polish cadence, `VID-*`; owner-driven, one app / week)*
 
@@ -154,14 +136,10 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `Mailbox-9` | official Google OAuth client registration (pre-release, org/process task | ⚪ pending | for |
 
-
 ### App tools *(Tool-1..Tool-9
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Tool-1` | the reverse channel (AppCallHost): correlation-id request/response from shell INTO an app… | ⚪ pending |  |
-| `Tool-2` | declaration + registry: manifest registrations.tools (name/title/description/input/output… | ⚪ pending |  |
-| `Tool-3` | typed arguments: tool inputs described as PropertyDefs (not raw JSON Schema | ⚪ pending | OQ-TOOL-1 |
 | `Tool-4` | invocation + capabilities: tools.call({tool, args}); new grants on the existing (appId, c… | ⚪ pending |  |
 | `Tool-5` | untrusted-descriptor hardening: a provider's tool name/description reaches the model's pr… | ⚪ pending | OQ-TOOL-4 |
 | `Tool-6` | agent projection: projectAppTools → AgentTool-shaped rows carrying the namespaced id (lif… | ⚪ pending | Tool-4 |
