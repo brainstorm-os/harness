@@ -27,6 +27,13 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-485 - the tests/perf Notes specs can't pass: app windows open 0-width under the perf launcher
+- **session:** dev-2026-08-02 (B11.19 verification)   **kind:** bug   **app:** shell (tests/perf harness)   **status:** open
+- **what I was trying to do:** verify the B11.19 slash-menu sections in the real shell via a new `tests/perf/specs/notes-slash-sections.spec.ts` (shell repo), same launch pattern as the shipped `notes-bulk-indent.spec.ts`.
+- **what happened:** the Notes app window opens with **zero width** — `page.screenshot` fails with "Cannot take screenshot with 0 width" and every `visible` locator wait times out (elements have no layout in a 0×0 window). The dashboard window is fine (icon clicks work); only the app window is degenerate. **The shipped `notes-bulk-indent.spec.ts` fails identically on untouched shell `main` @ `984772c6`** — pre-existing, not introduced by B11.19.
+- **what I expected:** hidden windows (`BRAINSTORM_HIDDEN_WINDOWS=1`) still carry real bounds — the dogfood harness's Notes windows screenshot fine (probe 931 in this same environment, same build).
+- **evidence:** `notes-bulk-indent` + `notes-slash-sections` both timing out at the same `[contenteditable] p` wait in worktree AND main tree; "Cannot take screenshot with 0 width" from the app window; dogfood probe 931 against the identical build passing with full screenshots.
+- **triage:** _(open — suspect the app-window sizing path under the perf launcher (window placed relative to a display/workArea that hidden mode doesn't provide?), vs the dogfood founder launcher which works. B11.19's perf spec is committed and will pass once this is fixed. Repro: `bunx playwright test --config=playwright.config.ts tests/perf/specs/notes-bulk-indent.spec.ts` on shell main.)_
 ### F-484 - only Notes seems to have lock functionality, it's weird
 - **session:** owner-report-2026-08-02   **kind:** design   **app:** fleet (lock)   **status:** triaged → plan rung Lock-5
 - **what I was trying to do:** lock things outside Notes.

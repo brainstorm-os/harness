@@ -14,7 +14,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 ### Pass log
 
-- **2026-08-02 · editor rungs filed (owner request)** — `B11.19` slash menu organised into sections by block type (the catalogue's `CommandCategory` values need a deliberate re-taxonomy first — divider/table/columns are all tagged `Embed` today) + `B11.20` external embed-block family, design task first (v1: YouTube + Google Maps over the existing `embed-providers.ts` allowlist; Anytype's ~30 providers as the ceiling). **69 open — GA 34 · v2 35.**
+- **2026-08-02 · editor rungs filed AND driven (owner request)** — `B11.19` slash-menu sections **built same day** (shell PR #449: Lists/Layout/Advanced categories + residue re-taxonomy, sectioned browse view / flat ranked filter view, drift-fence; real-shell verified, dogfood probe 931) + `B11.20` external embed-block family: **(a) design ✅** (doc 15 §External web embeds + doc 38 provider reconciliation; v1 = YouTube + Google Maps, click-to-load mandatory for Maps), (b) build pending. Found + filed `F-485` (perf-launcher app windows open 0-width, pre-existing on main). **69 open — GA 34 · v2 35.**
 - **2026-08-02 · app-tools track complete through Tool-9** — `Tool-5` ✅ (#436), `Tool-6`/`Tool-8`(approval half)/`Tool-9` ✅ (#442). OQ-TOOL-2 → coexist; OQ-TOOL-4 applied (sideloaded tools never reach the model's prompt); OQ-TOOL-5 → effect × initiator. The reviews found two shipping regressions of the same shape — a working path removed before its replacement landed (Tool-5's approval could never be minted; Tool-8's prompt had no receiver) — plus a workflow capability ceiling that did not bind app-tool calls. Residue split honestly: `Tool-7b` (editor surfaces) and `Tool-8b` (proposal tray · refusal chips · argument prompt · trace row, the last gated on OQ-TOOL-6).
 
 - **2026-08-02 · Tool-5 rug-pull re-prompt** — an app UPDATE can no longer rewrite an approved tool and inherit the friction the old wording earned. The review caught the rung shipping a regression that would have made EVERY app tool permanently uncallable (the caller derived `confirmed` from `effect` alone, so an unapproved `pure` tool could never record its approval) — the rung's own tests missed it because the fixture pre-approved everything. Four more fixed: fail-closed on an unreadable store, the Changed reason now reaches the human, approvals keyed per caller, re-baseline only after success.
@@ -137,7 +137,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `B11.19` | Slash menu organised into sections by block type *(owner request 2026-08-02)*: re-taxono… | ⚪ pending |  |
+| `B11.19` | Slash menu organised into sections by block type — built, shell PR #449; real-shell ver… | 🟡 in flight | shell #449 merge |
 | `B11.20` | External embed-block family — (a) design ✅ 2026-08-02 (doc 15 §External web embeds + do… | 🟡 in flight | (a) ✅ before (b) build |
 
 ### Bookmarks *(9.18)*
