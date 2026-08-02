@@ -3204,11 +3204,15 @@ Opened by the bookmark favicon/cover work — the first consumer of a synced, en
 - **Tentative leaning:** a sideloaded app's tools are callable from menus (user-initiated, visible) but **excluded from the model's tool list until promoted**, because a menu quarantine has no prompt analogue. Catalog-signed and first-party project normally, still sanitized + length-capped + rug-pull-fingerprinted.
 - **Blocking?:** No for `Tool-5`'s hardening work, but the answer determines what `Tool-6` projects.
 
-#### OQ-TOOL-5 — Effect-driven auto-run, or always confirm?
+#### OQ-TOOL-5 — Effect-driven auto-run, or always confirm? *[RESOLVED in implementation-plan Stage 14 — Tool-4]*
 - **Where:** [78-app-tools.md](../platform/78-app-tools.md), [64-mcp-integrations.md](../platform/64-mcp-integrations.md), [55-agent-app.md](../apps/55-agent-app.md).
 - **Question:** `decideToolFriction` already maps a tool to `AutoRun | Confirm`. Which declared effects may auto-run, and does the answer differ per consumer (a menu click is already a user gesture; an agent-initiated call is not)?
 - **Tentative leaning:** `pure` auto-runs everywhere; `reads-vault` auto-runs from a menu (the click is the gesture) but confirms when agent-initiated; `proposes-write` always ends in a human approve gesture by construction; `external` follows the egress rules. A provider's declared effect is a friction input, never a boundary — a provider can lie, exactly as MCP's `readOnlyHint` can.
-- **Blocking?:** No — v1 can confirm everything and relax with dogfood evidence.
+- **Resolution (2026-08-02, shipped in `Tool-4`):** the leaning, as a table in code — `decideAppToolFriction(effect, initiator)`. `pure` auto-runs everywhere; `reads-vault` auto-runs from a user gesture and **confirms when an agent initiates**; `proposes-write` auto-runs *because* the approval gesture exists by construction downstream (nothing persists without it); `external` always confirms, leaving the machine being the one effect a user cannot undo. Two corrections the build forced:
+  - **`decideToolFriction` could NOT be reused.** It keys on MCP's `readOnlyHint`/`destructiveHint` booleans, which an app tool does not have — it declares an `AppToolEffect`. `decideAppToolFriction` is a sibling with the same two-value result, so unifying them later is a rename, not a semantic change.
+  - **The initiator is DERIVED, not declared.** `isAgentPrincipal(envelope.app)` off the broker-verified caller, so a caller cannot name its own initiator and thereby choose its own friction. The OQ asked whether the answer differs per consumer; it does, and the consumer is now established rather than asserted.
+  Friction remains **not a security boundary** (the ledger is): a provider lying about its `effect` buys less friction, never more authority.
+- **Blocking?:** No — ~~v1 can confirm everything and relax with dogfood evidence~~ resolved directly; the table above is what shipped, and calibration stays revisitable with dogfood evidence.
 
 #### OQ-TOOL-6 — Shared trace substrate with 77?
 - **Where:** [78-app-tools.md](../platform/78-app-tools.md), [77-agent-observability.md](../platform/77-agent-observability.md).
