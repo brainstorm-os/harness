@@ -203,7 +203,7 @@ Over-extraction is also a smell. These stay per-app on purpose — do **not** tr
   | Database | columns via `EditableCell` | per-cell edit |
   | Graph | selection summary | read-only |
 
-  Lock enforcement is sound in all of them, just spelled three ways: row-level `readOnly` (Bookmarks, Books, Contacts, Notes, Tasks) · shared `canMutate` (Journal, Preview) · **the *absence of* `onEdit`** (Database — `apps/database/src/app.ts:1607`, per Lock-4). Graph and Files have no lock concept. So a grep for the literal `readOnly` proves nothing about whether a panel honours the lock — read the call site.
+  Lock enforcement is sound in all of them, just spelled three ways: row-level `readOnly` (Bookmarks, Books, Contacts, Notes, Tasks) · shared `canMutate` (Journal, Preview) · **the *absence of* `onEdit`** (Database — `apps/database/src/app.ts:1607`, per Lock-4). Graph and Files have no lock *toggle* — but both still write lockable entities ungated (Graph property/link writes, Files rename/delete); closing that is Lock-5 (F-484). So a grep for the literal `readOnly` proves nothing about whether a panel honours the lock — read the call site.
 - **App sidebars and content lists.** Calendar's mini-calendar+source filters, Tasks' projects+archived tree, Files' folder tree, Notes' note list — these are different UI schemas. They share *primitives* (virtualization, DnD, list rows) but not algorithms.
 - **App bootstrap / state machines / event wiring** in each `app.tsx`.
 - **i18n manifests** (the strings) — only the `createT` machinery and cross-app label helpers are shared.
