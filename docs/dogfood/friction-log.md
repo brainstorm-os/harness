@@ -27,6 +27,37 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-489 - a collapsed sidebar is still in the tab order: Tab lands on a panel you cannot see
+- **session:** dev-2026-08-02 (329 audit, probes 934/935)   **kind:** bug (a11y)   **app:** shell (fleet — ~14 apps)   **status:** open
+- **what I was trying to do:** work out why the 329 sweep's row interactions timed out in Tasks and Files while the other apps were fine.
+- **what happened:** with the sidebar COLLAPSED, its rows stay in the DOM at `x = -240` at full width and height — visible to CSS, off the screen to a human. Probe 935 then asked the accessibility question and it is worse than a test-harness annoyance: in Tasks, pressing Tab lands on `button.tasks-sidebar__row` (x=-240) and `.tasks-sidebar__heading-add` (x=-37). A keyboard user tabs into a panel they cannot see; a screen-reader user is read a list that is not on screen.
+- **what I expected:** a collapsed panel is gone for every input modality, not just for the eye.
+- **evidence:** `tests/dogfood/.sessions/935-probe-offcanvas-focus/notes.md` ("TAB landed on 2 offscreen element(s) in 25 presses"), `934-probe-row-targets/notes.md`, `932-probe-tasks-pointer/notes.md`.
+- **triage:** _(open — cause is `transform: translateX(-100%)` with no `visibility`/`inert` guard. A grep finds the same unguarded pattern in ~14 apps (bookmarks, chat, books, calendar, code-editor, contacts, database, tasks, files, journal, notes, …); whether it bites today only depends on whether that app's panel happens to be collapsed, so Tasks is the instance, not the bug. Fix fleet-wide with `visibility: hidden` on the collapsed state plus `transition: …, visibility 0s linear <duration>` so the slide-out still animates — `visibility` removes the subtree from BOTH the tab order and the a11y tree — or the `inert` attribute from app state. Ship a `tools/check-*.mjs` ratchet with it, or it drifts back one app at a time.)_
+
+### F-488 - Journal's entry body never renders in the main pane
+- **session:** dev-2026-08-02 (329 audit, batch 1)   **kind:** bug   **app:** journal   **status:** open
+- **what I was trying to do:** read the twenty-app audit captures for Journal.
+- **what happened:** the word counter says "5 words" and the sidebar snippet shows the text, but the pane below Mood/Habits is completely empty — in BOTH themes, on the main view and after opening the entry. The entry's content is invisible to the user.
+- **what I expected:** the entry body renders where the entry is open.
+- **evidence:** `329-audit-apps-dark/17-dark-journal-01-main.png`, `21-dark-journal-05-first-item-open.png` and their light twins.
+- **triage:** _(open — under repro. The word count proves the content is loaded, so this is a render/mount fault rather than missing data; the hybrid `replaceChildren` reconciliation trap in CLAUDE.md is one candidate. Note the sidebar snippet and the Calendar chip both show a stray leading "t " on the same entry, so title/body handling for that entity is worth checking as one thing.)_
+
+### F-487 - menu panels bleed saturated content through their rows; the tooltip chip vanishes on dark
+- **session:** dev-2026-08-02 (329 audit, batches 2/3/5)   **kind:** design   **app:** shell (shared primitives)   **status:** ✅ fixed (shell #455)
+- **what I was trying to do:** read the twenty-app audit captures.
+- **what happened:** (a) menu panels let whatever sits beneath paint through — the Books cover band turned the ⋯ panel mint-green under red "Remove from library" text, Database's accent "+ New" became a blue blob across "Copy embed link", a Files card icon showed inside "Duplicate", Calendar's today-highlight under "Export to iCal…", Graph's checkbox blue through the panel edge. (b) The tooltip chip renders as a real chip on light themes and as bare floating text on dark ones.
+- **what I expected:** a menu is legible over any content, and a tooltip is a chip in both schemes.
+- **evidence:** `39-dark-books-04-header-menu.png`, `09-dark-database-04-header-menu.png`, `04-dark-files-04-header-menu.png`, `15-light-calendar-04-header-menu.png`, `25-light-graph-04-header-menu.png`; `36-dark-files-05-first-item-open.png` + `26-dark-graph-05-first-item-open.png` vs their light twins.
+- **triage / resolution (developer, 2026-08-02, shell #455):** both were ONE shared surface each, which is why they reproduced across five apps. (a) `--fm-surface-bg` was the raw `--color-glass-background-strong` (0.5–0.72 alpha) and `.fm-menu`'s `saturate(180%)` backdrop-filter amplified the bleed; now mixed over the theme's opaque `background.elevated` at 92%, keeping the frosted look while guaranteeing row contrast. (b) The chip was a fixed `rgba(20,20,20,0.94)` — over a #1c1c1c toolbar the surface WAS the backdrop; now the theme-inverse pair the token contrast ratchet already holds at AA in all 14 themes. Same PR converged the two different "Empty" faces inside one property block (five cell kinds hardcoded `--text-size-sm`, four inherited `--text-size-md`), pinned by a CSS-parity test.
+
+### F-486 - the drift ratchet certified twenty apps clean; the screenshot audit then found real defects in most of them
+- **session:** dev-2026-08-02 (329 audit)   **kind:** process   **app:** shell (all)   **status:** open
+- **what I was trying to do:** drain the release-13 polish bucket to the owner's "perfectly polished" bar.
+- **what happened:** `POLISH-APP-1..20` drove the design-drift baseline to zero and has been empty since, yet a dense both-theme screenshot sweep of the same twenty apps found: a P1 (F-488), two shared-primitive defects across five apps (F-487), a fleet-wide a11y defect (F-489), Automations shipping no header ⋯ menu at all, the theme editor's ⋯ menu missing the per-row icons every other app has, Whiteboard's object menu missing the standard verbs, Books clipping reader text at the panel edge with never-resolving skeleton bars, Browser's dark favicons invisible on the dark tab strip, Contacts painting no row hover, Mailbox showing two empty-state faces in one window, and Files rendering "(untitled)" on every card.
+- **what I expected:** an empty drift baseline to mean something about how the apps look.
+- **triage:** _(open as a standing note, not a fix. The ratchet measures literal colours and px font-sizes; NONE of the above changes either, so it was never capable of seeing them. It is a useful anti-regression floor and a useless polish gate. The gate is the screenshot audit — capture densely in both themes and READ the images (sessions 327 + 329, which deliberately do not judge). Reference: the memory note "drift ratchet is not polish".)_
+
 ### F-485 - the tests/perf Notes specs can't pass: app windows open 0-width under the perf launcher
 - **session:** dev-2026-08-02 (B11.19 verification)   **kind:** bug   **app:** shell (tests/perf harness)   **status:** open
 - **what I was trying to do:** verify the B11.19 slash-menu sections in the real shell via a new `tests/perf/specs/notes-slash-sections.spec.ts` (shell repo), same launch pattern as the shipped `notes-bulk-indent.spec.ts`.
