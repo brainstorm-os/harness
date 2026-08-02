@@ -134,15 +134,28 @@ Apps request `network.embed:<provider>` to use a specific provider, or `network.
 
 ### Providers in v1
 
-Curated, conservative:
+Curated, conservative. *(Reconciled 2026-08-02 against what shipped — the product catalogue, tiers, and insertion surface live in [15-embedding-and-composition.md §External web embeds](../editing/15-embedding-and-composition.md); this list is the security posture per provider.)*
+
+**Shipped** (allowlisted in `classifyUrl`; anything else degrades to a bookmark card):
 
 - `youtube` (via `youtube-nocookie.com`).
-- `vimeo` (via Vimeo's privacy-preserving embed mode).
+- `vimeo` (via `player.vimeo.com`).
+- `loom`, `figma`, `codesandbox` (official embed endpoints).
+
+**Next (B11.20b):**
+
+- `google-maps` (keyless `output=embed` endpoint). **No cookie-free variant exists → click-to-load is mandatory for this provider**, not the OQ-164 default; short links (`maps.app.goo.gl`) are *not* resolved (that would need network in the classifier) and stay bookmark cards.
+- `openstreetmap` (`export/embed.html` — no cookies; the privacy-friendly map sibling).
+
+**Designed, unshipped (tier 2 — each needs its posture row here before it ships):**
+
 - `twitter` / `x` (snapshot mode, no JS embed; or render as link-preview-only if snapshot endpoint disappears).
 - `mastodon`, `bluesky` (federated; per-instance fetched as link previews).
-- `loom`, `figma` (preview-only by default; full embed requires explicit user opt-in per embed).
+- `spotify`, `soundcloud`, `github-gist`, `codepen`, `miro`.
 
 > **Decision:** v1 ships the curated providers above. Apps cannot register new embed providers in v1. Post-v1: a per-vault user-defined provider list with explicit risk acknowledgement. Curating providers is a security feature, not a gatekeeping move.
+
+> **Gap (as-shipped vs this design, tracked under B11.20b):** the shipped `WebEmbedNode` mounts its iframe directly from the app renderer (`iframe-src-exempt`, minimal `sandbox` + `no-referrer`) and loads on render — the `network.embed:<provider>` capability check and the click-to-load default of this section are **not yet enforced**. The allowlist + official-endpoint mapping ARE enforced (renderer-side re-classification on render, so a hand-edited document cannot iframe an arbitrary origin).
 
 > **Open:** OQ-164 — should every embed default to **click-to-load** (privacy-strict) or **auto-load with placeholder** (UX-friendly)? Tentative leaning: click-to-load. Most embeds the user inserts aren't watched immediately; loading them on render leaks per-page-render. Make auto-load an opt-in per embed via a small affordance.
 

@@ -138,7 +138,7 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `B11.19` | Slash menu organised into sections by block type *(owner request 2026-08-02)*: re-taxono… | ⚪ pending |  |
-| `B11.20` | External embed-block family — design task first (v1: YouTube + Google Maps), then build … | ⚪ pending | (a) design before (b) build |
+| `B11.20` | External embed-block family — (a) design ✅ 2026-08-02 (doc 15 §External web embeds + do… | 🟡 in flight | (a) ✅ before (b) build |
 
 ### Bookmarks *(9.18)*
 

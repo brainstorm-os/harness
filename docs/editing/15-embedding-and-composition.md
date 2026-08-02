@@ -177,6 +177,45 @@ What 9.5.x **does not** ship — deferred forward:
 - **Capability enforcement itself**: the transport carries the capability list in the Startup envelope but does NOT gate calls — the broker is the authoritative gate (9.4.4 mount seam wires this).
 - **BP protocol semantics**: 9.3.3 (Block Protocol conformance + Hook handlers). The transport is the secure pipe; the BP wire format on top of `BlockFrameMessageKind.Message` payloads is opaque to it.
 
+## External web embeds — the embed-block family *(B11.20a design, 2026-08-02)*
+
+Besides the two internal mechanisms above there is a third, narrower composition case: **content that lives on someone else's servers** — a YouTube video, a map, a Figma file — pasted into a document as a URL. This section is the design for that family: the provider catalogue, its tiers, the insertion surface, and the privacy/fallback posture. The security envelope (why embeds are dangerous, the embed sandbox, `network.embed:<provider>`) is owned by [38-network-and-proxy.md §Embeds](../security/38-network-and-proxy.md); this section owns the product shape. Anytype's ~30 embed processors are the reference ceiling — we deliberately start small and tier up.
+
+### What exists today (as-shipped baseline)
+
+- `classifyUrl` (`packages/editor/src/plugins/embed-providers.ts`) — a pure URL→provider classifier. Allowlisted providers map a watch/share URL to the provider's official embed endpoint; **everything else degrades to a bookmark card**, so the renderer never iframes an arbitrary origin. Shipped providers: **YouTube** (via `youtube-nocookie.com`), **Vimeo**, **Loom**, **Figma**, **CodeSandbox**.
+- `WebEmbedNode` — the Lexical node rendering the `<iframe>` (`sandbox` minimal, `referrerpolicy="no-referrer"`, re-classifies its persisted URL on render so a hand-edited doc can't smuggle an arbitrary origin past the allowlist). ⚠️ Two diverging copies exist (`packages/editor/src/nodes/` and `apps/notes/src/editor/nodes/`) — consolidation is part of the build rung.
+- Reachable from the **Notes palette only** (`block.embed.bookmark`) + the paste-a-lone-URL path. Journal/Tasks/Bookmarks hosts cannot insert one.
+- Doc 38's `network.embed:<provider>` capability and default click-to-load are **designed but not enforced** — the iframe mounts directly from the app renderer (marked `iframe-src-exempt`) and loads on render.
+
+### Provider catalogue and tiers
+
+One block, many providers: the family stays **one node type + one classifier** — adding a provider is a new `classifyUrl` branch + a catalogue row, never a new node. Local *processor* blocks (equation today; Mermaid/Graphviz if ever) render with **no network** and are explicitly out of this family.
+
+| Tier | Providers | Posture |
+|------|-----------|---------|
+| **1 — shipped** | YouTube (`youtube-nocookie`), Vimeo, Loom, Figma, CodeSandbox | Keep; retrofit click-to-load (below). |
+| **1b — B11.20b builds** | **Google Maps** (`google.com/maps`/`maps.google.com` place/search/`@lat,lng` URLs → keyless `output=embed` endpoint; `maps.app.goo.gl` short links classify as bookmark — resolving them needs network the classifier must never have), **OpenStreetMap** (`export/embed.html?bbox=…` — the privacy-friendly sibling, no cookies) | Maps has **no** no-cookie variant → click-to-load is mandatory for it, not optional. |
+| **2 — next** | X/Twitter (snapshot/link-preview only, per doc 38), Spotify, SoundCloud, GitHub Gist, CodePen, Miro | Each needs a privacy-posture row in doc 38 before shipping. |
+| **3 — long tail (toward the Anytype set)** | Twitch, Sketchfab, Canva, Telegram, Bilibili, Google Drive/Docs, Airtable, Typeform, … | Only on demand; Instagram/Facebook likely **never** (embed endpoints are login/tracking-hostile). |
+
+Per-provider metadata the catalogue carries: accepted URL shapes → embed endpoint mapping (tracking params stripped), default **aspect ratio** (video 16:9; Maps/OSM 4:3; Figma/CodeSandbox 3:2 tall), and **load policy** (click-to-load default per doc 38's OQ-164 leaning; a provider with no cookie-free endpoint is click-to-load always).
+
+### Insertion surface (pairs with B11.19 sections)
+
+- **Paste a lone URL** → auto-classify, insert the right block (shipped behaviour, kept).
+- **Slash menu**: the generic **Web embed / Bookmark** command moves from the Notes-only set into the **shared catalogue** under the Embeds section, so Journal/Tasks/Bookmarks palettes can opt in. The **v1 providers get first-class rows** (YouTube, Google Maps) — same insertion path, provider-specific label/icon/keywords and a pre-configured URL prompt — so `/youtube` and `/maps` behave the way users arriving from Notion/Anytype expect. Tier-2+ providers ride the generic command's keywords first and are promoted to their own row only with evidence of use (the Embeds section must not become 30 rows of noise on day one).
+
+### Fallbacks (offline / export / not-embeddable)
+
+- **No network / not yet clicked**: the block renders a local placeholder card — provider glyph, best-effort title from the URL, the URL itself — never a spinner.
+- **Export**: MD → the plain URL; HTML → an anchor (never the iframe); PDF → the placeholder card. An embed must never make an export hang on a remote fetch.
+- **Unclassifiable / de-allowlisted URL**: bookmark card (shipped behaviour, kept).
+
+### Build rung (B11.20b) checklist
+
+Google Maps + OpenSteetMap branches in `classifyUrl` (pure, exhaustively unit-tested) · shared-catalogue surfacing + provider rows · click-to-load facade retrofit across tier 1 · consolidate the two `WebEmbedNode` copies into `@brainstorm/editor` · per-provider aspect ratios · doc 38 provider table updated in the same PR.
+
 ## Summary
 
 - **Lexical custom nodes** = vocabulary inside the prose stream. Lives in the document's Yjs fragment. Cursor flows through.
