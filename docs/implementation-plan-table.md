@@ -14,6 +14,8 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 ### Pass log
 
+- **2026-08-02 · Tool-7 object-menu surface** — app tools render in the object ⋯ menu through the SAME AS-4 policy (projection + one shared inline cap), invoked via `tools.call` with a real refusal seam rather than the intent precedent's fire-and-forget. Three defects the rung's premise missed: the shared `dedupe` would have collapsed every tool into one row (the very verb collision this track removes), `tools.list` never stamped a trust tier so the quarantine could not apply, and it would have listed tools the caller could not call — dead menu rows. `Tool-7b` filed for the three EDITOR surfaces, blocked on `BlockCommand.run` being sync/void with nowhere to report a named refusal.
+
 - **2026-08-02 · Tool-4 + OQ-TOOL-5 settled** — `tools.call` ships: cross-app invocation gated by `tools.provide` / `tools.call:<appId>[/<name>]`, with authorization checked BEFORE the registry so error codes cannot enumerate installed tools. `allowedTypes` enforced against the entity store. Friction = effect × initiator, initiator derived from the verified principal; an agent-initiated confirm is refused rather than self-approved. Two of the rung's own premises were wrong (`decideToolFriction` not reusable; no `mcp.tool:` capability to mirror) and are corrected in doc 78. **The pentest failed the rung first** — two working exploits (a narrow per-tool grant readable as a broad one; `javascript:`/`file:` URLs passing a `format:url` argument because it was enforced with a *display* validator) plus three proven-latent ones — all five fixed in-PR and pinned. `main` CI went GREEN on the Tool-3 merge — first pass since #428.
 
 - **2026-08-02 · Tool-3 + OQ-TOOL-1 settled** — owner picked `PropertyDef` over JSON Schema ("safer wins"), so arguments are validated **at the broker before the call reaches the provider** and the model's JSON Schema is projected from the same declaration. Security review found three real defects (unscreened `pattern`/`allowedTypes` reaching the model prompt; `null` passing every constraint; a `date` value passed by reference) — all fixed in-PR. Also fixes `main`'s red CI, red since Tool-2 (#428) on a mis-anchored `biome-ignore`. **68 open — GA 33 · v2 35** (the count fell 88 → 68 because the table had not been regenerated since the polish drain).
@@ -142,9 +144,9 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Tool-5` | untrusted-descriptor hardening: a provider's tool name/description reaches the model's pr… | ⚪ pending | OQ-TOOL-4 |
+| `Tool-5` | untrusted-descriptor hardening: a provider's tool name/description reaches the model's pr… | ⚪ pending | none |
 | `Tool-6` | agent projection: projectAppTools → AgentTool-shaped rows carrying the namespaced id (lif… | ⚪ pending | Tool-4 |
-| `Tool-7` | menu presentation (closes the AS-2 residue): tools declaring a UI surface render as contr… | ⚪ pending | Tool-2, Tool-4 |
+| `Tool-7b` | menu presentation, the three EDITOR surfaces (inline toolbar / block-gutter menu / slash… | ⚪ pending | Tool-7 |
 | `Tool-8` | results + lifecycle: proposes-write results render through a shared proposal/diff tray an… | ⚪ pending | Tool-4 |
 | `Tool-9` | automations: AgentTool gains the namespaced id + the real input schema so a workflow step… | ⚪ pending | Tool-6 |
 
