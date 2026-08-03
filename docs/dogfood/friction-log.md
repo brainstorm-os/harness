@@ -28,7 +28,7 @@ Newest sessions on top.
 <!-- Entries land below this line, newest session first. -->
 
 ### F-491 - Journal days damaged before the F-488 fix stay blank forever
-- **session:** dev-2026-08-03 (F-488 real-shell verification)   **kind:** bug   **app:** journal   **status:** 🟡 detection shipped (shell #464, plan `3.11`) — **the loss itself is unrecoverable and always will be**; in-app surfacing is `3.12`
+- **session:** dev-2026-08-03 (F-488 real-shell verification)   **kind:** bug   **app:** journal   **status:** 🟡 detection + in-app surfacing shipped (shell #464 + #465, plan `3.11`/`3.12`) — **the loss itself is unrecoverable and always will be**
 - **what I was trying to do:** confirm shell #460 had cleared the blank Journal bodies the 329 audit found.
 - **what happened:** it clears the *cause*, not the *damage*. On a cold reopen of the Northbound vault the ydoc worker reports `journal-2026-07-29` and `journal-2026-07-26` as holding unintegratable structs. Those two days' rows exist and now accept writes cleanly (`entities.applyDoc` resolves), but the bytes their parked structs depend on were never written to disk, so no amount of re-shipping recreates them. Their content is gone.
 - **what I expected:** either the content comes back, or the app says it can't.
