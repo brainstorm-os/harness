@@ -27,6 +27,19 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-492 - a second device never receives a single entity key: it listens on its pre-pairing inbox
+- **session:** dev-2026-08-03 (10.3c two-device dogfood, `collab/012`)   **kind:** bug   **app:** shell (sync)   **status:** open — **this is what keeps multi-device sync out of "Shipped" on the public roadmap**
+- **what I was trying to do:** re-run `tests/dogfood/collab/012-lan-two-devices.spec.ts` against the 10.3c producers (shell #466/#467/#468) to confirm two of my own machines finally converge. The spec's own header predicted it would go green "with no change here" once 10.3c landed.
+- **what happened:** it still fails at exactly the same step — `[dev:collab] receive failed: envelope-pipeline: no DEK for entity ent_lan_brief` — with every transport assertion passing. The producer is NOT the problem: instrumented, it seals and emits correctly (`fanOut ent_lan_brief v1: roster=2 self=NXup0Zqb rows=KOB3NLjp:x,NXup0Zqb:x`, one rostered sibling with an X25519 key, a real ordinal). The wrap goes onto the shared identity inbox and **nobody is listening on it**.
+- **what I expected:** the joining device installs the DEK and reads the note.
+- **root cause:** `LiveSyncEngine` derives its inbox channel **once, in the constructor** — `this.#inbox = inboxChannelFor(bytesToBase64(ctx.devicePub))` (`main/sync/live-sync-engine.ts:179`) — and `start()` is guarded by `#frameListener`, so it subscribes exactly once and never again. The engine is rebuilt only on *vault session activation* (`live-sync-wiring.ts`), and pairing happens with the vault already open (noted at `main/index.ts:2487`). Pairing replaces the device's sovereign identity, so from that moment the joining device is subscribed to a channel that no longer names it. Proven directly — the two shells subscribe different inboxes while the wrap is routed to the desktop's:
+  - desktop emits `route=inbox:Se7lyssNZ0D+UDiRLKxlza4GlrSMNKed861JJCAyIYQ=`
+  - desktop subscribes `inbox:Se7lyssN…` ✅
+  - laptop subscribes `inbox:Xmpqw4yo7o/Y062auEu6ICU4M5c2beu70irQ6BKWHMo=` ❌ (its pre-pairing identity)
+- **evidence:** `tests/dogfood/.sessions/collab-012-lan-two-devices/{mira,marcus}.console.log` from the instrumented run; the LAN half is solid throughout (`[lan-host] listening on ws://192.168.2.50:56797`, `connection accepted (2 live)`, laptop `transportKind: "lan"`).
+- **note:** a second, separate defect was found and fixed on the way here (shell `fix/collab-harness-provision-fanout`): `SharingEngine.provisionEntity` minted a DEK without calling `installEntityWrap`, so the collab harness could never reach the 10.3c producer *at all*. That fix is what let this bug become visible.
+- **triage:** _(the fix is to re-derive the inbox from the CURRENT session identity and re-subscribe when pairing changes it — either rebuild the engine on pairing completion, or make `devicePub` a getter and have `onDevicesChanged` re-subscribe. Sync/crypto surface, so it wants its own plan rung plus `/security-review` + `/pentester` per the gates rule, not a slip-in. Until it lands, 10.3c is not demonstrable between two real machines and the roadmap line must stay in "In progress".)_
+
 ### F-491 - Journal days damaged before the F-488 fix stay blank forever
 - **session:** dev-2026-08-03 (F-488 real-shell verification)   **kind:** bug   **app:** journal   **status:** 🟡 detection + in-app surfacing shipped (shell #464 + #465, plan `3.11`/`3.12`) — **the loss itself is unrecoverable and always will be**
 - **what I was trying to do:** confirm shell #460 had cleared the blank Journal bodies the 329 audit found.
