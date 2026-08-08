@@ -3573,6 +3573,34 @@ Source: [platform/79-p2p-sync.md](../platform/79-p2p-sync.md), the `P2P-0` spike
 
 ---
 
+#### OQ-248: Does a session present ONE identity at a time, or all of them?
+- **Where:** [81 §4](../security/81-multi-identity-vaults.md).
+- **Question:** a multi-identity vault holds N sovereign identities. Does `VaultSession` expose an ACTIVE one (chosen at open, switchable) or all simultaneously? Every consumer of `session.identity` today reads it as a constant — the sync envelope signer, `inboxChannelFor`, the devices roster, "is this member me?".
+- **Options & trade-offs:** *active-one* keeps the wire format, the signer and the inbox exactly as they are and makes "who am I" answerable, at the cost of a mode the user can be in the wrong one of. *All-at-once* removes the mode but makes the signer ambiguous, forces N inbox subscriptions, and makes the roster plural.
+- **Tentative leaning:** active-one. It is the only option that leaves the 10.3a/10.3b wire contract untouched, and the alternative turns every "which identity signed this" question into a set.
+- **Blocking?:** Blocks all of multi-identity — the shape of every other change depends on it.
+
+#### OQ-249: After adopting a second identity, whose entities are whose?
+- **Where:** [81 §4](../security/81-multi-identity-vaults.md).
+- **Question:** entities carry `createdBy`, and access grants name a member identity (`ResolvedMember.member`). If a vault admits identity B, do A's entities belong to B as well?
+- **Options & trade-offs:** *any-identity-in-the-vault-owns-everything* is simple and matches "it is my vault on my machine", but it silently widens every existing grant — a share to A now reaches whoever A later admits. *Per-identity ownership* preserves the meaning of a grant, at the cost of a vault whose contents are partly invisible to the identity currently active, which is a confusing surface.
+- **Tentative leaning:** per-identity ownership, because the alternative changes what a grant already issued to A means, retroactively and invisibly.
+- **Blocking?:** Blocks the access-model half. Does not block the open-path fix.
+
+#### OQ-250: What authorises admitting an identity to a vault?
+- **Where:** [81 §4](../security/81-multi-identity-vaults.md).
+- **Question:** admitting an identity is exactly what `F-493` does by accident today — pairing writes a foreign identity secret into the target's keystore with no vault-side record and no consent step. What makes it legitimate?
+- **Options & trade-offs:** a signed, auditable admission record in the vault (mirroring `SignedAddDeviceRecord`) is consistent with how devices are admitted and leaves a trail; a bare keystore write is what we have and is indistinguishable from an attack. The threat is real: without a record, "multi-identity" is a supported mechanism for silently repointing someone's vault.
+- **Tentative leaning:** a signed admission record, verified on open, and surfaced in Settings the way devices are.
+- **Blocking?:** BLOCKING for the pentest gate. Shipping the open-path relaxation without this converts a fail-closed check into an unguarded one.
+
+#### OQ-251: How does a multi-identity vault survive an older build?
+- **Where:** [81 §4](../security/81-multi-identity-vaults.md).
+- **Question:** `vault.json.identityPublicKey` is a single string today and every existing vault has one. A vault written by a multi-identity build and then opened by an older one must not brick — the bug being fixed is a vault that will not open.
+- **Options & trade-offs:** keep the single field as the ACTIVE identity and add a new list field alongside (older builds keep working, at the cost of two sources of truth); or replace it and accept that older builds refuse. The second is cleaner and strictly worse for the user who rolls back.
+- **Tentative leaning:** keep `identityPublicKey` as the active identity, add the set beside it, and treat the single field as authoritative for any build that does not understand the set.
+- **Blocking?:** Blocks shipping. A migration that can brick a vault is the failure mode this whole design exists to remove.
+
 ### How to use this list
 
 - Each open question must be either **answered** (move the resolution into the source doc, drop the entry here) or **kept as known unknown** until implementation forces it.
