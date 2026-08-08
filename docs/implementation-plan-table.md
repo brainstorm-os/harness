@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-08-02 — B11.19 slash-menu sections shipped (shell #449 merged); B11.20 embed-block family: design done, build pending. **68 open — GA 33 · v2 35.**
+**Last updated:** 2026-08-08 — forge migrated to GitLab (`SH-39`/`SH-40` ✅, `SH-41` 🟡, CI disabled while free-tier minutes are exhausted). `POLISH-DSN-10/11/12` ✅ — settled by reading the shipped code, since the owner review that held them lived on a GitHub PR the migration made unreachable. The `VID-*` track is closed (owner call) and its rungs removed rather than marked done. **61 open — GA 26 · v2 35.**
 
 <!-- PASS LOG — append-only, ONE short bullet per pass, newest FIRST. Never
      rewrite or absorb earlier bullets (that megaparagraph was the repo's worst
@@ -61,7 +61,7 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (31)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (26)
 
 ### Sync, multi-device & E2E encryption *(Stage 10)*
 
@@ -89,17 +89,6 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
 | `POLISH-1` | first owner-driven dogfood sweep (open): owner walks the fleet and files rungs per catego… | ⚪ pending |  |
-| `POLISH-DSN-10` | the Neutral button variant reads as the heaviest element on a light surface. By design Ne… | 🟡 in flight |  |
-| `POLISH-DSN-11` | the Agent's proposal cards wear bespoke chrome. .agent-proposal__btn (Add to vault / Disc… | 🟡 in flight |  |
-| `POLISH-DSN-12` | the Marketplace listing detail mixes chip and value faces. On a sideloaded app's detail t… | 🟡 in flight |  |
-
-### App showcase videos *(standing content + polish cadence, `VID-*`; owner-driven, one app / week)*
-
-| ID | Task | Status | Gate |
-| -- | ---- | ------ | ---- |
-| `VID-1` | first episode (owner picks the headliner | ⚪ pending |  |
-| `VID-notes` | Notes is VID-1 (owner pick 2026-07-22). Polish gate PASSED | 🟡 in flight | PASSED |
-| `VID-build-apps` | "Build a new app inside Brainstorm" | 🟡 in flight | 1 (polish/capture dry-run |
 
 ### AI broker & vector / hybrid search *(Stage 11; lexical half shipped early as Shell 9.22)*
 
@@ -120,6 +109,12 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `MOB-6` | reminders as local notifications: portable scheduler core (incl. onMissed: FireOnce water… | ⚪ pending | MOB-3 |
 | `MOB-7` | editing: property edit + task check-off + append composer first; full block editing via W… | ⚪ pending | MOB-4 |
 | `MOB-8` | hardening + store beta: biometric-gated keystore unlock (gate, never custody | ⚪ pending | MOB-4–MOB-7 |
+
+### Dev tooling & self-hosting *(Stage 0 dev-MCP + SH ladder)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `SH-41` | GitLab CI port — pipelines disabled while free-tier minutes are exhaus… | 🟡 in flight | quota · /dev/shm |
 
 ### Window manager, menus & shortcuts *(Stage 6)*
 
