@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-08-08 — forge migrated to GitLab (`SH-39`/`SH-40` ✅, `SH-41` 🟡, CI disabled while free-tier minutes are exhausted). `POLISH-DSN-10/11/12` ✅ — settled by reading the shipped code, since the owner review that held them lived on a GitHub PR the migration made unreachable. The `VID-*` track is closed (owner call) and its rungs removed rather than marked done. **61 open — GA 26 · v2 35.**
+**Last updated:** 2026-08-10 — **table regenerated from the plan after five weeks of hand-edits.** The previous "61 open" was wrong in both directions: it listed `10.3c` and `Tool-7b` as pending months after they shipped, and it was missing twelve open iterations the plan already carried (`10.15`, `Catalog-2`…`Catalog-8`, `Ops-2`, `14.36/37/38`, and `10.3c`'s residue). `10.3c` ✅ (producers landed 2026-08-03, both gates passing); residue split out as `10.3d`. **74 open — GA 31 · v2 43.**
 
 <!-- PASS LOG — append-only, ONE short bullet per pass, newest FIRST. Never
      rewrite or absorb earlier bullets (that megaparagraph was the repo's worst
@@ -14,6 +14,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 ### Pass log
 
+- **2026-08-10 · plans actualised (no feature work)** — the table had drifted from the plan for five weeks because regeneration is a manual copy-paste of `gen-open-iterations.ts`'s stdout, and nothing failed when it was skipped. Corrected: `10.3c` ⚪→✅ (shell #466/#467/#468, both gates passing 2026-08-03 in the [ledger](_review/evaluations.jsonl)); its residue promoted to `10.3d` so it survives the parent going ✅; `10.15` moved out from between `10.3c` and its own sub-bullets, where it had been silently orphaning them. **Three open items had no iteration id at all** and so were dropped by the generator with no signal — Files' shell bootstrap (now `9.8.2c`), the 9.18.6 scrape residue (now `9.18.6b`), and `10.3c`'s residue. The generator now **exits 1 and names them** rather than dropping them, which is the actual fix: the silence was the bug. **74 open — GA 31 · v2 43** (was reported as 61).
 - **2026-08-02 · editor rungs filed AND driven (owner request)** — `B11.19` slash-menu sections **built + merged same day** ✅ (shell #449 @ `e34368a5`: Lists/Layout/Advanced categories + residue re-taxonomy, sectioned browse view / flat ranked filter view, drift-fence; real-shell verified, dogfood probe 931) + `B11.20` external embed-block family: **(a) design ✅** (doc 15 §External web embeds + doc 38 provider reconciliation; v1 = YouTube + Google Maps, click-to-load mandatory for Maps), (b) build pending. Found + filed `F-485` (perf-launcher app windows open 0-width, pre-existing on main). **69 open — GA 34 · v2 35.**
 - **2026-08-02 · app-tools track complete through Tool-9** — `Tool-5` ✅ (#436), `Tool-6`/`Tool-8`(approval half)/`Tool-9` ✅ (#442). OQ-TOOL-2 → coexist; OQ-TOOL-4 applied (sideloaded tools never reach the model's prompt); OQ-TOOL-5 → effect × initiator. The reviews found two shipping regressions of the same shape — a working path removed before its replacement landed (Tool-5's approval could never be minted; Tool-8's prompt had no receiver) — plus a workflow capability ceiling that did not bind app-tool calls. Residue split honestly: `Tool-7b` (editor surfaces) and `Tool-8b` (proposal tray · refusal chips · argument prompt · trace row, the last gated on OQ-TOOL-6).
 
@@ -61,13 +62,14 @@ Full roadmap + hero assignments + the **infra + collaborative-sync line** live i
 
 Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then plan section. **Phase rules:** *GA* = v1, pre-1.0, rides the single-user release trains 0.8.0→1.0.0 (the GA definition-of-done); *v2* = explicitly post-v1 (paid / commercial, multi-user, marketplace) — Stage 14 / Collaboration layer / etc. Classification is computed in `tools/gen-open-iterations.ts` (`phaseFor`) so it regenerates with the table. A bundled id (e.g. `9.12.3/.4/.5/…`) is one plan bullet covering several rungs.
 
-## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (26)
+## GA — GA / pre-1.0 (release trains 0.8.0→1.0.0) (31)
 
 ### Sync, multi-device & E2E encryption *(Stage 10)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `10.3c` | multi-device DEK wrap fan-out (the missing producer) *(filed 2026-08-01 from the P2P-1 cl… | ⚪ pending | none blocking — the primitives all exist |
+| `10.3d` | 10.3c residue: one roster read per pass + the two-device dogfood *(split out of 10.3c 202… | ⚪ pending |  |
+| `10.15` | multi-identity vaults *(filed 2026-08-08 from F-493; owner position taken: build real mul… | ⚪ pending |  |
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
 
@@ -110,11 +112,11 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `MOB-7` | editing: property edit + task check-off + append composer first; full block editing via W… | ⚪ pending | MOB-4 |
 | `MOB-8` | hardening + store beta: biometric-gated keystore unlock (gate, never custody | ⚪ pending | MOB-4–MOB-7 |
 
-### Dev tooling & self-hosting *(Stage 0 dev-MCP + SH ladder)*
+### Dev tooling & self-hosting *(Stage 0 dev-MCP + SH ladder + cross-cutting tracks)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `SH-41` | GitLab CI port — pipelines disabled while free-tier minutes are exhaus… | 🟡 in flight | quota · /dev/shm |
+| `SH-41` | GitLab CI port *(verify + e2e-smoke proven green 2026-08-06; pipelines DISABLED 2026-08-07 | 🟡 in flight |  |
 
 ### Window manager, menus & shortcuts *(Stage 6)*
 
@@ -128,16 +130,31 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `8.9` | post-v1 (re-scoped 2026-05-23): react-aria non-menu primitives (dialogs/comboboxes/popove… | ⚪ pending |  |
 
+### Marketplace surface *(Stage 14.17–14.18, preview)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `14.36` | launch-time bundle-integrity re-verification (32 §1). hashBundleDirectory runs at install… | ⚪ pending |  |
+| `14.37` | threat-intel feed client + quarantine flow (32 §3 + §Quarantine flow). Poll each subscrib… | ⚪ pending |  |
+| `14.38` | app-impersonation detection at install (32 §5). Fuzzy name + publisher-key disambiguation… | ⚪ pending |  |
+
 ### Notes (text-editor) *(9.6)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `B11.20` | External embed-block family — (a) design ✅ 2026-08-02 (doc 15 §External web embeds + do… | 🟡 in flight | (a) ✅ before (b) build |
+| `B11.20` | External embed-block family *(owner request 2026-08-02 | 🟡 in flight | (a |
+
+### Files (file-manager) *(9.8)*
+
+| ID | Task | Status | Gate |
+| -- | ---- | ------ | ---- |
+| `9.8.2c` | Files shell bootstrap | ⚪ pending |  |
 
 ### Bookmarks *(9.18)*
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
+| `9.18.6b` | scrape residue: author / publishedAt scrape; the typed-fields → property-backed migration… | ⚪ pending |  |
 | `9.18.8` | Highlights & annotations on captured content + a per-bookmark annotation list. *(gated: n… | ⚪ pending | needs editor text-anchoring on the captured… |
 
 ### Mailbox *(group I)*
@@ -150,11 +167,10 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 
 | ID | Task | Status | Gate |
 | -- | ---- | ------ | ---- |
-| `Tool-7b` | menu presentation, the three EDITOR surfaces (inline toolbar / block-gutter menu / slash… | ⚪ pending | Tool-7 |
-| `Tool-8b` | results + lifecycle, the presentation half (split out of Tool-8, whose approval half ship… | ⚪ pending | Tool-8 |
+| `Tool-8b` | results + lifecycle, the presentation half *(chips: shell #446 merged; tray + argument pr… | 🟡 in flight | OQ-TOOL-6 (trace row only |
 | `Tool-8` | results + lifecycle *(shell #442, 2026-08-02)* <gates: security-review> | 🟡 in flight |  |
 
-## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (35)
+## v2 — v2 / post-v2 (commercial · multi-user · marketplace) (43)
 
 ### Peer-to-peer sync *(`P2P-*` design spike; the concrete LAN slice shipped early as `LAN-*`
 
@@ -197,6 +213,14 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | `Site-3` | Product Hunt / launch assets | ⚪ pending |  |
 | `Account-1` | customer account web portal. apps/account (Next.js) landed: credential sign-in → plan/bil… | 🟡 in flight |  |
 | `DevPortal-1` | / Catalog-1 | 🟡 in flight |  |
+| `Catalog-2` | deploy the official catalog origin. Blocks Launch-2 (Product Hunt) *(scoped 2026-08-03)*.… | ⚪ pending |  |
+| `Catalog-3` | production key ceremony + rotation drill. Blocks Launch-2 (Product Hunt) *(scoped 2026-08… | ⚪ pending |  |
+| `Catalog-4` | bundle object store + CDN (cloud 3.4c production half). Blocks Launch-2 (Product Hunt) *(… | ⚪ pending |  |
+| `Catalog-5` | close the CI publish loop. Blocks Launch-2 (Product Hunt) *(scoped 2026-08-03)*. .github/… | ⚪ pending |  |
+| `Catalog-6` | automated submission review *(post-PH; gates third-party submissions)*. catalog-admin's r… | ⚪ pending |  |
+| `Catalog-7` | third-party publishing tooling *(post-PH)*. Publishing today is the internal tools/publis… | ⚪ pending |  |
+| `Catalog-8` | catalog discovery producers *(post-PH)*. Discover currently mirrors Browse, and Marketpla… | ⚪ pending |  |
+| `Ops-2` | marketplace policy + legal surface *(post-PH; gates third-party submissions)*. Nothing ex… | ⚪ pending |  |
 | `Support-1` | support desk + status page | ⚪ pending |  |
 | `BugTrack-1` | staff bug/crash/feedback triage | ◑ preview-drop |  |
 | `Ops-1` | web-property auth/email/webhooks/observability | ⚪ pending |  |
