@@ -10,10 +10,13 @@
  * hover states painting somewhere unexpected, inconsistent menus.
  *
  * One THEME per invocation (`AUDIT_THEME=dark|light`, default dark): the mode
- * flip uses the real `dashboard.setAppearanceMode` so app windows re-theme
- * too, and the saved mode is restored in `finally`. Slot pairs are never
- * touched — the audit sees the owner's actual light/dark themes. A fresh boot
- * per run also sidesteps the zombie-window relaunch trap.
+ * flip goes through `../lib/appearance`, which commits the real
+ * `dashboard.setAppearanceMode` so app windows re-theme too AND asserts the
+ * shell actually repainted before any file is named for a theme (F-494 — 327
+ * shipped a whole light pass that was dark). The saved mode is restored in
+ * `finally`. Slot pairs are never touched — the audit sees the owner's actual
+ * light/dark themes. A fresh boot per run also sidesteps the zombie-window
+ * relaunch trap.
  *
  * `AUDIT_APPS=Notes,Tasks,…` (APP keys) chunks the sweep under external time
  * caps. Console/page errors are collected per window like session 012 — a
@@ -22,6 +25,12 @@
 
 import { test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import {
+	AppearanceMode,
+	readAppearanceMode,
+	restoreAppearanceMode,
+	switchTheme,
+} from "../lib/appearance";
 import { APP, type AppId, startSession } from "../lib/founder";
 
 /** Apps that need longer to settle before the first capture. */
@@ -83,7 +92,8 @@ const EXTRAS: Partial<Record<AppId, (page: Page, shot: (n: string) => Promise<vo
 
 test("visual audit — every app, one theme per run (329)", async () => {
 	test.setTimeout(900_000);
-	const theme = process.env.AUDIT_THEME === "light" ? "light" : "dark";
+	const theme =
+		process.env.AUDIT_THEME === AppearanceMode.Light ? AppearanceMode.Light : AppearanceMode.Dark;
 	const only = process.env.AUDIT_APPS?.split(",").map((s) => s.trim());
 	const s = await startSession(`329-audit-apps-${theme}`);
 
@@ -106,26 +116,13 @@ test("visual audit — every app, one theme per run (329)", async () => {
 		await dash.waitForTimeout(2500);
 		await dash.keyboard.press("Escape");
 
-		// Save the owner's mode, then flip. Slot pairs stay untouched.
-		savedMode = await dash.evaluate(async () => {
-			const bs = (window as unknown as {
-				brainstorm: {
-					dashboard: {
-						snapshot: () => Promise<{ appearance?: { mode?: string } } | null>;
-					};
-				};
-			}).brainstorm;
-			const snap = await bs.dashboard.snapshot();
-			return snap?.appearance?.mode ?? null;
-		});
-		await dash.evaluate(async (mode) => {
-			const bs = (window as unknown as {
-				brainstorm: { dashboard: { setAppearanceMode: (m: string) => Promise<void> } };
-			}).brainstorm;
-			await bs.dashboard.setAppearanceMode(mode);
-		}, theme);
-		await dash.waitForTimeout(1200);
-		s.note(`theme pass: ${theme} (saved mode: ${savedMode})`);
+		// Save the owner's mode, then flip. Slot pairs stay untouched. `switchTheme`
+		// throws if the shell did not repaint, so nothing below can be filed under
+		// a theme it is not.
+		savedMode = await readAppearanceMode(dash);
+		const probe = await switchTheme(dash, theme);
+		s.note(`theme pass: ${theme} → resolved "${probe.theme}" (${probe.background})`);
+		s.note(`saved appearance mode: ${savedMode}`);
 
 		const entries = Object.entries(APP).filter(([name]) => !only || only.includes(name));
 		for (const [name, id] of entries) {
@@ -186,16 +183,7 @@ test("visual audit — every app, one theme per run (329)", async () => {
 		}
 		s.note("captured — read the images, do not trust this line");
 	} finally {
-		if (savedMode) {
-			await dash
-				.evaluate(async (mode) => {
-					const bs = (window as unknown as {
-						brainstorm: { dashboard: { setAppearanceMode: (m: string) => Promise<void> } };
-					}).brainstorm;
-					await bs.dashboard.setAppearanceMode(mode);
-				}, savedMode)
-				.catch(() => {});
-		}
+		await restoreAppearanceMode(dash, savedMode);
 		await s.finish();
 	}
 });
