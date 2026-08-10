@@ -29,9 +29,22 @@
  * Hidden windows throughout via `startSession` → `shellLaunchEnv`. Screenshots
  * read from the page, not the screen, so nothing appears on the owner's
  * desktop.
+ *
+ * The theme flip goes through `../lib/appearance` — the real
+ * `dashboard.setAppearanceMode` API, with the resolved background asserted
+ * before a single file is named for a theme. The first version of this spec
+ * flipped `documentElement`'s `data-theme` attribute, which nothing in the
+ * shell styles off, so every `*-light-*` capture here was the dark theme filed
+ * under the light name (F-494). The saved mode is restored in `finally`.
  */
 
 import { test } from "@playwright/test";
+import {
+	AppearanceMode,
+	readAppearanceMode,
+	restoreAppearanceMode,
+	switchTheme,
+} from "../lib/appearance";
 import { startSession } from "../lib/founder";
 
 /** Every settings section, by its nav label. Captured one by one — a section
@@ -56,11 +69,14 @@ const SETTINGS_SECTIONS = [
 test("visual audit — shell + settings, both themes (327)", async () => {
 	test.setTimeout(900_000);
 	const s = await startSession("327-audit-shell-settings");
+	const dash = s.dashboard;
+	let savedMode: string | null = null;
 
 	try {
-		const dash = s.dashboard;
 		await dash.waitForTimeout(2500);
 		await dash.keyboard.press("Escape");
+		savedMode = await readAppearanceMode(dash);
+		s.note(`saved appearance mode: ${savedMode}`);
 
 		/** Capture without letting one bad surface abort the sweep. */
 		const shot = async (name: string, fn?: () => Promise<void>): Promise<void> => {
@@ -73,17 +89,13 @@ test("visual audit — shell + settings, both themes (327)", async () => {
 			}
 		};
 
-		/** Flip the whole shell between themes so every capture happens twice —
-		 *  a UA default is invisible on light and glaring on dark. */
-		const setTheme = async (mode: "light" | "dark"): Promise<void> => {
-			await dash.evaluate((m) => {
-				document.documentElement.setAttribute("data-theme", m);
-			}, mode);
-			await dash.waitForTimeout(400);
-		};
-
-		for (const theme of ["dark", "light"] as const) {
-			await setTheme(theme);
+		// Flip the whole shell between themes so every capture happens twice — a
+		// UA default is invisible on light and glaring on dark. `switchTheme`
+		// throws if the shell did not actually repaint, so the sweep below can
+		// never file a capture under a theme it is not.
+		for (const theme of [AppearanceMode.Dark, AppearanceMode.Light] as const) {
+			const probe = await switchTheme(dash, theme);
+			s.note(`theme pass: ${theme} → resolved "${probe.theme}" (${probe.background})`);
 			const p = (name: string) => `${theme}-${name}`;
 
 			// ── The shell itself ────────────────────────────────────────────
@@ -136,6 +148,7 @@ test("visual audit — shell + settings, both themes (327)", async () => {
 
 		s.note("shell + settings captured in both themes — read the images, do not trust this line");
 	} finally {
+		await restoreAppearanceMode(dash, savedMode);
 		await s.finish();
 	}
 });
