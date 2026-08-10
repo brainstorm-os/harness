@@ -27,6 +27,15 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-494 - the 327 audit's "light theme" captures are all dark: the flip is a no-op
+- **session:** dev-2026-08-10 (POLISH-DSN-13)   **kind:** bug (harness)   **app:** harness (`tests/dogfood/sessions/327-audit-shell-settings.spec.ts`)   **status:** open — **blocks half of the 0.14.0 design gate**
+- **what I was trying to do:** judge the shell + Settings surfaces in both themes as part of `POLISH-DSN-13`.
+- **what happened:** every `*-light-*` file in `.sessions/327-audit-shell-settings/` renders the DARK theme. `21-light-01-dashboard.png` is the dark dashboard; `26-light-11-settings-01-appearance.png` still shows Dark selected with the Active badge on the dark pair card.
+- **root cause (verified, and it is NOT the product):** spec 327's `setTheme` does `document.documentElement.setAttribute("data-theme", m)`. The shell does not resolve its theme from that attribute — `applyThemeVars` (`packages/shell/src/renderer/theme/theme-provider.tsx`) writes the theme as **CSS custom properties** onto `documentElement` via `setProperty`. `data-theme` is an attribute the shell itself *writes* so `widgets-layer.tsx` can observe it and propagate to widget iframes; nothing reads it to style the shell. So the flip changes an attribute and no pixels.
+- **why it matters more than one broken spec:** a screenshot gate that silently captures the WRONG THEME and files it under the right name is the same failure class as [[F-486]] one layer up — the audit reports "both themes reviewed" while half the evidence is a duplicate. Sibling spec `329-audit-apps` does it correctly, via the real `dashboard.setAppearanceMode`, and its light captures are genuinely light — so the fix is to make 327 call the same API.
+- ⚠️ **an earlier read of this called it a product theme-switch bug** (the owner has reported a dead light/dark toggle four times, so the resemblance was tempting). It is not: 329 proves the real API re-themes app windows correctly. Do not let this entry be cited as evidence for that bug.
+- **fix:** 327 uses `bs.dashboard.setAppearanceMode(mode)` like 329, and asserts the resolved theme (or samples a background pixel) BEFORE writing a file named `*-light-*`, so a silent no-op can never be filed as evidence again.
+
 ### F-493 - pairing a second device makes THAT device's vault unopenable on next launch
 - **session:** dev-2026-08-04 ([[F-492]] root-cause dig)   **kind:** bug   **app:** shell (pairing / vault)   **status:** 🟡 fix open in review — **shell!10** (`fix/pairing-identity-rebased`, 2026-08-10). Severity unchanged: loss of access to an existing vault, not a sync gap. The fix was written 2026-08-04, pushed, and left with no MR for six days; recovered, rebased off a 30-commit-stale base, 957 tests green. ⚠️ Not yet proven on two real devices — that is `10.3d`(b).
 - **what I was trying to do:** find out why the joining device in `collab/012` never adopts the shared identity, so I could fix [[F-492]].
