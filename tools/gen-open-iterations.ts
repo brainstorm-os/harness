@@ -14,6 +14,7 @@ const BULLET = /^\s*-\s+([🟡⚪◑])\s+(.*)$/u;
 const src = readFileSync("docs/implementation-plan.md", "utf8").split("\n");
 let section = "(preamble)";
 const rows: { section: string; id: string; task: string; status: string; gate: string }[] = [];
+const dropped: { section: string; text: string }[] = [];
 
 for (const line of src) {
 	const h = line.match(/^#{1,3}\s+(.*)$/);
@@ -35,9 +36,14 @@ for (const line of src) {
 	const id = (idMatch?.[1] ?? "?").replace(/[*`]/g, "");
 	// Only real iteration ids: digit-led (opt. B prefix) or a Name-Code like
 	// NAPI-3 / Collab-C5 / Mailbox-2 / P2P-0 (digits allowed inside the prefix).
-	// Drops prose sub-bullets ("remaining:", "Files shell bootstrap") that
-	// aren't their own iteration.
-	if (!/^(B?\d[\w.…/()]*|[A-Z][A-Za-z0-9]+-[A-Za-z0-9])/.test(id)) continue;
+	// An open bullet with no id is REPORTED, not silently dropped: that silence
+	// is how the Files shell bootstrap and the 9.18.6 scrape residue stayed out
+	// of every status report for months, and how `10.3c`'s residue would have
+	// disappeared the moment its parent went ✅.
+	if (!/^(B?\d[\w.…/()]*|[A-Z][A-Za-z0-9]+-[A-Za-z0-9])/.test(id)) {
+		dropped.push({ section, text: rest.slice(0, 100) });
+		continue;
+	}
 	// task = text after the id up to the first em-dash separator; de-markdown.
 	let after = rest
 		.slice((idMatch?.[1] ?? "").length)
@@ -112,3 +118,12 @@ for (const phase of PHASE_ORDER) {
 }
 console.log(`TOTAL open: ${rows.length} — GA ${phaseCount.GA} · v2 ${phaseCount.v2}\n`);
 console.log(out);
+
+if (dropped.length > 0) {
+	console.error(
+		`\n⚠️  ${dropped.length} OPEN bullet(s) carry no iteration id, so they are NOT in the table above.\n` +
+			"    Give each one an id in implementation-plan.md, or the work stays invisible:\n",
+	);
+	for (const d of dropped) console.error(`    [${d.section}] ${d.text}`);
+	process.exitCode = 1;
+}
