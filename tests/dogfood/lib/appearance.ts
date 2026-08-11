@@ -26,7 +26,7 @@
  * (`#2e3440`, Nord, is the lightest), so the midpoint is not a close call.
  */
 
-import type { Page } from "@playwright/test";
+import type { Frame, Page } from "@playwright/test";
 
 /** Mirror of `AppearanceMode` in the shell's `@brainstorm-os/protocol`. The
  *  harness has no dependency on the shell workspace, so the wire values are
@@ -100,14 +100,25 @@ export async function applyAppearanceMode(dash: Page, mode: string): Promise<voi
 	await dash.waitForTimeout(REPAINT_SETTLE_MS);
 }
 
-/** Read back what the renderer resolved. Pure observation — never throws on a
- *  mismatch, so a caller can report as well as assert. */
-export async function probeAppearance(dash: Page): Promise<AppearanceProbe> {
-	return dash.evaluate(
-		async ({ tokenName }) => {
-			const bs = (window as unknown as AppearanceBridge).brainstorm;
-			const snapshot = await bs.dashboard.snapshot().catch(() => null);
+/** One document's resolved theme, with no dashboard API involved — so it can be
+ *  read from an app renderer, the tab strip, or a widget iframe as well as from
+ *  the dashboard. `AppearanceProbe` is this plus the dashboard's `mode`. */
+export type SurfaceProbe = Omit<AppearanceProbe, "mode">;
 
+/** Any document a probe can run in: a top-level renderer Page or a child Frame
+ *  (the widget iframes are Frames of the dashboard page). */
+export type ProbeTarget = Page | Frame;
+
+/**
+ * Resolve `--color-background-primary` inside `target` and classify it by
+ * luminance. Shared by `probeAppearance` and by the per-surface repaint probe
+ * (session 940) so every surface in a run is measured by ONE rule — a surface
+ * that never re-themed has to read as unchanged/unresolved, not as a plausible
+ * colour that a second implementation might round differently.
+ */
+export async function probeSurface(target: ProbeTarget): Promise<SurfaceProbe> {
+	return target.evaluate(
+		({ tokenName }) => {
 			const root = document.documentElement;
 			const token = getComputedStyle(root).getPropertyValue(tokenName).trim();
 
@@ -136,16 +147,19 @@ export async function probeAppearance(dash: Page): Promise<AppearanceProbe> {
 			const luminance =
 				a === 0 ? Number.NaN : 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 
-			return {
-				theme: root.dataset.theme ?? "",
-				token,
-				background,
-				luminance,
-				mode: snapshot?.appearance?.mode ?? null,
-			};
+			return { theme: root.dataset.theme ?? "", token, background, luminance };
 		},
 		{ tokenName: BACKGROUND_TOKEN },
 	);
+}
+
+/** Read back what the DASHBOARD renderer resolved, plus the mode the real API
+ *  round-trips. Pure observation — never throws on a mismatch, so a caller can
+ *  report as well as assert. */
+export async function probeAppearance(dash: Page): Promise<AppearanceProbe> {
+	const surface = await probeSurface(dash);
+	const mode = await readAppearanceMode(dash).catch(() => null);
+	return { ...surface, mode };
 }
 
 /** Throw unless the shell has actually repainted into `theme`. Loud on purpose:
