@@ -4,7 +4,7 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
 
 **Legend:** ✅ done · 🟡 in flight · ◑ preview-drop only · ⚪ pending · ❌ rejected
 
-**Last updated:** 2026-08-10 — **table regenerated from the plan after five weeks of hand-edits.** The previous "61 open" was wrong in both directions: it listed `10.3c` and `Tool-7b` as pending months after they shipped, and it was missing twelve open iterations the plan already carried (`10.15`, `Catalog-2`…`Catalog-8`, `Ops-2`, `14.36/37/38`, and `10.3c`'s residue). `10.3c` ✅ (producers landed 2026-08-03, both gates passing); residue split out as `10.3d`. **80 open — GA 37 · v2 43.**
+**Last updated:** 2026-08-11 — **table regenerated from the plan after five weeks of hand-edits.** The previous "61 open" was wrong in both directions: it listed `10.3c` and `Tool-7b` as pending months after they shipped, and it was missing twelve open iterations the plan already carried (`10.15`, `Catalog-2`…`Catalog-8`, `Ops-2`, `14.36/37/38`, and `10.3c`'s residue). `10.3c` ✅ (producers landed 2026-08-03, both gates passing); residue split out as `10.3d`. **80 open — GA 37 · v2 43.**
 
 <!-- PASS LOG — append-only, ONE short bullet per pass, newest FIRST. Never
      rewrite or absorb earlier bullets (that megaparagraph was the repo's worst
@@ -13,6 +13,8 @@ Scannable remaining-work companion to [implementation-plan.md](implementation-pl
      history of this file. -->
 
 ### Pass log
+
+- **2026-08-11 · 0.14.0 drive, day one** — merged: the vault-bricking pairing fix + `LAN-2b` (shell!10), `F-489` fleet a11y incl. Mailbox, wallpaper live-update, Files toolbar, `F-485`, the Settings **six-group nav** (shell!12), `DS-contrast-1` (shell!13), the `F-494` audit-gate repair. `POLISH-DSN-13` ran: **109 findings → 17 systemic + 41 local**. Two things worth carrying: three of the audit's five worst findings were **stale evidence** (captured 08-02, judged 08-10, fixed in between — a capture is evidence with a timestamp), and the dashboard widget fix was **refused** because it closed the overlap by parking widgets below the fold, invisible and unremovable. Seven fixes closed the named instance and left the class open; the skeptic pass caught all seven, so *sweep the class* is now the standing instruction.
 
 - **2026-08-10 · `POLISH-DSN-13` RUN — the design gate has its list.** Captured hidden-window across twenty apps in both themes plus shell + Settings; **109 findings judged from the images**, deduped to **17 systemic + 41 app-local** ([findings doc](_review/2026-08-10-polish-dsn-13-findings.md)). Six are `bad`, and **the two worst are in the shell, not in any app**: dashboard widgets overlap each other and three app-grid icons, and overlay surfaces are translucent so content bleeds through. Also caught: on-accent labels fail contrast in dark (pure token arithmetic — no test exists, which is why a dark-on-indigo label shipped), the header tooltip chip has no surface at all in dark, and menus open ~500px from their trigger or inside the 44px header band. **The gate is NOT closed**: every `*-light-*` shell/Settings capture is dark, because spec 327 flips a `data-theme` attribute the shell never reads (`F-494`) — so half the evidence does not exist. Five app-primary-surface failures are recorded but explicitly NOT root-caused; they may be seeded-vault artifacts and must be checked against a real vault before anyone files them as bugs.
 
@@ -97,8 +99,8 @@ Every open iteration, **bucketed by phase** (GA / pre-1.0 → v2/post-v2) then p
 | -- | ---- | ------ | ---- |
 | `POLISH-1` | first owner-driven dogfood sweep (open): owner walks the fleet and files rungs per catego… | ⚪ pending |  |
 | `POLISH-DSN-13` | fleet screenshot audit, all twenty apps + shell + Settings, both themes *(the 0.14.0 desi… | 🟡 in flight | is missing: |
-| `DS-face-audit-1` | systemic defects from POLISH-DSN-13 get a primitive + a ratchet. List delivered 2026-08-1… | ⚪ pending |  |
-| `POLISH-DSN-14` | app-local defects from POLISH-DSN-13. 41 items delivered 2026-08-10, tabulated per app wi… | ⚪ pending |  |
+| `DS-face-audit-1` | systemic defects from POLISH-DSN-13 get a primitive + a ratchet. Landed so far (2026-08-1… | 🟡 in flight |  |
+| `POLISH-DSN-14` | app-local defects from POLISH-DSN-13. Landed: the Settings sidebar's flat 22-item list be… | 🟡 in flight |  |
 
 ### AI broker & vector / hybrid search *(Stage 11; lexical half shipped early as Shell 9.22)*
 
