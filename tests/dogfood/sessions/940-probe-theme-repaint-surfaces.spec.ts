@@ -8,8 +8,11 @@
  * fall out of live probes (F-480 was isolated by 921/922, never by reading), so
  * this spec measures instead of arguing.
  *
- * It is deliberately NOT a pass/fail assertion on "did the theme change". It is
- * a CENSUS: sample the resolved background of every surface the shell paints,
+ * Phases A–E are deliberately NOT pass/fail assertions on "did the theme
+ * change" — they are a CENSUS, and they measured clean. Phase F (mode=auto,
+ * driven by the OS preference) is the one that found the bug, so it — and only
+ * it — ASSERTS: the dashboard must converge on main's reading, and no surface
+ * that paints a real colour may sit out the flip. The census is: sample the resolved background of every surface the shell paints,
  * flip the theme through the path a user actually uses, sample again, and print
  * the surfaces whose value is byte-identical across the flip. An unchanged
  * value is the only unambiguous evidence of a missed repaint — a *different*
@@ -43,7 +46,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { type Frame, type Page, test } from "@playwright/test";
+import { type Frame, type Page, expect, test } from "@playwright/test";
 import {
 	AppearanceMode,
 	type AuditTheme,
@@ -78,6 +81,21 @@ type Reading = {
 
 /** Snapshot of every reachable surface at one moment, keyed by surface name. */
 type Census = Map<string, Reading>;
+
+/** A surface whose value is allowed to be byte-identical across a flip: a
+ *  reading that is not a colour at all (`--app-wallpaper-image` is `(unset)`
+ *  in a solid-wallpaper vault) or an element that paints nothing and lets its
+ *  parent through (alpha 0 ⇒ `luminanceOf` returns NaN). Everything else
+ *  standing still IS a missed repaint — pixel hashes included, since a frozen
+ *  canvas is exactly the failure they exist to catch. */
+function isExplainedStale(reading: Reading | undefined): boolean {
+	if (!reading) return true;
+	if (reading.kind === ReadingKind.Raw) return true;
+	return (
+		(reading.kind === ReadingKind.Computed || reading.kind === ReadingKind.Token) &&
+		Number.isNaN(reading.luminance)
+	);
+}
 
 /** Apps opened before the switch. One with a wallpaper-stripe header and a
  *  normal DOM body (Notes), two canvas apps (Graph, Whiteboard), and one dense
@@ -534,6 +552,14 @@ test("940 — which surfaces fail to repaint on a live light/dark switch", async
 		// restored to "system" in the same phase.
 		s.note("\n=== F · mode=auto, flipped by the OS preference (nativeTheme) ===");
 		let autoFailures: string[] = [];
+		/** One entry per OS flip that never reached main's own reading. THE
+		 *  assertion of this spec: a torn shell is one where these two disagree,
+		 *  and the disagreement outlived a 10s poll on 3 runs of 3. */
+		const autoStuck: string[] = [];
+		/** The last AUTO-phase census, so the verdict can ask what KIND of reading
+		 *  a stale surface was: a transparent element or an `(unset)` wallpaper var
+		 *  is identical in both themes by construction; a colour is not. */
+		let lastAutoCensus: Census | null = null;
 		try {
 			await dash.evaluate(async () => {
 				const bs = window as unknown as {
@@ -587,6 +613,13 @@ test("940 — which surfaces fail to repaint on a live light/dark switch", async
 						`dashboard ${converged ? `converged after ${trail.length}s` : "NEVER converged in 10s"} ` +
 						`[${trail.join(" ")}]`,
 				);
+				if (!converged) {
+					autoStuck.push(
+						`OS → ${source}: main resolved ${want}, the dashboard stayed ` +
+							`${trail[trail.length - 1]?.split(":")[1] ?? "?"} for ${trail.length}s ` +
+							`(:root[data-theme]=${rendererView.dataTheme})`,
+					);
+				}
 				s.note(
 					`    renderer matchMedia dark=${rendererView.matchMediaDark}, ` +
 						`:root[data-theme]=${rendererView.dataTheme}`,
@@ -605,6 +638,7 @@ test("940 — which surfaces fail to repaint on a live light/dark switch", async
 
 			await setOsPreference("dark");
 			const osDarkAgain = await census("F3 · mode=auto, OS preference = DARK again");
+			lastAutoCensus = osDarkAgain;
 			const backFailures = diff(
 				osLight,
 				osDarkAgain,
@@ -648,6 +682,26 @@ test("940 — which surfaces fail to repaint on a live light/dark switch", async
 				? "AUTO (OS-driven): every reachable surface repainted."
 				: `AUTO (OS-driven): ${autoFailures.length} surface(s) unchanged → ${autoFailures.join(", ")}`,
 		);
+
+		// ---- the one hard assertion (F-495) ------------------------------------
+		//
+		// Everything above is a census a reader judges. This is the regression
+		// lock, and it is deliberately narrow: the AUTO path, where the shell was
+		// measured tearing in two — dark app windows against a light dashboard,
+		// stuck there past a 10s poll, on the FIRST OS flip after entering Auto.
+		// It does not tolerate a slow convergence either: `converged` already
+		// allows a full second per sample.
+		const autoStaleColours = autoFailures.filter(
+			(surface) => !isExplainedStale(lastAutoCensus?.get(surface)),
+		);
+		expect(
+			autoStuck,
+			"the dashboard never reached the slot main resolved from nativeTheme — a torn shell (F-495), not a lag",
+		).toEqual([]);
+		expect(
+			autoStaleColours,
+			"these surfaces paint a real colour and did not move across an OS-driven light/dark flip in mode=auto (F-495)",
+		).toEqual([]);
 	} finally {
 		await restoreAppearanceMode(dash, savedMode);
 		await s.finish();
