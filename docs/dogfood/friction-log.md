@@ -27,6 +27,15 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-497 — five more apps painted the read-only lock and wrote through it anyway
+
+- **session:** lock5-class-sweep   **kind:** bug   **app:** notes, tasks, calendar, journal, code-editor   **status:** ✅ fixed (shell `7438ef57`)
+- **what I was trying to do:** close `Lock-5(f)`/`(g)` — the Bookmarks data-loss hole and the nine guards that survived deletion — and then, per the standing "sweep the class" instruction, check every other app's write funnel against the shared lock reading in `packages/sdk/src/entity-lock.ts`.
+- **what happened:** the same defect in five apps the rung had never looked at. Each read `locked` in three-to-five places, all of them chrome, and each had an ungated funnel underneath. **Notes:** the store's `update` / `setValue` / `remove` — so the dictionary rewrite (renaming a select option) patched locked notes wholesale. **Tasks:** `saveTask` / `deleteTaskRecord`, reached by ~20 callers including the whole-list reorder. **Calendar:** the detail surface's Save/Delete and the multi-select bulk move. **Journal:** the autosave denormaliser, the day icon picker, and the check-in patch behind mood + habits — a surface the editor's read-only state never covered at all. **Code-editor:** the SAVE, which writes the file's whole content, plus rename and folder move.
+- **what I expected:** a lock the product offers on every object to hold on every write path, per the rule in CLAUDE.md.
+- **evidence:** each app now has a write-gate module (`logic/*-writes.ts`, or the store for Notes) with tests that assert the REFUSAL against a mock service, and every guard was verified by deleting it and watching the app's whole vitest scope go red. 20 mutations, 20 reds.
+- **triage:** fixed in place; recorded on the plan as `Lock-5(h)`–`(l)`. The durable lesson is in `Lock-5(m)`: grep for `locked` finds the chrome, not the funnel — the sweep only works by reading each app's save/remove pair.
+
 ### F-495 - light/dark switching leaves a TORN shell: dark apps, light dashboard (the bug reported four times)
 - **session:** dev-2026-08-11 (probe 940)   **kind:** bug   **app:** shell (appearance / auto mode)   **status:** open — **root-caused and reproduced 3/3; fix pending**
 - **what the owner said, four times:** *"why switching theme is broken again? it's broken 4th time already"*. Three previous investigations were **code reading**, and all three concluded the theme path was sound. They were right — and looking in the wrong place.
