@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Brainstorm harness hub \u2014 dogfood sessions, the dev MCP server, and orchestration. Drives the sibling shell repo at ../shell.",
   "scripts": {
-    "check:lineage": "node tools/check-orphaned-commits.mjs",
+    "check:lineage": "bun tools/check-orphaned-commits.mjs",
     "dogfood:build": "(cd ../shell && bun run --filter @brainstorm-os/shell build && bun run build:apps)",
     "dogfood": "(cd ../shell && bun run --filter @brainstorm-os/shell build) && playwright test --config=playwright.dogfood.config.ts",
     "dogfood:fast": "BRAINSTORM_DOGFOOD_SKIP_BUILD=1 playwright test --config=playwright.dogfood.config.ts",

@@ -5,12 +5,15 @@
  * squash-merge makes this invisible to every ordinary signal, and why the probe
  * is a timestamp rather than a diff.
  *
- * Network-dependent (`gh`), so the decision logic lives in the pure module with
+ * Network-dependent (`glab`), so the decision logic lives in the pure module with
  * its own tests and this only gathers input. Run it in the wrap-up after merging,
- * or any time stacked PRs are in flight:
+ * or any time stacked MRs are in flight:
  *
- *     node tools/check-orphaned-commits.mjs            # this repo
- *     node tools/check-orphaned-commits.mjs ../shell   # another checkout
+ *     bun tools/check-orphaned-commits.mjs            # this repo
+ *     bun tools/check-orphaned-commits.mjs ../shell   # another checkout
+ *
+ * Run it with `bun`, not `node`: it imports a TS module that declares an enum,
+ * which Node's strip-only TypeScript mode refuses.
  *
  * Exits 1 only on a HARD orphan (work that exists nowhere else), so it can gate a
  * wrap-up script without failing on branches that were merely re-landed late.
@@ -73,18 +76,11 @@ function observe(pr, remoteBranches) {
 function main() {
 	run("git", ["fetch", "--quiet", "origin"]);
 
-	// Merged PRs are the only candidates; an open one is just work in progress.
-	const prs = JSON.parse(
-		run("gh", [
-			"pr",
-			"list",
-			"--state",
-			"merged",
-			"--limit",
-			"40",
-			"--json",
-			"number,headRefName,mergedAt",
-		]),
+	// Merged MRs are the only candidates; an open one is just work in progress.
+	// GitLab since 2026-08-05 — `glab` returns the full MR objects, so narrow them
+	// to the three fields the pure module actually reads.
+	const prs = JSON.parse(run("glab", ["mr", "list", "--merged", "-F", "json", "-P", "40"])).map(
+		(mr) => ({ number: mr.iid, headRefName: mr.source_branch, mergedAt: mr.merged_at }),
 	);
 
 	const remoteBranches = new Set(
