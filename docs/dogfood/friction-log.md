@@ -27,6 +27,27 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-498 — pairing signs the new device's roster records with the identity it is about to stop being
+
+- **session:** dev-2026-08-12 (`10.3d`(b), the two-device proof)   **kind:** bug   **app:** shell (pairing / LAN admission)   **status:** open — **release-blocking for 0.14.0**, it is why `10.3d`(b) is still red
+- **what I was trying to do:** run `tests/dogfood/collab/012-lan-two-devices.spec.ts` — the acceptance test for `10.3c`, unblocked since shell!10 landed identity adoption, and never yet run against the shipped producers.
+- **what happened:** phases 1–3 pass exactly as the spec's header promises. The shells pair, the relay stops and is cleared from both vaults, and the host binds a real private address (`ws://192.168.2.50:56550`). Then the joining device refuses its own way in:
+
+  ```
+  [devices]   dropped an unverifiable roster record for 23XywFmCuyKh… —
+              signature does not verify under this identity
+  [lan-dial]  ws://192.168.2.50:56550 refused admission:
+              could not answer the host's sealed challenge
+  [lan-dial]  no peer — relay
+  ```
+
+  The relay is stopped, so the fallback goes nowhere and `ent_lan_brief` never converges.
+- **root cause (read, not guessed):** `pairing-service.ts` writes BOTH roster records — its own device at `:430` and the source device at `:454` — signed with `session.getUserIdentity().secretKey`, and only then calls `reopenForAdoptedIdentity()` at `:489`. The comment at `:475` states the problem without connecting it to the lines above: *"`VaultSession.identity` is readonly and set once in the constructor, so this session is still running as its PRE-pairing self."* So both records are signed by the identity the device is **about to stop being**. After adoption, `DevicesStore.listActive(identity.publicKey)` verifies them under the ADOPTED key, both fail, and the joining device is left with an empty roster — it cannot answer a challenge that asks it to prove roster membership.
+- **why the LAN-2b verification is not the bug:** refusing a record that does not verify under this identity is correct and is what makes a forged roster row unable to obtain an entity DEK. The defect is that pairing *creates* records that cannot verify. Do not "fix" this by relaxing the read path.
+- **why it hid this long:** every earlier run of `012` died sooner — first on the missing producer (`no DEK for entity`, fixed by `10.3c`), then on the pre-adoption inbox ([[F-492]]). Each fix moved the failure one step later, and this is the next step. The unit tests all sign and verify under ONE identity, so the pre/post-adoption skew has no coverage anywhere.
+- **fix (not yet written — it is an authorization path and wants its own review):** the records must be signed by the adopted identity. Either write them AFTER `reopenForAdoptedIdentity()` and re-read the session, or sign with the adopted secret (already in the keystore from `scanPayload`) while keeping the current ordering. The ordering at `:485` is deliberate — "a re-open that fails leaves a paired device that needs a restart, never an un-paired one" — so whichever way it goes, that invariant has to survive. Needs a test that pairs, adopts, and then asserts `listActive` returns BOTH devices under the adopted key; that assertion fails today.
+- **also seen, and separate:** `[devices] dropped an unverifiable roster record` fires with no indication that the vault has just silently lost LAN capability. Whatever the fix, a roster that drops every record it holds deserves a louder signal than one `console.error`.
+
 ### F-497 — five more apps painted the read-only lock and wrote through it anyway
 
 - **session:** lock5-class-sweep   **kind:** bug   **app:** notes, tasks, calendar, journal, code-editor   **status:** ✅ fixed (shell `7438ef57`)
@@ -58,7 +79,7 @@ Newest sessions on top.
 - **deliberately left:** the QR canvas is `#fff` in every theme (a QR only scans dark-on-white) — now commented as such so the next sweep doesn't "fix" it; the AI-provider brand chips; the welcome screen (pinned to Default Light by design); the error-boundary fallback (renders outside the theme provider on purpose). **Residue:** ~20 hardcoded black `box-shadow` rgba values across the renderer are off-palette against the light themes' tinted `--color-shadow-*`, a separate and larger sweep.
 
 ### F-494 - the 327 audit's "light theme" captures are all dark: the flip is a no-op
-- **session:** dev-2026-08-10 (POLISH-DSN-13)   **kind:** bug (harness)   **app:** harness (`tests/dogfood/sessions/327-audit-shell-settings.spec.ts`)   **status:** open — **blocks half of the 0.14.0 design gate**
+- **session:** dev-2026-08-10 (POLISH-DSN-13)   **kind:** bug (harness)   **app:** harness (`tests/dogfood/sessions/327-audit-shell-settings.spec.ts`)   **status:** ✅ fixed and **verified by re-capture 2026-08-12** — 327 now flips through the real `dashboard.setAppearanceMode` and asserts the resolved background before naming a file for a theme. The re-run's `21-light-01-dashboard.png` is genuinely light, and it earns its keep immediately: `S1` (widgets overlapping each other AND the app-icon row) and `S3` (the Settings pane translucent, dashboard content bleeding through) are both plainly visible in a theme that previously had zero evidence.
 - **what I was trying to do:** judge the shell + Settings surfaces in both themes as part of `POLISH-DSN-13`.
 - **what happened:** every `*-light-*` file in `.sessions/327-audit-shell-settings/` renders the DARK theme. `21-light-01-dashboard.png` is the dark dashboard; `26-light-11-settings-01-appearance.png` still shows Dark selected with the Active badge on the dark pair card.
 - **root cause (verified, and it is NOT the product):** spec 327's `setTheme` does `document.documentElement.setAttribute("data-theme", m)`. The shell does not resolve its theme from that attribute — `applyThemeVars` (`packages/shell/src/renderer/theme/theme-provider.tsx`) writes the theme as **CSS custom properties** onto `documentElement` via `setProperty`. `data-theme` is an attribute the shell itself *writes* so `widgets-layer.tsx` can observe it and propagate to widget iframes; nothing reads it to style the shell. So the flip changes an attribute and no pixels.
