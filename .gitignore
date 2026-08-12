@@ -37,3 +37,4 @@ tests/dogfood/.promo-build-apps-data/
 tests/dogfood/.verify-editor/
 tests/dogfood/.verify-editor-data/
 tests/dogfood/Singleton*
+graphify-out/
