@@ -62,7 +62,12 @@ import type { ShareInvite } from "../../../packages/shell/src/main/collab/share-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "..", "..", "..");
-const SHELL_DIR = join(REPO_ROOT, "packages", "shell");
+// `BRAINSTORM_SHELL_DIR` points a run at a side worktree's build — the same
+// contract `founder.ts` already honours. Without it the collab suite could only
+// ever exercise whatever `main` happened to be built as, so the one proof that
+// matters for a pairing or sync fix (`012`) could not be run on the branch that
+// contains it. Default is the symlinked main tree.
+const SHELL_DIR = process.env.BRAINSTORM_SHELL_DIR ?? join(REPO_ROOT, "packages", "shell");
 const ELECTRON_BIN = join(SHELL_DIR, "node_modules", ".bin", "electron");
 const MAIN_ENTRY = join(SHELL_DIR, "out", "main", "index.js");
 
