@@ -75,7 +75,7 @@ getbrainstorm.online/blog
   credibility for it. If one line has to go for length, cut the investor line
   before the co-founder line.
 - Numbers stated (11 releases, ~8,500 stars, ~20 apps) match
-  [`../funding/founder-application-answers.md`](../funding/founder-application-answers.md).
+  `../funding/founder-application-answers.md`.
   33 users / 570 visitors stays out of the post: strong as a conversion story
   in a pitch, weak as a social-proof number in public.
 - Pin the post to the profile after posting; a connect post keeps recruiting

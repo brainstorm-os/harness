@@ -243,7 +243,7 @@ Plus / Pro / Team / Enterprise plans land. Hosted relay, encrypted backup, cloud
 
 ## Product Hunt campaign
 
-Moved to the funding section — see [§Product Hunt campaign in `funding/pre-seed-options.md`](../funding/pre-seed-options.md#product-hunt-campaign), where it sits alongside the other launch / community-outreach channels (r/PKMS, Hacker News). The anti-pattern commitments it depends on stay defined here ([§What we don't do](#what-we-dont-do-anti-patterns-by-name)); phase/whether-at-all is still **OQ-MK-9**.
+Moved to the funding section — see §Product Hunt campaign in `funding/pre-seed-options.md`, where it sits alongside the other launch / community-outreach channels (r/PKMS, Hacker News). The anti-pattern commitments it depends on stay defined here ([§What we don't do](#what-we-dont-do-anti-patterns-by-name)); phase/whether-at-all is still **OQ-MK-9**.
 
 ## Content strategy
 
