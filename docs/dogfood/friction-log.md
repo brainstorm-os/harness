@@ -27,6 +27,26 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-500 — every inline widget in a note leaks its typing into the document
+
+- **session:** owner-2026-08-25   **kind:** bug   **app:** notes · tasks · editor (all decorator nodes)   **status:** ✅ fixed (shell `fix/notes-select-shared-system`)
+- **what I was trying to do:** the owner's follow-up to [[F-499]] — "you changed only select field but I mean the whole app".
+- **triage (developer, 2026-08-25):** the owner was right, and the class is bigger than the select field. A `DecoratorNode` renders real interactive DOM **inside** the contenteditable, and Lexical binds its root handlers on that element in the **bubble** phase. So a key pressed in a decorator's own control bubbles up and Lexical dispatches against the *document*. Probed against a live editor, from the number field's inline input:
+
+  | typed in the cell | reached the document |
+  | --- | --- |
+  | Enter | `KEY_ENTER_COMMAND` (the reported symptom) |
+  | Escape | `KEY_ESCAPE_COMMAND` |
+  | ArrowDown / ArrowLeft | `KEY_ARROW_*_COMMAND` |
+  | Backspace | `KEY_BACKSPACE_COMMAND` — block-selection **deletes blocks** |
+  | paste | `PASTE_COMMAND` — pasting into a cell also pasted into the note |
+  | cut / copy | `CUT_COMMAND` / `COPY_COMMAND` |
+
+  A React `onKeyDown` cannot prevent any of it: React attaches at its root container, an **ancestor** of the contenteditable, so Lexical has already dispatched by the time the component's handler runs. The shared cells' commit handler (`useInlineEditKeyDown`) has always called `preventDefault()` there — which is exactly why this looked handled and was not. **12 interactive decorators** across notes, tasks and the editor package were exposed; only one had any guard at all.
+- **fix:** `useDecoratorInputBoundary` (`@brainstorm-os/editor`) installs a native listener on the decorator's host and **marks** the event with Lexical's own `_lexicalHandled` flag — the one it already sets so an event consumed by a nested editor does not re-fire in its parents. Applied to all 12. `tools/check-decorator-boundary.mjs` joins `bun run lint` at a zero baseline, and counts a decorator as interactive when it mounts a shared property **cell** as well as a literal control — the select field's markup was a single `<Cell />`, so a control-only rule would have missed the node that started this.
+- **the lesson worth keeping:** the first cut of the fix called `stopPropagation()`, which also starved React's delegated listeners on that same ancestor container — the cell's `onChange` stopped firing and the number field committed empty. **jsdom did not catch it; the real-shell spec did.** There is now a test asserting the events are still *delivered* upward while being hidden from the editor.
+
+
 ### F-499 — the note "select" field is a second, worse select — and typing an option opens a block menu
 
 - **session:** owner-2026-08-25   **kind:** design   **app:** notes (editor / inline fields)   **status:** ✅ fixed (shell `fix/notes-select-shared-system`)
