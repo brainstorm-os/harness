@@ -2,6 +2,21 @@
 
 This is a brief entry point. The canonical reference is [`docs/foundations/35-code-conventions.md`](docs/foundations/35-code-conventions.md).
 
+## Which repository
+
+This repository holds the **design record** (`docs/`), the **dogfood harness**
+(`tests/`) and the **dev tooling** (`tools/`). The application itself — the
+Electron shell, its apps and packages — lives in
+[`brainstorm-os/shell`](https://github.com/brainstorm-os/shell).
+
+- Changing how the product **behaves or looks**? That is a `shell` change. Read
+  the relevant design doc here first; if the change alters a documented
+  decision, update the doc in the same turn.
+- Changing a **design decision, the plan, an open question, a dogfood session or
+  the tooling**? That is a change here.
+
+The conventions below apply to both, because `shell` is built against them.
+
 ## Before you write code
 
 1. Read the relevant design doc(s). Start at [`docs/00-index.md`](docs/00-index.md) for the reading order.
@@ -37,7 +52,7 @@ This is a brief entry point. The canonical reference is [`docs/foundations/35-co
 
 ## Dev MCP server
 
-From Stage 0.10 onward, this repo ships an in-tree MCP (Model Context Protocol) server at `tools/mcp-server/` that exposes the implementation plan, OQ ledger, coverage state, size budgets, and i18n checks as MCP resources + tools. Claude Code (and any other MCP-capable assistant) loads it locally — it is **not** a runtime feature of Brainstorm.
+This repo ships an in-tree MCP (Model Context Protocol) server at `tools/mcp-server/` that exposes the implementation plan, OQ ledger, coverage state, size budgets, and i18n checks as MCP resources + tools. Claude Code (and any other MCP-capable assistant) loads it locally — it is **not** a runtime feature of Brainstorm.
 
 See [`docs/implementation-plan.md` → Dev MCP server](docs/implementation-plan.md#dev-mcp-server) for the full design.
 
@@ -100,7 +115,13 @@ The `BrainstormProject` seed scope (per [`docs/foundations/49-self-hosting.md`](
 
 ## Reporting bugs / asking questions
 
-For now, open an issue. Once the project is closer to public, contribution guidelines will solidify around a community process.
+Open an issue — a bug in the application belongs on
+[`brainstorm-os/shell`](https://github.com/brainstorm-os/shell/issues); a
+question about a design decision or a gap in the docs belongs here.
+
+Both repositories are AGPL-3.0-or-later. Some documents referenced from the
+design record are maintained privately and are not published; where that
+happens the path carries a short stub saying so.
 
 ## Summary
 

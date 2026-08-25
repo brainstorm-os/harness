@@ -156,4 +156,4 @@ The conceptual reading order is below. File numbers (`01-...`, `28-...`, etc.) a
 
 ## Review artifacts
 
-`_review/` held the per-iteration and stage-boundary audit outputs — security reviews, pentests, performance passes, and the gate ledger. Those are internal audit artefacts and are **maintained privately**; see [`_review/README.md`](_review/README.md). Nothing in the design surface depends on them.
+Per-iteration and stage-boundary audit outputs — security reviews, pentests, performance passes, and the gate ledger — are internal artefacts kept out of this repository. Nothing in the design surface depends on them.

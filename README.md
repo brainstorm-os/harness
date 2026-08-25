@@ -30,8 +30,7 @@ shell repo are enforced against rules stated in
 A small number of documents are maintained privately and are **not** part of
 this record: fundraising material, commercial strategy (monetisation, pricing,
 payments architecture), internal launch runbooks and unreleased campaign copy,
-credential-procurement notes, and the internal audit trail under
-[`docs/_review/`](docs/_review/README.md).
+credential-procurement notes, and the internal audit trail.
 
 Where the published docs cross-reference one of those, the path is kept with a
 short stub explaining the omission, so links still resolve. Nothing published
