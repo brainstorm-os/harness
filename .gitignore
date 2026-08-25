@@ -3,6 +3,7 @@
 
 # deps & build output
 node_modules/
+node_modules
 out/
 dist/
 
