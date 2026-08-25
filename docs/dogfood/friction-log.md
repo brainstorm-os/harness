@@ -27,6 +27,19 @@ Newest sessions on top.
 
 <!-- Entries land below this line, newest session first. -->
 
+### F-499 — the note "select" field is a second, worse select — and typing an option opens a block menu
+
+- **session:** owner-2026-08-25   **kind:** design   **app:** notes (editor / inline fields)   **status:** ✅ fixed (shell `fix/notes-select-shared-system`)
+- **what I was trying to do:** put a status field in a note.
+- **what happened:** there is a separate `/select` field with its own popover, its own per-note option list, and its own "Add option…" box — none of which is the Select I already have everywhere else through **properties**. It looks wrong, and pressing Enter while adding an option opens a block menu instead of adding the option.
+- **what I expected:** one select in the product. Adding options behaves like adding options.
+- **triage (developer, 2026-08-25):** both halves confirmed, and they are the same root cause — **the field forked from the shared system.**
+  - Its three siblings (`CheckboxFieldNode` / `DateFieldNode` / `NumberFieldNode`) all render through the shared property-ui cell registry (`getCell(...)`). `SelectFieldNode` alone hand-rolled a picker, on the premise (stated in its own header comment) that "a standalone note cell has no backing vault dictionary". That premise is **false in current code**: `apps/notes/src/app.tsx` wraps the whole app, editor included, in `<PropertiesProvider>` with the vault property + dictionary stores. So the fork bought a second option model, a second picker, and a second keyboard story for nothing.
+  - The bespoke picker set `focusOnMount: false` and never focused its own "Add option…" input — verified by mounting the real picker and reading `document.activeElement` (`BODY`). The chip that opens it lives *inside* the contenteditable, so the keystrokes aimed at the input reached Lexical instead, and Enter did editor things.
+  - **It was not tested at the level that could catch this.** `select-field-node.view.test.tsx` re-rendered the picker's footer into a **detached second React root** and dispatched Enter at it there. The event never travelled through the editor, so the test asserted "typing + Enter adds the option" while that interaction was broken in the app. Rewritten to mount one tree and query the picker where it actually lands.
+- **fix:** the field now stores a vault Select **property key** + the chosen dictionary **item id** and renders `getCell(Text, Tag)` — the same Tag cell the Database grid and the properties panel use, whose search input takes focus on open and whose shared combobox hook owns Enter. Binding reuses the existing `<AddPropertyPicker>` (scoped to Select defs via its `excludeKeys` seam). Persisted v1 nodes keep their labels and their value; the first bind seeds their inline vocabulary into the real dictionary, so an option set becomes shared vocabulary instead of being lost. What stays on the node is the *value* — a table cell has no entity to hold one, which is the whole reason these inline fields exist.
+
+
 ### F-498 — pairing signs the new device's roster records with the identity it is about to stop being
 
 - **session:** dev-2026-08-12 (`10.3d`(b), the two-device proof)   **kind:** bug   **app:** shell (pairing / LAN admission)   **status:** ✅ fixed (shell!18) — **`10.3d`(b) now passes**, 18.9s, where it had failed at 34.2s on `ent_lan_brief did not converge`. Two of one user's own devices sync over the LAN with the relay stopped, for the first time
