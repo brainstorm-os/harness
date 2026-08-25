@@ -1,7 +1,7 @@
 # The admission principal — which key proves "I am an allowed device"
 
 Decision note for **LAN-2b(c)**, the item the rest of the LAN security gate
-depends on ([`../_review/2026-07-26-lan-p2p-security-gate.md`](../_review/2026-07-26-lan-p2p-security-gate.md)
+depends on (`../_review/2026-07-26-lan-p2p-security-gate.md`
 G3/G4). It also unblocks the device-revocation fix, which is a *live* gap on
 today's build.
 

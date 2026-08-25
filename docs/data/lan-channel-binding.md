@@ -3,7 +3,7 @@
 Design for **LAN-2b(a)+(b)**, the last critical item blocking LAN-4's external
 socket bind. Supersedes the "mutual challenge" mitigation in
 [`lan-p2p-sync.md`](lan-p2p-sync.md) §4.3 / T4, which does not work. Findings:
-[`../_review/2026-07-26-lan-p2p-security-gate.md`](../_review/2026-07-26-lan-p2p-security-gate.md)
+`../_review/2026-07-26-lan-p2p-security-gate.md`
 G2. Principal decision: [`lan-admission-principal.md`](lan-admission-principal.md).
 
 ## Why the specified fix fails

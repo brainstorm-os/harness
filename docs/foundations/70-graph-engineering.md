@@ -151,7 +151,7 @@ expression-evaluation surface as needing its own security pass, and it never
 happened. The marker came off (claiming a gate you haven't run is the thing this
 prevents) and the owed review went on the rung as residue.
 
-That review [then ran](../_review/2026-07-27-entity-step-expressions.md), on
+That review then ran, on
 2026-07-27, and found a privilege escalation in shipped code: a workflow could
 rewrite its own `capabilities` sheet and inherit the whole automations app
 ceiling. The marker is now back on `11b.18` with a passing record behind it.

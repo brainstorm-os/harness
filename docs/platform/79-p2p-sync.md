@@ -14,7 +14,7 @@ Read alongside:
 - [data/lan-admission-principal.md](../data/lan-admission-principal.md): why the per-device key is the principal.
 - [data/20-database-growth-and-sync.md](../data/20-database-growth-and-sync.md): the sync model the transport carries.
 - [security/16-identity-orgs-encryption.md](../security/16-identity-orgs-encryption.md): the trust model none of this changes.
-- [_review/2026-07-26-lan-p2p-security-gate.md](../_review/2026-07-26-lan-p2p-security-gate.md): the gate that shaped the shipped handshake.
+- _review/2026-07-26-lan-p2p-security-gate.md: the gate that shaped the shipped handshake.
 
 ---
 
@@ -26,7 +26,7 @@ Every claim here was read out of the shipped shell, not inferred from the plan. 
 
 **The LAN transport is not a new transport.** `ActiveRelayKind.Lan` and `ActiveRelayKind.WebSocket` are both backed by the same `WebSocketRelayPort` class. Only the address and the injected handshake differ (`main/index.ts`, the `makeRelayPort` branch). This is the shipped answer to the transport question and [§4](#4-transport) does not reopen it.
 
-**The listener exists and is hardened.** `sync/lan-relay-listener.ts` binds a real inbound socket over `node:http` + `ws`, with an address allowlist (`isBindableAddress`: private IPv4 literal or loopback, never a wildcard), per-source connection accounting, a rate window, `Origin` rejection before the 101, an auth deadline, an 8 MiB message cap and bounded teardown. It passed a `/pentester` pass that failed first with three blocking findings and then passed on re-run; both runs are in [`_review/evaluations.jsonl`](../_review/evaluations.jsonl).
+**The listener exists and is hardened.** `sync/lan-relay-listener.ts` binds a real inbound socket over `node:http` + `ws`, with an address allowlist (`isBindableAddress`: private IPv4 literal or loopback, never a wildcard), per-source connection accounting, a rate window, `Origin` rejection before the 101, an auth deadline, an 8 MiB message cap and bounded teardown. It passed a `/pentester` pass that failed first with three blocking findings and then passed on re-run; both runs are in `_review/evaluations.jsonl`.
 
 **Admission is channel-bound and mutual.** `sync/lan-admission.ts` + `sync/lan-relay-host.ts` implement the handshake from [lan-channel-binding.md](../data/lan-channel-binding.md): client sends `hello{deviceAccount}`, the host seals a 32-byte nonce to that device's roster X25519 key with HPKE base mode (`info = "brainstorm/lan-admission/v1"`, AAD binding both account names), the client opens it and signs a direction-tagged transcript, the host verifies against the roster Ed25519 key and answers with its own direction-tagged proof, which the client verifies before it sends anything at all. There is no plaintext-nonce fallback on the LAN path: an unknown, revoked or X25519-less device makes `sealFor` return `null` and the host closes.
 
@@ -223,7 +223,7 @@ So: `P2P-3` should be re-scoped from "NAT traversal" to "direct connection whene
 
 **Cost.** Zero for the reused parts. The discovery tag is a KDF call and a TXT field.
 
-**What would change my mind.** Nothing short of a finding against the shipped handshake, which had a security review and a pentest ([`_review/evaluations.jsonl`](../_review/evaluations.jsonl)).
+**What would change my mind.** Nothing short of a finding against the shipped handshake, which had a security review and a pentest (`_review/evaluations.jsonl`).
 
 ---
 
@@ -289,7 +289,7 @@ The executable brief, in dependency order. Roughly six work items, of which two 
 5. **Add the rotating discovery tag** ([§3.1](#31-the-new-finding-automatic-dialing-discloses-your-device-identity)). No `hello` to an advertiser that cannot produce a valid tag. This is a security requirement of automatic discovery, not an enhancement, and it should land in the same change as item 4.
 6. **Fix interface selection and decide the IPv6 position** ([§8](#8-portability)).
 
-**Gates.** A `bonjour-service` dependency triggers the dependency rule, so an `electron-builder --dir` dry-run is required. Items 4 and 5 change what the device broadcasts and who it will talk to, which is new attack surface on the first inbound socket, so a `/security-review` is required and a `/pentester` pass is warranted on the discover-to-dial path specifically. Both go in [`_review/evaluations.jsonl`](../_review/evaluations.jsonl) with a rubric, per the recorded-gates rule.
+**Gates.** A `bonjour-service` dependency triggers the dependency rule, so an `electron-builder --dir` dry-run is required. Items 4 and 5 change what the device broadcasts and who it will talk to, which is new attack surface on the first inbound socket, so a `/security-review` is required and a `/pentester` pass is warranted on the discover-to-dial path specifically. Both go in `_review/evaluations.jsonl` with a rubric, per the recorded-gates rule.
 
 ---
 

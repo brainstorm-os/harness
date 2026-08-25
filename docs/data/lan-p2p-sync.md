@@ -186,7 +186,7 @@ Numbered in the Track-C LAN namespace; resolve (take a position, document here +
 ### ✅ Security gate RESULT (2026-07-26) — LAN-4 remains blocked, on 8 items
 
 The gate below RAN: `/security-review` + `/pentester`, full findings in
-[`../_review/2026-07-26-lan-p2p-security-gate.md`](../_review/2026-07-26-lan-p2p-security-gate.md).
+`../_review/2026-07-26-lan-p2p-security-gate.md`.
 Headline: **the sealed-envelope pipeline holds** (content confidentiality and
 integrity are not breakable from this transport, exactly as §4.1 claims) — but
 the mitigations §4 leans on were **specified and never built**, and the

@@ -64,4 +64,4 @@ So the pairing flow still has to decide what "join" means on a device that alrea
 
 ## 6 · Gates
 
-Key distribution and the vault-open path. `/security-review` **and** `/pentester` before ✅, recorded in [`_review/evaluations.jsonl`](../_review/evaluations.jsonl) per the gates-are-recorded rule. Specific things a pentest should try: admitting an identity without authorisation (OQ-250), downgrading a multi-identity vault to a single-identity build (OQ-251), and using a second admitted identity to read entities shared only to the first (OQ-249).
+Key distribution and the vault-open path. `/security-review` **and** `/pentester` before ✅, recorded in `_review/evaluations.jsonl` per the gates-are-recorded rule. Specific things a pentest should try: admitting an identity without authorisation (OQ-250), downgrading a multi-identity vault to a single-identity build (OQ-251), and using a second admitted identity to read entities shared only to the first (OQ-249).

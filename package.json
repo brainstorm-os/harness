@@ -2,6 +2,7 @@
   "name": "@brainstorm/harness",
   "private": true,
   "type": "module",
+  "license": "AGPL-3.0-or-later",
   "description": "Brainstorm harness hub \u2014 dogfood sessions, the dev MCP server, and orchestration. Drives the sibling shell repo at ../shell.",
   "scripts": {
     "check:lineage": "bun tools/check-orphaned-commits.mjs",
